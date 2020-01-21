@@ -8,10 +8,7 @@ import {
   put,
   takeEvery,
 } from '@redux-saga/core/effects';
-import {
-  EntityDataModelApiActions,
-  EntityDataModelApiSagas,
-} from 'lattice-sagas';
+import { EntityDataModelApiActions, EntityDataModelApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -23,8 +20,16 @@ import {
 
 const LOG = new Logger('EDMSagas');
 
-const { getAllEntityTypes, getAllPropertyTypes } = EntityDataModelApiActions;
-const { getAllEntityTypesWorker, getAllPropertyTypesWorker } = EntityDataModelApiSagas;
+const {
+  getAllAssociationTypes,
+  getAllEntityTypes,
+  getAllPropertyTypes,
+} = EntityDataModelApiActions;
+const {
+  getAllAssociationTypesWorker,
+  getAllEntityTypesWorker,
+  getAllPropertyTypesWorker,
+} = EntityDataModelApiSagas;
 
 /*
  *
@@ -40,6 +45,7 @@ function* getEntityDataModelTypesWorker(action :SequenceAction) :Generator<*, *,
     yield put(getEntityDataModelTypes.request(action.id));
 
     const responses :Object[] = yield all([
+      call(getAllAssociationTypesWorker, getAllAssociationTypes()),
       call(getAllEntityTypesWorker, getAllEntityTypes()),
       call(getAllPropertyTypesWorker, getAllPropertyTypes()),
     ]);
@@ -52,8 +58,9 @@ function* getEntityDataModelTypesWorker(action :SequenceAction) :Generator<*, *,
     if (responseError) throw responseError;
 
     yield put(getEntityDataModelTypes.success(action.id, {
-      entityTypes: responses[0].data,
-      propertyTypes: responses[1].data,
+      associationTypes: responses[0].data,
+      entityTypes: responses[1].data,
+      propertyTypes: responses[2].data,
     }));
   }
   catch (error) {
