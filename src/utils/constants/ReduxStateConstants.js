@@ -13,7 +13,17 @@ const APP :Object = {
   SELECTED_ORG_ID: 'selectedOrgId',
 };
 
+const EDM :Object = {
+  ASSOCIATION_TYPES: 'associationTypes',
+  EDM: 'edm',
+  ENTITY_TYPES: 'entityTypes',
+  PROPERTY_TYPES: 'propertyTypes',
+  TYPES_BY_ID: 'typesById',
+  TYPE_IDS_BY_FQN: 'typeIdsByFqn',
+};
+
 export {
   APP,
+  EDM,
   SHARED,
 };
