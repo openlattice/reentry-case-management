@@ -8,16 +8,17 @@ import {
   put,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { AppApiActions, AppApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
+import { APP_NAME } from '../../utils/constants/GeneralConstants';
 import { INITIALIZE_APPLICATION, initializeApplication } from './AppActions';
-import {
-  getEntityDataModelTypes,
-} from '../../core/edm/EDMActions';
-import {
-  getEntityDataModelTypesWorker,
-} from '../../core/edm/EDMSagas';
+import { getEntityDataModelTypes } from '../../core/edm/EDMActions';
+import { getEntityDataModelTypesWorker } from '../../core/edm/EDMSagas';
+
+const { getApp, getAppConfigs } = AppApiActions;
+const { getAppWorker, getAppConfigsWorker } = AppApiSagas;
 
 const LOG = new Logger('AppSagas');
 
@@ -31,12 +32,20 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
 
   try {
     yield put(initializeApplication.request(action.id));
-    const responses :Object[] = yield all([
+    const [edmResponse, appResponse] :Object[] = yield all([
       call(getEntityDataModelTypesWorker, getEntityDataModelTypes()),
-      // ...any other required requests
+      call(getAppWorker, getApp(APP_NAME))
     ]);
-    if (responses[0].error) throw responses[0].error;
-    yield put(initializeApplication.success(action.id));
+    if (edmResponse.error) throw edmResponse.error;
+    if (appResponse.error) throw appResponse.error;
+
+    const app = appResponse.data;
+    const appConfigsResponse = yield call(getAppConfigsWorker, getAppConfigs(app.id));
+    if (appConfigsResponse.error) throw appConfigsResponse.error;
+
+    const appConfigs :Object[] = appConfigsResponse.data;
+
+    yield put(initializeApplication.success(action.id, { appConfigs }));
   }
   catch (error) {
     LOG.error(action.type, error);
