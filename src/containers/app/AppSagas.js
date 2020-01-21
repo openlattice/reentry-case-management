@@ -69,7 +69,8 @@ function* initializeApplicationWatcher() :Generator<*, *, *> {
 }
 
 function* switchOrganizationWorker(action :Object) :Generator<*, *, *> {
-  AccountUtils.storeOrganizationId(action.org.orgId);
+  const { value } = action;
+  AccountUtils.storeOrganizationId(value.orgId);
   yield put(push(Routes.ROOT));
   yield call(initializeApplicationWorker, initializeApplication());
 }

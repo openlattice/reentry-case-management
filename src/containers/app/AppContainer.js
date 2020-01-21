@@ -117,7 +117,7 @@ class AppContainer extends Component<Props> {
 
   render() {
 
-    const { organizations } = this.props;
+    const { organizations, selectedOrgId } = this.props;
 
     const userInfo = AuthUtils.getUserInfo();
     let user = null;
@@ -136,7 +136,8 @@ class AppContainer extends Component<Props> {
             logout={this.logout}
             organizationsSelect={{
               onChange: this.switchOrganization,
-              organizations
+              organizations,
+              selectedOrganizationId: selectedOrgId
             }}
             user={user}>
           <AppNavigationWrapper>
