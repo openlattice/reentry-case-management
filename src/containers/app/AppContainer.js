@@ -35,8 +35,8 @@ import { isNonEmptyString } from '../../utils/LangUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
-const { INITIALIZE_APPLICATION } = AppActions;
-const { ORGS } = APP;
+const { INITIALIZE_APPLICATION, switchOrganization } = AppActions;
+const { ORGS, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const Error = styled.div`
@@ -47,11 +47,13 @@ type Props = {
   actions :{
     initializeApplication :RequestSequence;
     logout :() => void;
+    switchOrganization :RequestSequence;
   };
   organizations :Map;
   requestStates :{
     INITIALIZE_APPLICATION :RequestState;
   };
+  selectedOrgId :UUID;
 };
 
 class AppContainer extends Component<Props> {
@@ -71,6 +73,16 @@ class AppContainer extends Component<Props> {
     // if (isFunction(gtag)) {
     //   gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
     // }
+  }
+
+  switchOrganization = (organization :Object) => {
+    const { actions, selectedOrgId } = this.props;
+    if (organization.value !== selectedOrgId) {
+      actions.switchOrganization({
+        orgId: organization.value,
+        title: organization.label
+      });
+    }
   }
 
   renderAppContent = () => {
@@ -123,7 +135,7 @@ class AppContainer extends Component<Props> {
             appTitle="Re-entry Case Management"
             logout={this.logout}
             organizationsSelect={{
-              onChange: () => console.log('org'),
+              onChange: this.switchOrganization,
               organizations
             }}
             user={user}>
@@ -146,13 +158,15 @@ const mapStateToProps = (state :Map<*, *>) => ({
   [ORGS]: state.getIn([APP.APP, ORGS]),
   requestStates: {
     [INITIALIZE_APPLICATION]: state.getIn([APP.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
-  }
+  },
+  [SELECTED_ORG_ID]: state.getIn([APP.APP, SELECTED_ORG_ID]),
 });
 
 const mapActionsToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout: AuthActions.logout,
+    switchOrganization,
   }, dispatch)
 });
 

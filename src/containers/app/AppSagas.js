@@ -2,18 +2,25 @@
  * @flow
  */
 
+import { AccountUtils } from 'lattice-auth';
 import {
   all,
   call,
   put,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { push } from 'connected-react-router';
 import { AppApiActions, AppApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
+import * as Routes from '../../core/router/Routes';
 import { APP_NAME } from '../../utils/constants/GeneralConstants';
-import { INITIALIZE_APPLICATION, initializeApplication } from './AppActions';
+import {
+  INITIALIZE_APPLICATION,
+  SWITCH_ORGANIZATION,
+  initializeApplication,
+} from './AppActions';
 import { getEntityDataModelTypes } from '../../core/edm/EDMActions';
 import { getEntityDataModelTypesWorker } from '../../core/edm/EDMSagas';
 
@@ -61,7 +68,19 @@ function* initializeApplicationWatcher() :Generator<*, *, *> {
   yield takeEvery(INITIALIZE_APPLICATION, initializeApplicationWorker);
 }
 
+function* switchOrganizationWorker(action :Object) :Generator<*, *, *> {
+  AccountUtils.storeOrganizationId(action.org.orgId);
+  yield put(push(Routes.ROOT));
+  yield call(initializeApplicationWorker, initializeApplication());
+}
+
+function* switchOrganizationWatcher() :Generator<*, *, *> {
+  yield takeEvery(SWITCH_ORGANIZATION, switchOrganizationWorker);
+}
+
 export {
   initializeApplicationWatcher,
   initializeApplicationWorker,
+  switchOrganizationWatcher,
+  switchOrganizationWorker,
 };
