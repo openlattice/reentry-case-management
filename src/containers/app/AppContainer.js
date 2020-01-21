@@ -32,9 +32,11 @@ import * as AppActions from './AppActions';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import * as Routes from '../../core/router/Routes';
 import { isNonEmptyString } from '../../utils/LangUtils';
+import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
 const { INITIALIZE_APPLICATION } = AppActions;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const Error = styled.div`
   text-align: center;
@@ -134,7 +136,7 @@ class AppContainer extends Component<Props> {
 
 const mapStateToProps = (state :Map<*, *>) => ({
   requestStates: {
-    [INITIALIZE_APPLICATION]: state.getIn(['app', INITIALIZE_APPLICATION, 'requestState']),
+    [INITIALIZE_APPLICATION]: state.getIn([APP.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
   }
 });
 
