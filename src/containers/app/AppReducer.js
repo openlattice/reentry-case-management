@@ -55,7 +55,7 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           }
 
           const { appConfigs } = value;
-          let organizations :Map = Map();
+          let organizations :Map = state.get(ORGS);
 
           let entitySetIdsByOrgId :Map = state.get(ENTITY_SET_IDS_BY_ORG_ID);
 
@@ -65,7 +65,11 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
             const { id: orgId } = organization;
 
             if (!fromJS(appConfig.config).isEmpty()) {
-              organizations = organizations.set(orgId, organization);
+              organizations = organizations.set(orgId, {
+                id: orgId,
+                title: organization.title,
+              });
+
               fromJS(APP_TYPE_FQNS).forEach((fqn) => {
                 entitySetIdsByOrgId = entitySetIdsByOrgId.setIn(
                   [orgId, fqn],
