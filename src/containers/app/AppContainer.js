@@ -36,6 +36,7 @@ import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
 const { INITIALIZE_APPLICATION } = AppActions;
+const { ORGS } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const Error = styled.div`
@@ -47,6 +48,7 @@ type Props = {
     initializeApplication :RequestSequence;
     logout :() => void;
   };
+  organizations :Map;
   requestStates :{
     INITIALIZE_APPLICATION :RequestState;
   };
@@ -103,6 +105,8 @@ class AppContainer extends Component<Props> {
 
   render() {
 
+    const { organizations } = this.props;
+
     const userInfo = AuthUtils.getUserInfo();
     let user = null;
     if (isNonEmptyString(userInfo.name)) {
@@ -118,6 +122,10 @@ class AppContainer extends Component<Props> {
             appIcon={OpenLatticeIcon}
             appTitle="Re-entry Case Management"
             logout={this.logout}
+            organizationsSelect={{
+              onChange: () => console.log('org'),
+              organizations
+            }}
             user={user}>
           <AppNavigationWrapper>
             <NavLink to={Routes.ROOT} />
@@ -135,6 +143,7 @@ class AppContainer extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => ({
+  [ORGS]: state.getIn([APP.APP, ORGS]),
   requestStates: {
     [INITIALIZE_APPLICATION]: state.getIn([APP.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
   }
