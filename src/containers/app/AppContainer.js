@@ -114,7 +114,7 @@ class AppContainer extends Component<Props> {
       <AppContainerWrapper>
         <AppHeaderWrapper
             appIcon={OpenLatticeIcon}
-            appTitle="Reentry Case Management"
+            appTitle="Re-entry Case Management"
             logout={this.logout}
             user={user}>
           <AppNavigationWrapper>
