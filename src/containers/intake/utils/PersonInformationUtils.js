@@ -19,20 +19,29 @@ const {
   CONTACT_INFO,
   EDUCATION,
   HAS,
+  JAILS_PRISONS,
+  JAIL_STAY,
   LOCATED_AT,
   LOCATION,
   PEOPLE,
   PERSON_DETAILS,
   PERSON_DETAILS_CRIMINAL_JUSTICE,
+  PROBATION_PAROLE,
+  SUBJECT_OF,
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
+  FIRST_NAME,
   GENDER,
   HIGHEST_EDUCATION_LEVEL,
+  LAST_NAME,
   MARITAL_STATUS,
+  NAME,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
+  PROJECTED_RELEASE_DATETIME,
+  RECOGNIZED_END_DATETIME,
   SEX_OFFENDER,
 } = PROPERTY_TYPE_FQNS;
 
@@ -144,6 +153,61 @@ const getClientCJDetailsAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
+const getClientReleaseAssociations = (formData :Object) => {
+  const associations = [];
+  const outerPageSectionKey :string = getPageSectionKey(1, 4);
+  const releaseDate :any = getIn(
+    formData,
+    [outerPageSectionKey, getEntityAddressKey(0, JAIL_STAY, PROJECTED_RELEASE_DATETIME)]
+  );
+  // change to EKID once you hydrate form with real jails from entity set:
+  const jailOrPrison :any = getIn(formData, [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, NAME)]);
+
+  if (isDefined(releaseDate) || isDefined(jailOrPrison)) {
+    associations.push([LOCATED_AT, 0, JAIL_STAY, 0, JAILS_PRISONS, {}]);
+    associations.push([SUBJECT_OF, 0, PEOPLE, 0, JAIL_STAY, {}]);
+  }
+
+  const probationData = getIn(formData, [outerPageSectionKey, getPageSectionKey(1, 7)]);
+  if (!isDefined(probationData) || Object.values(probationData).every((value :any) => !isDefined(value))) {
+    return associations;
+  }
+
+  // DATA MODEL UNKNOWN for the following associations:
+  // Attorney
+  // if (isDefined(get(probationData, getEntityAddressKey(1, PEOPLE, LAST_NAME)))
+  //   || isDefined(get((probationData, getEntityAddressKey(1, PEOPLE, FIRST_NAME))))) {
+  //   associations.push([UNKNOWN]);
+  //
+  //   if (isDefined(get(probationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
+  //     associations.push([CONTACTED_VIA, 1, PEOPLE, 2, CONTACT_INFO, {}]);
+  //   }
+  //   if (isDefined(get(probationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
+  //     associations.push([CONTACTED_VIA, 1, PEOPLE, 3, CONTACT_INFO, {}]);
+  //   }
+  // }
+
+  // Probation/Parole Officer
+  // if (isDefined(get(probationData, getEntityAddressKey(2, PEOPLE, LAST_NAME)))
+  //   || isDefined(get((probationData, getEntityAddressKey(2, PEOPLE, FIRST_NAME))))) {
+  //   associations.push([UNKNOWN]);
+  //
+  //   if (isDefined(get(probationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
+  //     associations.push([CONTACTED_VIA, 2, PEOPLE, 4, CONTACT_INFO, {}]);
+  //   }
+  //   if (isDefined(get(probationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
+  //     associations.push([CONTACTED_VIA, 2, PEOPLE, 5, CONTACT_INFO, {}]);
+  //   }
+  // }
+
+  // Probation/Parole
+  // if (isDefined(get(probationData, getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)))) {
+  //   associations.push([UNKNOWN]);
+  // }
+
+  return associations;
+};
+
 // const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
 //   const associations = [];
 //   const hearing = get(formData, getPageSectionKey(1, 6));
@@ -158,5 +222,6 @@ export {
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
   getClientEducationAssociations,
+  getClientReleaseAssociations,
   setPreferredMethodOfContact,
 };

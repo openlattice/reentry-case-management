@@ -22,7 +22,7 @@ const {
   EDUCATION,
   HEARINGS,
   JAILS_PRISONS,
-  JAIL_STAY_LENGTH,
+  JAIL_STAY,
   LOCATION,
   PEOPLE,
   PERSON_DETAILS,
@@ -189,7 +189,7 @@ const personInformationSchema :Object = {
           enum: JAIL_PRISON_NAMES,
           enumNames: JAIL_PRISON_NAMES
         },
-        [getEntityAddressKey(0, JAIL_STAY_LENGTH, PROJECTED_RELEASE_DATETIME)]: {
+        [getEntityAddressKey(0, JAIL_STAY, PROJECTED_RELEASE_DATETIME)]: {
           type: 'string',
           title: 'Release date:',
           format: 'date'
@@ -376,7 +376,7 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, JAILS_PRISONS, NAME)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, JAIL_STAY_LENGTH, PROJECTED_RELEASE_DATETIME)]: {
+    [getEntityAddressKey(0, JAIL_STAY, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-4',
     },
     referredFrom: {

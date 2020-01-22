@@ -15,6 +15,7 @@ import {
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
   getClientEducationAssociations,
+  getClientReleaseAssociations,
   setPreferredMethodOfContact,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
@@ -76,6 +77,7 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientContactAndAddressAssociations(formDataToProcess));
     associations = associations.concat(getClientEducationAssociations(formDataToProcess));
     associations = associations.concat(getClientCJDetailsAssociations(formDataToProcess));
+    associations = associations.concat(getClientReleaseAssociations(formDataToProcess));
     console.log('associations: ', associations);
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
