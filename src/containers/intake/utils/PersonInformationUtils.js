@@ -13,18 +13,30 @@ import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataCo
 
 const { getEntityAddressKey, getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 const {
+  // APPEARS_IN,
+  // HEARINGS,
   CONTACTED_VIA,
   CONTACT_INFO,
+  EDUCATION,
+  HAS,
   LOCATED_AT,
   LOCATION,
   PEOPLE,
+  PERSON_DETAILS,
+  PERSON_DETAILS_CRIMINAL_JUSTICE,
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
+  GENDER,
+  HIGHEST_EDUCATION_LEVEL,
+  MARITAL_STATUS,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
+  SEX_OFFENDER,
 } = PROPERTY_TYPE_FQNS;
+
+// Entities Utils
 
 const setPreferredMethodOfContact = (formData :Object) :Object => {
 
@@ -74,6 +86,21 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+// Associations Utils
+
+const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const personGender :any = getIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PERSON_DETAILS, GENDER)]);
+  const maritalStatus :any = getIn(
+    formData,
+    [getPageSectionKey(1, 3), getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]
+  );
+  if (!isDefined(personGender) && !isDefined(maritalStatus)) return associations;
+
+  associations.push([HAS, 0, PEOPLE, 0, PERSON_DETAILS, {}]);
+  return associations;
+};
+
 const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*>> => {
 
   const associations = [];
@@ -95,7 +122,41 @@ const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*
   return associations;
 };
 
+const getClientEducationAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const educationLevel :any = getIn(
+    formData,
+    [getPageSectionKey(1, 3), getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]
+  );
+  if (!isDefined(educationLevel)) return associations;
+  associations.push([HAS, 0, PEOPLE, 0, EDUCATION, {}]);
+  return associations;
+};
+
+const getClientCJDetailsAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const educationLevel :any = getIn(
+    formData,
+    [getPageSectionKey(1, 5), getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]
+  );
+  if (!isDefined(educationLevel)) return associations;
+  associations.push([HAS, 0, PEOPLE, 0, PERSON_DETAILS_CRIMINAL_JUSTICE, {}]);
+  return associations;
+};
+
+// const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
+//   const associations = [];
+//   const hearing = get(formData, getPageSectionKey(1, 6));
+//   if (!Object.values(hearing).length) return associations;
+//
+//   associations.push([APPEARS_IN, 0, PEOPLE, 0, HEARINGS, {}]);
+//   return associations;
+// };
+
 export {
+  getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
+  getClientDetailsAssociations,
+  getClientEducationAssociations,
   setPreferredMethodOfContact,
 };

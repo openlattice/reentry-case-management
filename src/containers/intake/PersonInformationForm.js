@@ -10,7 +10,13 @@ import { connect } from 'react-redux';
 import COLORS from '../../core/style/Colors';
 
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
-import { getClientContactAndAddressAssociations, setPreferredMethodOfContact } from './utils/PersonInformationUtils';
+import {
+  getClientCJDetailsAssociations,
+  getClientContactAndAddressAssociations,
+  getClientDetailsAssociations,
+  getClientEducationAssociations,
+  setPreferredMethodOfContact,
+} from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 
@@ -66,16 +72,19 @@ class PersonInformationForm extends Component<Props, State> {
     console.log('formDataToProcess: ', formDataToProcess);
 
     let associations :Array<Array<*>> = [];
+    associations = associations.concat(getClientDetailsAssociations(formDataToProcess));
     associations = associations.concat(getClientContactAndAddressAssociations(formDataToProcess));
+    associations = associations.concat(getClientEducationAssociations(formDataToProcess));
+    associations = associations.concat(getClientCJDetailsAssociations(formDataToProcess));
     console.log('associations: ', associations);
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
     console.log('entityData: ', entityData);
-    const associationEntityData :Object = processAssociationEntityData(
-      fromJS(associations),
-      entitySetIdsByFqn,
-      propertyTypeIdsByFqn
-    );
+    // const associationEntityData :Object = processAssociationEntityData(
+    //   fromJS(associations),
+    //   entitySetIdsByFqn,
+    //   propertyTypeIdsByFqn
+    // );
 
   }
 
