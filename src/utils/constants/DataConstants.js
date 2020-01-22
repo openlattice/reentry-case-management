@@ -52,24 +52,23 @@ const MARITAL_STATUSES :string[] = [
 ];
 
 const EDUCATION_LEVELS :string[] = [
-  'Grade School',
-  '9th Grade',
-  '10th Grade',
-  '11th Grade',
-  '12th Grade',
-  'High School Diploma',
-  'High School Equivalency',
-  'Associate\'s Degree',
-  'Bachelor\'s Degree',
-  'Grad School',
+  'Elementary or High school, no diploma',
+  '9th grade, no diploma',
+  '10th grade, no diploma',
+  '11th grade, no diploma',
+  '12th grade, no diploma',
+  'Elementary or High school, GED',
+  'High school diploma',
+  'College, no degree',
+  'Postsecondary',
 ];
 
 // Contact
 
 const PREFERRED_COMMUNICATION_METHODS :string[] = [
   'Phone',
-  'Email',
   'Text Message',
+  'Email',
 ];
 
 // Jail
