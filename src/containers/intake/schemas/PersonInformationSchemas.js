@@ -20,9 +20,10 @@ const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   CONTACT_INFO,
   EDUCATION,
+  EMPLOYEE,
   HEARINGS,
   JAILS_PRISONS,
-  JAIL_STAY,
+  JAIL_STAYS,
   LOCATION,
   PEOPLE,
   PERSON_DETAILS,
@@ -52,6 +53,7 @@ const {
   SEX_OFFENDER,
   SSN,
   STREET,
+  TITLE,
   TYPE,
   US_STATE,
   ZIP,
@@ -189,7 +191,7 @@ const personInformationSchema :Object = {
           enum: JAIL_PRISON_NAMES,
           enumNames: JAIL_PRISON_NAMES
         },
-        [getEntityAddressKey(0, JAIL_STAY, PROJECTED_RELEASE_DATETIME)]: {
+        [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
           type: 'string',
           title: 'Release date:',
           format: 'date'
@@ -218,6 +220,11 @@ const personInformationSchema :Object = {
                   type: 'object',
                   title: '',
                   properties: {
+                    [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]: {
+                      type: 'string',
+                      title: 'Type',
+                      enum: ['Probation', 'Parole']
+                    },
                     [getEntityAddressKey(1, PEOPLE, LAST_NAME)]: {
                       type: 'string',
                       title: 'Attorney Last Name',
@@ -225,6 +232,11 @@ const personInformationSchema :Object = {
                     [getEntityAddressKey(1, PEOPLE, FIRST_NAME)]: {
                       type: 'string',
                       title: 'Attorney First Name',
+                    },
+                    [getEntityAddressKey(0, EMPLOYEE, TITLE)]: {
+                      type: 'string',
+                      title: 'Employee title',
+                      default: 'Attorney'
                     },
                     [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
@@ -242,6 +254,11 @@ const personInformationSchema :Object = {
                       type: 'string',
                       title: 'Probation/Parole Officer First Name',
                     },
+                    [getEntityAddressKey(1, EMPLOYEE, TITLE)]: {
+                      type: 'string',
+                      title: 'Employee title',
+                      default: 'Probation or Parole Officer'
+                    },
                     [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
                       title: 'Probation/Parole Officer Phone Number',
@@ -255,7 +272,8 @@ const personInformationSchema :Object = {
                       title: 'Probation/Parole End Date',
                       format: 'date'
                     },
-                  }
+                  },
+                  required: [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]
                 }
               }
             },
@@ -277,8 +295,7 @@ const personInformationSchema :Object = {
         [getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]: {
           type: 'string',
           title: 'Is the client a Registered Sex Offender?',
-          enum: [true, false],
-          enumNames: ['Yes', 'No'],
+          enum: ['Yes', 'No'],
         },
         registeredCounty: {
           type: 'string',
@@ -376,7 +393,7 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, JAILS_PRISONS, NAME)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, JAIL_STAY, PROJECTED_RELEASE_DATETIME)]: {
+    [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-4',
     },
     referredFrom: {
@@ -387,11 +404,17 @@ const personInformationUiSchema :Object = {
     },
     [getPageSectionKey(1, 7)]: {
       classNames: 'column-span-12 grid-container',
+      [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]: {
+        classNames: 'column-span-4',
+      },
       [getEntityAddressKey(1, PEOPLE, LAST_NAME)]: {
-        classNames: 'column-span-6',
+        classNames: 'column-span-4',
       },
       [getEntityAddressKey(1, PEOPLE, FIRST_NAME)]: {
-        classNames: 'column-span-6',
+        classNames: 'column-span-4',
+      },
+      [getEntityAddressKey(0, EMPLOYEE, TITLE)]: {
+        'ui:widget': 'hidden'
       },
       [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-6',
@@ -404,6 +427,9 @@ const personInformationUiSchema :Object = {
       },
       [getEntityAddressKey(2, PEOPLE, FIRST_NAME)]: {
         classNames: 'column-span-6',
+      },
+      [getEntityAddressKey(1, EMPLOYEE, TITLE)]: {
+        'ui:widget': 'hidden'
       },
       [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-4',
