@@ -7,21 +7,34 @@ import { Models } from 'lattice';
 const { FullyQualifiedName } = Models;
 
 const APP_TYPE_FQNS :Object = {
+
+  APPEARS_IN: new FullyQualifiedName('app.appearsin_new'),
+  ASSIGNED_TO: new FullyQualifiedName('app.assignedto'),
   CONTACTED_VIA: new FullyQualifiedName('app.contactedvia'),
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
+  COURT_CASES: new FullyQualifiedName('app.courtcases'),
   EDUCATION: new FullyQualifiedName('app.education'),
+  EMPLOYEE: new FullyQualifiedName('app.employee'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
+  IS: new FullyQualifiedName('app.is_new'),
   JAILS_PRISONS: new FullyQualifiedName('app.jailsorprisons'),
   JAIL_STAYS: new FullyQualifiedName('app.jailstays'),
   JAIL_STAY_LENGTH: new FullyQualifiedName('app.jailstaylength'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
   LOCATION: new FullyQualifiedName('app.location'),
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
+  ORGANIZATION: new FullyQualifiedName('app.organization'),
+  PART_OF: new FullyQualifiedName('app.partof'),
   PEOPLE: new FullyQualifiedName('app.people'),
   PERSON_DETAILS: new FullyQualifiedName('app.persondetails'),
   PERSON_DETAILS_CRIMINAL_JUSTICE: new FullyQualifiedName('app.person_details_criminal_justice'),
   PROBATION_PAROLE: new FullyQualifiedName('app.probationorparole'),
+  PROBATION_PAROLE_OFFICER: new FullyQualifiedName('app.probation_or_parole_officer'),
+  PROVIDED: new FullyQualifiedName('app.provided'),
+  PROVIDED_TO: new FullyQualifiedName('app.providedto'),
+  REFERRAL_REQUEST: new FullyQualifiedName('app.referralrequest'),
+  REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
 };
 
@@ -50,6 +63,7 @@ const PROPERTY_TYPE_FQNS = {
   SEX_OFFENDER: new FullyQualifiedName('ol.sexoffender'),
   SSN: new FullyQualifiedName('nc.SSN'),
   STREET: new FullyQualifiedName('location.street'),
+  TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
   US_STATE: new FullyQualifiedName('location.state'),
   ZIP: new FullyQualifiedName('location.zip'),
