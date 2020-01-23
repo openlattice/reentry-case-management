@@ -15,8 +15,10 @@ import {
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
   getClientEducationAssociations,
+  getClientHearingAssociations,
   getClientReleaseAssociations,
   setPreferredMethodOfContact,
+  setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
@@ -64,12 +66,10 @@ class PersonInformationForm extends Component<Props, State> {
     let formDataToProcess = formData;
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
     formDataToProcess = setPreferredMethodOfContact(formDataToProcess);
+    formDataToProcess = setProbationOrParoleValues(formDataToProcess);
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
-    formDataToProcess = deleteKeyFromFormData(
-      formDataToProcess,
-      [getPageSectionKey(1, 4), getPageSectionKey(1, 7), 'referredFrom']
-    );
+    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'referredFrom']);
     console.log('formDataToProcess: ', formDataToProcess);
 
     let associations :Array<Array<*>> = [];
@@ -78,6 +78,7 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientEducationAssociations(formDataToProcess));
     associations = associations.concat(getClientCJDetailsAssociations(formDataToProcess));
     associations = associations.concat(getClientReleaseAssociations(formDataToProcess));
+    associations = associations.concat(getClientHearingAssociations(formDataToProcess));
     console.log('associations: ', associations);
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
