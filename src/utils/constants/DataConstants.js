@@ -91,6 +91,15 @@ const REFERRAL_SOURCES :string[] = [
   'Relative/Friend',
 ];
 
+// Parole/Probation
+
+const PAROLE_PROBATION_CONSTS :Object = {
+  PAROLE: 'Parole',
+  PAROLE_OFFICER: 'Parole Officer',
+  PROBATION: 'Probation',
+  PROBATION_OFFICER: 'Probation Officer',
+};
+
 // Locations
 
 const US_STATES :string[] = [
@@ -406,6 +415,7 @@ export {
   GENDERS,
   JAIL_PRISON_NAMES,
   MARITAL_STATUSES,
+  PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
   RACES,
   REFERRAL_SOURCES,

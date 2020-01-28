@@ -19,6 +19,7 @@ import {
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  getOfficerAndAttorneyContactAssociations,
   setClientContactInfoIndices,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
@@ -64,8 +65,6 @@ class PersonInformationForm extends Component<Props, State> {
   onSubmit = ({ formData } :Object) => {
     const { entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
 
-    console.log('formData: ', formData);
-
     let formDataToProcess = formData;
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
     formDataToProcess = setClientContactInfoIndices(formDataToProcess);
@@ -75,7 +74,6 @@ class PersonInformationForm extends Component<Props, State> {
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'referredFrom']);
-    console.log('formDataToProcess: ', formDataToProcess);
 
     let associations :Array<Array<*>> = [];
     associations = associations.concat(getClientDetailsAssociations(formDataToProcess));
@@ -83,8 +81,8 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientEducationAssociations(formDataToProcess));
     associations = associations.concat(getClientCJDetailsAssociations(formDataToProcess));
     associations = associations.concat(getClientReleaseAssociations(formDataToProcess));
+    associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
     associations = associations.concat(getClientHearingAssociations(formDataToProcess));
-    console.log('associations: ', associations);
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
     console.log('entityData: ', entityData);

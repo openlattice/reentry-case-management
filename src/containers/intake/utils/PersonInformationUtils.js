@@ -10,7 +10,7 @@ import { DataProcessingUtils } from 'lattice-fabricate';
 import { deleteKeyFromFormData, updateFormData } from '../../../utils/FormUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
+import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
 const {
   getEntityAddressKey,
@@ -55,6 +55,12 @@ const {
   TITLE,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
+const {
+  PAROLE,
+  PAROLE_OFFICER,
+  PROBATION,
+  PROBATION_OFFICER
+} = PAROLE_PROBATION_CONSTS;
 
 // Entities Utils
 
@@ -216,27 +222,27 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
     );
   }
 
-  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === 'Probation'
+  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === PROBATION
     && personCount === 2) {
     updatedFormData = updateFormData(
       updatedFormData,
       probationParolePath.concat([officerEmployeeKey]),
-      'Probation Officer'
+      PROBATION_OFFICER
     );
   }
-  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === 'Parole') {
+  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === PAROLE) {
     if (personCount === 2) {
       updatedFormData = updateFormData(
         updatedFormData,
         probationParolePath.concat([officerEmployeeKey]),
-        'Parole Officer'
+        PAROLE_OFFICER
       );
     }
     else {
       updatedFormData = updateFormData(
         updatedFormData,
         probationParolePath.concat([attorneyEmployeeKey]),
-        'Parole Officer'
+        PAROLE_OFFICER
       );
       updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([officerEmployeeKey]));
     }
@@ -244,7 +250,7 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
   return updatedFormData;
 };
 
-// fabricate's index mappers don't work, because these values are not in arrays
+// fabricate's index mappers don't work for these, because these values are not in arrays
 const setContactIndices = (formData :Object) :Map => {
 
   const sectionFourKey :string = getPageSectionKey(1, 4);
@@ -335,21 +341,10 @@ const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*
   if (!Object.values(contactsAndAddress).length) return associations;
 
   const contactInfoCount :number = getClientContactInfoCount(formData);
-  console.log('getClientDetailsAssociations contactInfoCount: ', contactInfoCount);
   if (contactInfoCount) {
     for (let i = 0; i < contactInfoCount; i += 1) {
       associations.push([CONTACTED_VIA, 0, PEOPLE, i, CONTACT_INFO, {}]);
     }
-    // const phoneNumberFilledOutInForm :boolean = isDefined(
-    //   get(contactsAndAddress, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER))
-    // );
-    // if (phoneNumberFilledOutInForm) {
-    //   associations.push([CONTACTED_VIA, 0, PEOPLE, 0, CONTACT_INFO, {}]);
-    // }
-    // if (isDefined(get(contactsAndAddress, getEntityAddressKey(1, CONTACT_INFO, EMAIL)))) {
-    //   // const emailEntityIndex :number = phoneNumberFilledOutInForm ? 1 : 0;
-    //   associations.push([CONTACTED_VIA, 0, PEOPLE, contactInfoCount - 1, CONTACT_INFO, {}]);
-    // }
   }
 
   const address :any = Object.keys(contactsAndAddress).find((entityAddressKey :string) => {
@@ -413,23 +408,11 @@ const getClientReleaseAssociations = (formData :Object) => {
   const attorneyFilledOutInForm :boolean = isDefined(get(probationData, getEntityAddressKey(1, PEOPLE, LAST_NAME)))
     || isDefined(get((probationData, getEntityAddressKey(1, PEOPLE, FIRST_NAME))));
 
-  let contactInfoCount = getClientContactInfoCount(formData);
-
   // Attorney
   if (attorneyFilledOutInForm) {
     associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYEE, {}]);
-    associations.push([IS, 0, PEOPLE, 0, EMPLOYEE, {}]);
-
-    if (isDefined(get(probationData, getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, 0, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
-      contactInfoCount += 1;
-    }
-    if (isDefined(get(probationData, getEntityAddressKey(-3, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, 0, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
-      contactInfoCount += 1;
-    }
+    associations.push([REPRESENTED_BY, 0, PEOPLE, 1, PEOPLE, {}]);
+    associations.push([IS, 1, PEOPLE, 0, EMPLOYEE, {}]);
   }
 
   /*
@@ -444,20 +427,8 @@ const getClientReleaseAssociations = (formData :Object) => {
   const officerIndex :number = attorneyFilledOutInForm ? 2 : 1;
   const officerEmployeeIndex :number = attorneyFilledOutInForm ? 1 : 0;
   if (officerFilledOutInForm) {
-
     associations.push([ASSIGNED_TO, officerEmployeeIndex, EMPLOYEE, 0, PEOPLE, {}]);
     associations.push([IS, officerIndex, PEOPLE, officerEmployeeIndex, EMPLOYEE, {}]);
-
-    if (isDefined(get(probationData, getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, officerIndex, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, officerEmployeeIndex, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
-      contactInfoCount += 1;
-    }
-    if (isDefined(get(probationData, getEntityAddressKey(-5, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, officerIndex, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, officerEmployeeIndex, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
-      contactInfoCount += 1;
-    }
   }
 
   /*
@@ -474,6 +445,56 @@ const getClientReleaseAssociations = (formData :Object) => {
     }
   }
 
+  return associations;
+};
+
+const getOfficerAndAttorneyContactAssociations = (
+  originalFormData :Object,
+  updatedFormData :Object
+) :Array<Array<*>> => {
+
+  const associations :Array<Array<*>> = [];
+  let clientContactInfoCount :number = getClientContactInfoCount(originalFormData);
+  const probationPath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
+  const probationData :Object = getIn(originalFormData, probationPath);
+
+  const firstEmployee :any = getIn(updatedFormData, probationPath.concat([getEntityAddressKey(0, EMPLOYEE, TITLE)]));
+  if (!isDefined(firstEmployee)) return associations;
+  const attorneyIsFirstEmployee :boolean = firstEmployee === 'Attorney';
+
+  let officerPersonIndex :number = 0;
+  if (firstEmployee === PAROLE_OFFICER || firstEmployee === PROBATION_OFFICER) officerPersonIndex = 1;
+
+  const secondEmployee :any = getIn(updatedFormData, probationPath.concat([getEntityAddressKey(1, EMPLOYEE, TITLE)]));
+  if (secondEmployee === PAROLE_OFFICER || secondEmployee === PROBATION_OFFICER) {
+    officerPersonIndex = 2;
+  }
+
+  if (attorneyIsFirstEmployee) {
+    if (isDefined(get(probationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, 1, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
+    if (isDefined(get(probationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, 1, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
+  }
+
+  if (officerPersonIndex > 0) {
+    if (isDefined(get(probationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, officerPersonIndex, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, officerPersonIndex - 1, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
+    if (isDefined(get(probationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, officerPersonIndex, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, officerPersonIndex - 1, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
+  }
   return associations;
 };
 
@@ -494,6 +515,7 @@ export {
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  getOfficerAndAttorneyContactAssociations,
   setClientContactInfoIndices,
   setContactIndices,
   setPreferredMethodOfContact,
