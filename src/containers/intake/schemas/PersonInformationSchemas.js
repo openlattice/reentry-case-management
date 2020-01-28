@@ -238,11 +238,11 @@ const personInformationSchema :Object = {
                       title: 'Employee title',
                       default: 'Attorney'
                     },
-                    [getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]: {
+                    [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
                       title: 'Attorney Phone Number',
                     },
-                    [getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]: {
+                    [getEntityAddressKey(3, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
                       title: 'Attorney Email',
                     },
@@ -259,11 +259,11 @@ const personInformationSchema :Object = {
                       title: 'Employee title',
                       default: 'Probation or Parole Officer'
                     },
-                    [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
+                    [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
                       title: 'Probation/Parole Officer Phone Number',
                     },
-                    [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
+                    [getEntityAddressKey(5, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
                       title: 'Probation/Parole Officer Email',
                     },
@@ -416,10 +416,10 @@ const personInformationUiSchema :Object = {
       [getEntityAddressKey(0, EMPLOYEE, TITLE)]: {
         'ui:widget': 'hidden'
       },
-      [getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]: {
+      [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-6',
       },
-      [getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]: {
+      [getEntityAddressKey(3, CONTACT_INFO, EMAIL)]: {
         classNames: 'column-span-6',
       },
       [getEntityAddressKey(2, PEOPLE, LAST_NAME)]: {
@@ -431,10 +431,10 @@ const personInformationUiSchema :Object = {
       [getEntityAddressKey(1, EMPLOYEE, TITLE)]: {
         'ui:widget': 'hidden'
       },
-      [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
+      [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-4',
       },
-      [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
+      [getEntityAddressKey(5, CONTACT_INFO, EMAIL)]: {
         classNames: 'column-span-4',
       },
       [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
