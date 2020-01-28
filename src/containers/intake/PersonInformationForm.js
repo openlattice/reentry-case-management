@@ -12,7 +12,7 @@ import COLORS from '../../core/style/Colors';
 
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
 import {
-  createEntityMappers,
+  setContactIndices,
   getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
@@ -71,6 +71,7 @@ class PersonInformationForm extends Component<Props, State> {
     formDataToProcess = setClientContactInfoIndices(formDataToProcess);
     formDataToProcess = setPreferredMethodOfContact(formDataToProcess);
     formDataToProcess = setProbationOrParoleValues(formDataToProcess);
+    formDataToProcess = setContactIndices(formDataToProcess);
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'referredFrom']);
@@ -85,19 +86,14 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientHearingAssociations(formDataToProcess));
     console.log('associations: ', associations);
 
-    const entityMappers :Map = createEntityMappers(formDataToProcess);
-    const entityData :Object = processEntityData(
-      formDataToProcess,
-      entitySetIdsByFqn,
-      propertyTypeIdsByFqn,
-      entityMappers
-    );
+    const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
     console.log('entityData: ', entityData);
-    // const associationEntityData :Object = processAssociationEntityData(
-    //   fromJS(associations),
-    //   entitySetIdsByFqn,
-    //   propertyTypeIdsByFqn
-    // );
+    const associationEntityData :Object = processAssociationEntityData(
+      fromJS(associations),
+      entitySetIdsByFqn,
+      propertyTypeIdsByFqn
+    );
+    console.log('associationEntityData: ', associationEntityData);
 
   }
 
