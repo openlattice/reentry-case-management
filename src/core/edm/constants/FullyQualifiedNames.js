@@ -59,7 +59,7 @@ const PROPERTY_TYPE_FQNS = {
   PREFERRED_METHOD_OF_CONTACT: new FullyQualifiedName('ol.preferredmethod'),
   PROJECTED_RELEASE_DATETIME: new FullyQualifiedName('ol.projectedreleasedatetime'),
   RACE: new FullyQualifiedName('nc.PersonRace'),
-  RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddatetime'),
+  RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddate'),
   SEX_OFFENDER: new FullyQualifiedName('ol.sexoffender'),
   SSN: new FullyQualifiedName('nc.SSN'),
   STREET: new FullyQualifiedName('location.street'),
