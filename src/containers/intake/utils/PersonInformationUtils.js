@@ -1,5 +1,6 @@
 // @flow
 import {
+  Map,
   get,
   getIn,
   hasIn,
@@ -11,7 +12,12 @@ import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
-const { getEntityAddressKey, getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
+const {
+  INDEX_MAPPERS,
+  getEntityAddressKey,
+  getPageSectionKey,
+  parseEntityAddressKey
+} = DataProcessingUtils;
 const {
   APPEARS_IN,
   ASSIGNED_TO,
@@ -53,12 +59,49 @@ const {
 
 // Entities Utils
 
+const getClientContactInfoCount = (formData :Object) :number => {
+
+  const contactSection :Object = get(formData, getPageSectionKey(1, 2));
+  const contactInfoKeysOnly :string[] = Object.keys(contactSection).filter((entityAddressKey :string) => {
+
+    const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+    const propertyIsAboutPreferred :boolean = propertyTypeFQN.toString() === PREFERRED.toString()
+      || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString();
+
+    return entitySetName === CONTACT_INFO.toString()
+      && isDefined(get(contactSection, entityAddressKey))
+      && !propertyIsAboutPreferred;
+  });
+  return contactInfoKeysOnly.length;
+};
+
+const setClientContactInfoIndices = (formData :Object) :Object => {
+  let updatedFormData = formData;
+  const sectionTwoKey :string = getPageSectionKey(1, 2);
+  const contactInfoCount :number = getClientContactInfoCount(formData);
+  if (!contactInfoCount) return updatedFormData;
+
+  if (!isDefined(getIn(formData, [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]))
+    && contactInfoCount === 1) {
+    const currentEmailPath :string[] = [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, EMAIL)];
+    const emailValue :string = getIn(formData, currentEmailPath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+    updatedFormData = updateFormData(
+      updatedFormData,
+      [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, EMAIL)],
+      emailValue
+    );
+  }
+  return updatedFormData;
+};
+
 const setPreferredMethodOfContact = (formData :Object) :Object => {
 
   const preferredMethodOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
   const pageSectionKey :string = getPageSectionKey(1, 2);
   const preferredMethodOfContactPath :string[] = [pageSectionKey, preferredMethodOfContactKey];
   const preferredMethodOfContactValue :string = getIn(formData, preferredMethodOfContactPath);
+  const contactInfoCount :number = getClientContactInfoCount(formData);
 
   if (!isDefined(formData)
     || !hasIn(formData, preferredMethodOfContactPath)
@@ -67,14 +110,22 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
   }
 
   let updatedFormData = formData;
+  updatedFormData = deleteKeyFromFormData(updatedFormData, preferredMethodOfContactPath);
+  if (!contactInfoCount) return updatedFormData;
+
+  const emailIndex :number = contactInfoCount - 1;
   if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
-    const emailAsPreferredMethodKey :string = getEntityAddressKey(1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+    const emailAsPreferredMethodKey :string = getEntityAddressKey(
+      emailIndex,
+      CONTACT_INFO,
+      PREFERRED_METHOD_OF_CONTACT
+    );
     updatedFormData = updateFormData(
       updatedFormData,
       [pageSectionKey, emailAsPreferredMethodKey],
       preferredMethodOfContactValue
     );
-    const emailAsPreferredKey :string = getEntityAddressKey(1, CONTACT_INFO, PREFERRED);
+    const emailAsPreferredKey :string = getEntityAddressKey(emailIndex, CONTACT_INFO, PREFERRED);
     updatedFormData = updateFormData(
       updatedFormData,
       [pageSectionKey, emailAsPreferredKey],
@@ -96,8 +147,6 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
     );
   }
 
-  updatedFormData = deleteKeyFromFormData(updatedFormData, preferredMethodOfContactPath);
-
   return updatedFormData;
 };
 
@@ -105,7 +154,7 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
 
   let updatedFormData :Object = formData;
   const probationParolePath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
-  const probationOrParoleData :Object = getIn(formData, probationParolePath);
+  const probationOrParoleData :Object = getIn(formData, probationParolePath, {});
   const attorneyKey :string = getEntityAddressKey(0, EMPLOYEE, TITLE);
   const officerKey :string = getEntityAddressKey(1, EMPLOYEE, TITLE);
   const keys :string[] = Object.keys(probationOrParoleData);
@@ -136,6 +185,46 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+const createEntityMappers = (formData :Object) :Map => {
+
+  const entityMappers :Map = Map().withMutations((mappers :Map) => {
+    const indexMappers = Map().withMutations((map :Map) => {
+
+      const clientContactEntitiesCount :number = getClientContactInfoCount(formData);
+
+      const sectionSevenKey :string = getPageSectionKey(1, 7);
+      const countAfterAttorneyPhone :number = isDefined(getIn(
+        formData,
+        [sectionSevenKey, getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]
+      )) ? clientContactEntitiesCount + 1 : clientContactEntitiesCount;
+      const countAfterAttorneyEmail :number = isDefined(getIn(
+        formData,
+        [sectionSevenKey, getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]
+      )) ? countAfterAttorneyPhone + 1 : countAfterAttorneyPhone;
+      const countAfterOfficerPhone :number = isDefined(getIn(
+        formData,
+        [sectionSevenKey, getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]
+      )) ? countAfterAttorneyEmail + 1 : countAfterAttorneyEmail;
+
+      map.set(getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER), (index) => index + clientContactEntitiesCount);
+      map.set(
+        getEntityAddressKey(-3, CONTACT_INFO, EMAIL),
+        (index) => index + countAfterAttorneyPhone
+      );
+      map.set(
+        getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER),
+        (index) => index + countAfterAttorneyEmail
+      );
+      map.set(
+        getEntityAddressKey(-5, CONTACT_INFO, EMAIL),
+        (index) => index + countAfterOfficerPhone
+      );
+    });
+    mappers.set(INDEX_MAPPERS, indexMappers);
+  });
+  return entityMappers;
+};
+
 // Associations Utils
 
 const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
@@ -157,12 +246,24 @@ const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*
   const contactsAndAddress :Object = get(formData, getPageSectionKey(1, 2));
   if (!Object.values(contactsAndAddress).length) return associations;
 
-  if (isDefined(get(contactsAndAddress, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)))) {
-    associations.push([CONTACTED_VIA, 0, PEOPLE, 0, CONTACT_INFO, {}]);
+  const contactInfoCount :number = getClientContactInfoCount(formData);
+  console.log('getClientDetailsAssociations contactInfoCount: ', contactInfoCount);
+  if (contactInfoCount) {
+    for (let i = 0; i < contactInfoCount; i += 1) {
+      associations.push([CONTACTED_VIA, 0, PEOPLE, i, CONTACT_INFO, {}]);
+    }
+    // const phoneNumberFilledOutInForm :boolean = isDefined(
+    //   get(contactsAndAddress, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER))
+    // );
+    // if (phoneNumberFilledOutInForm) {
+    //   associations.push([CONTACTED_VIA, 0, PEOPLE, 0, CONTACT_INFO, {}]);
+    // }
+    // if (isDefined(get(contactsAndAddress, getEntityAddressKey(1, CONTACT_INFO, EMAIL)))) {
+    //   // const emailEntityIndex :number = phoneNumberFilledOutInForm ? 1 : 0;
+    //   associations.push([CONTACTED_VIA, 0, PEOPLE, contactInfoCount - 1, CONTACT_INFO, {}]);
+    // }
   }
-  if (isDefined(get(contactsAndAddress, getEntityAddressKey(1, CONTACT_INFO, EMAIL)))) {
-    associations.push([CONTACTED_VIA, 0, PEOPLE, 1, CONTACT_INFO, {}]);
-  }
+
   const address :any = Object.keys(contactsAndAddress).find((entityAddressKey :string) => {
     const { entitySetName } = parseEntityAddressKey(entityAddressKey);
     return entitySetName === LOCATION.toString() && isDefined(get(contactsAndAddress, entityAddressKey));
@@ -202,9 +303,12 @@ const getClientReleaseAssociations = (formData :Object) => {
     [outerPageSectionKey, getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
   );
   // change to EKID once you hydrate form with real jails from entity set:
-  const jailOrPrison :any = getIn(formData, [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, NAME)]);
+  const incarcerationFacility :any = getIn(
+    formData,
+    [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, NAME)]
+  );
 
-  if (isDefined(releaseDate) || isDefined(jailOrPrison)) {
+  if (isDefined(releaseDate) || isDefined(incarcerationFacility)) {
     associations.push([LOCATED_AT, 0, JAIL_STAYS, 0, JAILS_PRISONS, {}]);
     associations.push([SUBJECT_OF, 0, PEOPLE, 0, JAIL_STAYS, {}]);
   }
@@ -218,39 +322,68 @@ const getClientReleaseAssociations = (formData :Object) => {
     person (client) -> represented by -> employee (attorney)
     person (attorney) -> is -> employee (attorney)
   */
+  const attorneyFilledOutInForm :boolean = isDefined(get(probationData, getEntityAddressKey(1, PEOPLE, LAST_NAME)))
+    || isDefined(get((probationData, getEntityAddressKey(1, PEOPLE, FIRST_NAME))));
+
+  let contactInfoCount = getClientContactInfoCount(formData);
+
   // Attorney
-  if (isDefined(get(probationData, getEntityAddressKey(1, PEOPLE, LAST_NAME)))
-    || isDefined(get((probationData, getEntityAddressKey(1, PEOPLE, FIRST_NAME))))) {
+  if (attorneyFilledOutInForm) {
     associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYEE, {}]);
     associations.push([IS, 0, PEOPLE, 0, EMPLOYEE, {}]);
 
-    if (isDefined(get(probationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, 2, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, 0, EMPLOYEE, 2, CONTACT_INFO, {}]);
+    if (isDefined(get(probationData, getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, 1, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, 0, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
+      contactInfoCount += 1;
     }
-    if (isDefined(get(probationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, 3, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, 0, EMPLOYEE, 3, CONTACT_INFO, {}]);
+    if (isDefined(get(probationData, getEntityAddressKey(-3, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, 1, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, 0, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
+      contactInfoCount += 1;
     }
   }
+
+  /*
+    parole officer (employee) + person (parole officer) -> assigned to -> person (client)
+    person (parole officer) -> is -> employee (parole officer)
+  */
 
   // Probation/Parole Officer
-  if (isDefined(get(probationData, getEntityAddressKey(2, PEOPLE, LAST_NAME)))
-    || isDefined(get((probationData, getEntityAddressKey(2, PEOPLE, FIRST_NAME))))) {
-    associations.push([ASSIGNED_TO, 2, PEOPLE, 0, PEOPLE, {}]);
-    associations.push([ASSIGNED_TO, 2, PEOPLE, 0, PROBATION_PAROLE, {}]);
+  // don't want add this person as index 2 if there's no person at index 1:
+  const officerFilledOutInForm = isDefined(get(probationData, getEntityAddressKey(2, PEOPLE, LAST_NAME)))
+    || isDefined(get((probationData, getEntityAddressKey(2, PEOPLE, FIRST_NAME))));
+  const officerIndex :number = attorneyFilledOutInForm ? 2 : 1;
+  const officerEmployeeIndex :number = attorneyFilledOutInForm ? 1 : 0;
+  if (officerFilledOutInForm) {
 
-    if (isDefined(get(probationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, 2, PEOPLE, 4, CONTACT_INFO, {}]);
+    associations.push([ASSIGNED_TO, officerEmployeeIndex, EMPLOYEE, 0, PEOPLE, {}]);
+    associations.push([IS, officerIndex, PEOPLE, officerEmployeeIndex, EMPLOYEE, {}]);
+
+    if (isDefined(get(probationData, getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, officerIndex, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, officerEmployeeIndex, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
+      contactInfoCount += 1;
     }
-    if (isDefined(get(probationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, 2, PEOPLE, 5, CONTACT_INFO, {}]);
+    if (isDefined(get(probationData, getEntityAddressKey(-5, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, officerIndex, PEOPLE, contactInfoCount, CONTACT_INFO, {}]);
+      associations.push([CONTACTED_VIA, officerEmployeeIndex, EMPLOYEE, contactInfoCount, CONTACT_INFO, {}]);
+      contactInfoCount += 1;
     }
   }
+
+  /*
+    person (client) -> assigned to -> parole
+    parole officer (employee) + person (parole officer) -> assigned to -> parole
+  */
 
   // Probation/Parole
   if (isDefined(get(probationData, getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)))) {
     associations.push([ASSIGNED_TO, 0, PEOPLE, 0, PROBATION_PAROLE, {}]);
+    if (officerFilledOutInForm) {
+      associations.push([ASSIGNED_TO, officerEmployeeIndex, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
+      associations.push([ASSIGNED_TO, officerIndex, PEOPLE, 0, PROBATION_PAROLE, {}]);
+    }
   }
 
   return associations;
@@ -266,12 +399,15 @@ const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
 };
 
 export {
+  createEntityMappers,
   getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
+  getClientContactInfoCount,
   getClientDetailsAssociations,
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  setClientContactInfoIndices,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
 };

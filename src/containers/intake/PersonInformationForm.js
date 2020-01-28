@@ -6,17 +6,20 @@ import { Map, fromJS } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
+import { RequestStates } from 'redux-reqseq';
 
 import COLORS from '../../core/style/Colors';
 
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
 import {
+  createEntityMappers,
   getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  setClientContactInfoIndices,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
@@ -65,6 +68,7 @@ class PersonInformationForm extends Component<Props, State> {
 
     let formDataToProcess = formData;
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
+    formDataToProcess = setClientContactInfoIndices(formDataToProcess);
     formDataToProcess = setPreferredMethodOfContact(formDataToProcess);
     formDataToProcess = setProbationOrParoleValues(formDataToProcess);
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
@@ -81,7 +85,13 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientHearingAssociations(formDataToProcess));
     console.log('associations: ', associations);
 
-    const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
+    const entityMappers :Map = createEntityMappers(formDataToProcess);
+    const entityData :Object = processEntityData(
+      formDataToProcess,
+      entitySetIdsByFqn,
+      propertyTypeIdsByFqn,
+      entityMappers
+    );
     console.log('entityData: ', entityData);
     // const associationEntityData :Object = processAssociationEntityData(
     //   fromJS(associations),
