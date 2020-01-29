@@ -7,6 +7,7 @@ import {
   EDUCATION_LEVELS,
   ETHNICITIES,
   GENDERS,
+  HEARING_TYPES,
   MARITAL_STATUSES,
   PREFERRED_COMMUNICATION_METHODS,
   RACES,
@@ -316,6 +317,7 @@ const personInformationSchema :Object = {
         [getEntityAddressKey(0, HEARINGS, TYPE)]: {
           type: 'string',
           title: 'Hearing type',
+          enum: HEARING_TYPES,
         },
       }
     },

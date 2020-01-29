@@ -400,11 +400,31 @@ const COUNTRIES :string[] = [
   'Åland Islands'
 ];
 
+// Hearing Types
+
+// source: http://www.occourts.org/directory/criminal/appearances-in-court/hearing-types.html
+const HEARING_TYPES = [
+  'Arraignment',
+  'Court Trial',
+  'Formal/Informal Probation',
+  'Held to Answer/Arraignment',
+  'Jury Trial',
+  'Motions',
+  'Pre-Trial',
+  'Preliminary Hearing',
+  'Probation Modification',
+  'Probation Violation Arraignment/Hearing',
+  'Sentencing',
+  'Terminal disposition',
+  'Trial Setting Conference',
+];
+
 export {
   COUNTRIES,
   EDUCATION_LEVELS,
   ETHNICITIES,
   GENDERS,
+  HEARING_TYPES,
   MARITAL_STATUSES,
   PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
