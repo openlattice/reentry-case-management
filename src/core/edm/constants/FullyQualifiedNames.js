@@ -2,9 +2,10 @@
  * @flow
  */
 
-import { Models } from 'lattice';
+import { Constants, Models } from 'lattice';
 
 const { FullyQualifiedName } = Models;
+const { OPENLATTICE_ID_FQN } = Constants;
 
 const APP_TYPE_FQNS :Object = {
 
@@ -44,6 +45,7 @@ const PROPERTY_TYPE_FQNS = {
   DATE: new FullyQualifiedName('general.date'),
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
   EMAIL: new FullyQualifiedName('staff.email'),
+  ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
   GENDER: new FullyQualifiedName('person.gender'),
