@@ -1,7 +1,16 @@
 // @flow
-import { removeIn, setIn } from 'immutable';
+import {
+  List,
+  Map,
+  removeIn,
+  setIn,
+} from 'immutable';
+import { Models } from 'lattice';
 
 import { isDefined } from './LangUtils';
+import { getEntityKeyId, getFirstNeighborValue } from './DataUtils';
+
+const { FullyQualifiedName } = Models;
 
 const deleteKeyFromFormData = (formData :Object, path :string[]) :Object => {
 
@@ -29,7 +38,29 @@ const updateFormData = (
   return updatedFormData;
 };
 
+const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedName[]) => {
+
+  const values = [];
+  const labels = [];
+  entities.forEach((entity :Map) => {
+
+    let label :string = '';
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entity.get(propertyType, '');
+      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
+      label = label.concat(' ', property);
+    });
+    const entityEKID :UUID = getEntityKeyId(entity);
+
+    labels.push(label);
+    values.push(entityEKID);
+  });
+
+  return [values, labels];
+};
+
 export {
   deleteKeyFromFormData,
+  getValuesFromEntityList,
   updateFormData,
 };
