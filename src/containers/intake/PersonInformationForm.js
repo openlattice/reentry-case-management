@@ -148,7 +148,7 @@ class PersonInformationForm extends Component<Props, State> {
     );
     console.log('associationEntityData: ', associationEntityData);
 
-    // actions.submitPersonInformationForm({ associationEntityData, entityData });
+    actions.submitPersonInformationForm({ associationEntityData, entityData });
   }
 
   render() {
