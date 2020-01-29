@@ -1,13 +1,15 @@
 // @flow
 import {
+  List,
   Map,
   get,
   getIn,
   hasIn,
+  setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { deleteKeyFromFormData, updateFormData } from '../../../utils/FormUtils';
+import { deleteKeyFromFormData, getValuesFromEntityList, updateFormData } from '../../../utils/FormUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
@@ -40,6 +42,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
+  ENTITY_KEY_ID,
   FIRST_NAME,
   GENDER,
   HIGHEST_EDUCATION_LEVEL,
@@ -61,6 +64,36 @@ const {
   PROBATION,
   PROBATION_OFFICER
 } = PAROLE_PROBATION_CONSTS;
+
+// Form Utils
+
+const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List) :Object => {
+  const [values, labels] = getValuesFromEntityList(facilities, [NAME]);
+  let newSchema = setIn(
+    schema,
+    [
+      'properties',
+      getPageSectionKey(1, 4),
+      'properties',
+      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
+      'enum'
+    ],
+    values
+  );
+  newSchema = setIn(
+    newSchema,
+    [
+      'properties',
+      getPageSectionKey(1, 4),
+      'properties',
+      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
+      'enumNames'
+    ],
+    labels
+  );
+
+  return newSchema;
+};
 
 // Entities Utils
 
@@ -516,6 +549,7 @@ export {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getOfficerAndAttorneyContactAssociations,
+  hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
   setContactIndices,
   setPreferredMethodOfContact,

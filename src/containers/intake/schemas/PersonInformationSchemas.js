@@ -7,7 +7,6 @@ import {
   EDUCATION_LEVELS,
   ETHNICITIES,
   GENDERS,
-  JAIL_PRISON_NAMES,
   MARITAL_STATUSES,
   PREFERRED_COMMUNICATION_METHODS,
   RACES,
@@ -36,6 +35,7 @@ const {
   DATE,
   DOB,
   EMAIL,
+  ENTITY_KEY_ID,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
@@ -43,7 +43,6 @@ const {
   LAST_NAME,
   MARITAL_STATUS,
   MIDDLE_NAME,
-  NAME,
   PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED_METHOD_OF_CONTACT,
@@ -185,11 +184,11 @@ const personInformationSchema :Object = {
       type: 'object',
       title: 'Release Information',
       properties: {
-        [getEntityAddressKey(0, JAILS_PRISONS, NAME)]: {
+        [getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]: {
           type: 'string',
           title: 'Most recently released from:',
-          enum: JAIL_PRISON_NAMES,
-          enumNames: JAIL_PRISON_NAMES
+          enum: [],
+          enumNames: []
         },
         [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
           type: 'string',
@@ -390,7 +389,7 @@ const personInformationUiSchema :Object = {
   },
   [getPageSectionKey(1, 4)]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, JAILS_PRISONS, NAME)]: {
+    [getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {

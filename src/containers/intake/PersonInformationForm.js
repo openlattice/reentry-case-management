@@ -2,14 +2,17 @@
 
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 import COLORS from '../../core/style/Colors';
 
+import { getIncarcerationFacilities } from './PersonInformationActions';
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
 import {
   setContactIndices,
@@ -20,21 +23,23 @@ import {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getOfficerAndAttorneyContactAssociations,
+  hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+import { APP, EDM, PERSON_INFORMATION_FORM } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
-  getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
+const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
 
 const CustomCardHeader = styled(CardHeader)`
   color: ${COLORS.GRAY_01};
@@ -44,12 +49,16 @@ const CustomCardHeader = styled(CardHeader)`
 `;
 
 type Props = {
+  actions:{
+    getIncarcerationFacilities :RequestSequence;
+  };
   entitySetIdsByFqn :Map;
+  incarcerationFacilities :List;
   propertyTypeIdsByFqn :Map;
 };
 
 type State = {
-  formData :Object;
+  schema :Object;
 };
 
 class PersonInformationForm extends Component<Props, State> {
@@ -58,9 +67,31 @@ class PersonInformationForm extends Component<Props, State> {
     super(props);
 
     this.state = {
-      formData: {}
+      schema: {}
     };
   }
+
+  componentDidMount() {
+    const { actions, entitySetIdsByFqn } = this.props;
+    if (entitySetIdsByFqn.has(APP_TYPE_FQNS.JAILS_PRISONS)) {
+      actions.getIncarcerationFacilities();
+    }
+  }
+
+  componentDidUpdate(prevProps :Props) {
+    const { actions, entitySetIdsByFqn, incarcerationFacilities } = this.props;
+    if (!prevProps.entitySetIdsByFqn.equals(entitySetIdsByFqn)) {
+      actions.getIncarcerationFacilities();
+    }
+    if (!prevProps.incarcerationFacilities.equals(incarcerationFacilities)) {
+      this.updateSchema(incarcerationFacilities);
+    }
+  }
+
+  updateSchema = (incarcerationFacilities :List) => {
+    const schema = hydrateIncarcerationFacilitiesSchemas(personInformationSchema, incarcerationFacilities);
+    this.setState({ schema });
+  };
 
   onSubmit = ({ formData } :Object) => {
     const { entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
@@ -96,14 +127,13 @@ class PersonInformationForm extends Component<Props, State> {
   }
 
   render() {
-    const { formData } = this.state;
+    const { schema } = this.state;
     return (
       <Card>
         <CustomCardHeader padding="30px">Person Information</CustomCardHeader>
         <Form
-            formData={formData}
             onSubmit={this.onSubmit}
-            schema={personInformationSchema}
+            schema={schema}
             uiSchema={personInformationUiSchema} />
       </Card>
     );
@@ -111,12 +141,20 @@ class PersonInformationForm extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
+  const personInformationForm :Map = state.get(PERSON_INFORMATION_FORM.PERSON_INFORMATION_FORM);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
+    [INCARCERATION_FACILITIES]: personInformationForm.get(INCARCERATION_FACILITIES),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
   };
 };
 
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    getIncarcerationFacilities,
+  }, dispatch)
+});
+
 // $FlowFixMe
-export default connect(mapStateToProps)(PersonInformationForm);
+export default connect(mapStateToProps, mapDispatchToProps)(PersonInformationForm);
