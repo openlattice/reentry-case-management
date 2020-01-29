@@ -25,6 +25,8 @@ import {
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
+  setContactIndices,
+  setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
@@ -105,6 +107,7 @@ class PersonInformationForm extends Component<Props, State> {
     formDataToProcess = setPreferredMethodOfContact(formDataToProcess);
     formDataToProcess = setProbationOrParoleValues(formDataToProcess);
     formDataToProcess = setContactIndices(formDataToProcess);
+    formDataToProcess = setDatesAsDateTimes(formDataToProcess);
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
 

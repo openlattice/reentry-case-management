@@ -7,6 +7,7 @@ import {
   hasIn,
   setIn,
 } from 'immutable';
+import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { deleteKeyFromFormData, getValuesFromEntityList, updateFormData } from '../../../utils/FormUtils';
@@ -354,6 +355,34 @@ const setContactIndices = (formData :Object) :Map => {
   return updatedFormData;
 };
 
+const setDatesAsDateTimes = (formData :Object) :Object => {
+
+  let updatedFormData = formData;
+  const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+
+  const releaseDatePath :string[] = [
+    getPageSectionKey(1, 4),
+    getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
+  ];
+  const releaseDate :any = getIn(formData, releaseDatePath);
+  const recognizedEndDatePath :string[] = [
+    getPageSectionKey(1, 4),
+    getPageSectionKey(1, 7),
+    getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)
+  ];
+  const recgonizedDate :any = getIn(formData, recognizedEndDatePath);
+
+  if (isDefined(releaseDate)) {
+    const datetimeISO :string = DateTime.fromSQL(releaseDate.concat(' ', currentTime)).toISO();
+    updatedFormData = updateFormData(updatedFormData, releaseDatePath, datetimeISO);
+  }
+  if (isDefined(recgonizedDate)) {
+    const datetimeISO :string = DateTime.fromSQL(recgonizedDate.concat(' ', currentTime)).toISO();
+    updatedFormData = updateFormData(updatedFormData, recognizedEndDatePath, datetimeISO);
+  }
+  return updatedFormData;
+};
+
 // Associations Utils
 
 const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
@@ -562,6 +591,7 @@ export {
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
   setContactIndices,
+  setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
 };
