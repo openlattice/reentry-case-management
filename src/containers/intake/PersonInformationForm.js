@@ -30,9 +30,10 @@ import {
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { APP, EDM, PERSON_INFORMATION_FORM } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
+  getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
@@ -40,6 +41,8 @@ const {
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
+const { JAILS_PRISONS } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const CustomCardHeader = styled(CardHeader)`
   color: ${COLORS.GRAY_01};
@@ -73,7 +76,7 @@ class PersonInformationForm extends Component<Props, State> {
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
-    if (entitySetIdsByFqn.has(APP_TYPE_FQNS.JAILS_PRISONS)) {
+    if (entitySetIdsByFqn.has(JAILS_PRISONS)) {
       actions.getIncarcerationFacilities();
     }
   }
@@ -113,6 +116,12 @@ class PersonInformationForm extends Component<Props, State> {
     associations = associations.concat(getClientReleaseAssociations(formDataToProcess));
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
     associations = associations.concat(getClientHearingAssociations(formDataToProcess));
+
+    // delete incarcerationFacility EKID from formData
+    formDataToProcess = deleteKeyFromFormData(
+      formDataToProcess,
+      [getPageSectionKey(1, 4), getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
+    );
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
     console.log('entityData: ', entityData);

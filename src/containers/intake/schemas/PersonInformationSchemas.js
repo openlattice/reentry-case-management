@@ -295,9 +295,10 @@ const personInformationSchema :Object = {
       title: '',
       properties: {
         [getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]: {
-          type: 'string',
+          type: 'boolean',
           title: 'Is the client a Registered Sex Offender?',
-          enum: ['Yes', 'No'],
+          enum: [true, false],
+          enumNames: ['Yes', 'No'],
         },
         registeredCounty: {
           type: 'string',
@@ -399,7 +400,7 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-4',
     },
-    referredFrom: {
+    [getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]: {
       classNames: 'column-span-4',
     },
     onProbationOrParole: {
@@ -449,6 +450,10 @@ const personInformationUiSchema :Object = {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]: {
       classNames: 'column-span-6',
+      'ui:widget': 'RadioWidget',
+      'ui:options': {
+        inline: true
+      }
     },
     registeredCounty: {
       classNames: 'column-span-6',
