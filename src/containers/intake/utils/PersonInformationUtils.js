@@ -419,14 +419,16 @@ const getClientReleaseAssociations = (formData :Object) => {
     [outerPageSectionKey, getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
   );
   // change to EKID once you hydrate form with real jails from entity set:
-  const incarcerationFacility :any = getIn(
+  const incarcerationFacilityEKID :any = getIn(
     formData,
-    [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, NAME)]
+    [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
   );
 
-  if (isDefined(releaseDate) || isDefined(incarcerationFacility)) {
-    associations.push([LOCATED_AT, 0, JAIL_STAYS, 0, JAILS_PRISONS, {}]);
+  if (isDefined(releaseDate)) {
     associations.push([SUBJECT_OF, 0, PEOPLE, 0, JAIL_STAYS, {}]);
+  }
+  if (isDefined(incarcerationFacilityEKID) && incarcerationFacilityEKID.length) {
+    associations.push([LOCATED_AT, 0, JAIL_STAYS, incarcerationFacilityEKID, JAILS_PRISONS, {}]);
   }
 
   const probationData = getIn(formData, [outerPageSectionKey, getPageSectionKey(1, 7)]);
