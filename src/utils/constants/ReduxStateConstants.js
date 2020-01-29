@@ -22,8 +22,14 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
+const PERSON_INFORMATION_FORM :Object = {
+  INCARCERATION_FACILITIES: 'incarcerationFacilities',
+  PERSON_INFORMATION_FORM: 'personInformationForm',
+};
+
 export {
   APP,
   EDM,
+  PERSON_INFORMATION_FORM,
   SHARED,
 };
