@@ -5,7 +5,9 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_INCARCERATION_FACILITIES,
+  SUBMIT_PERSON_INFORMATION_FORM,
   getIncarcerationFacilities,
+  submitPersonInformationForm,
 } from './PersonInformationActions';
 import { PERSON_INFORMATION_FORM, SHARED } from '../../utils/constants/ReduxStateConstants';
 
@@ -41,6 +43,18 @@ export default function personInformationReducer(state :Map = INITIAL_STATE, act
         },
         FAILURE: () => state.setIn([ACTIONS, GET_INCARCERATION_FACILITIES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_INCARCERATION_FACILITIES, action.id]),
+      });
+    }
+
+    case submitPersonInformationForm.case(action.type): {
+
+      return submitPersonInformationForm.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id], action)
+          .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id]),
       });
     }
 

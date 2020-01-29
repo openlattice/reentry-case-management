@@ -33,6 +33,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // PersonInformationSagas
     fork(PersonInformationSagas.getIncarcerationFacilitiesWatcher),
+    fork(PersonInformationSagas.submitPersonInformationFormWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),

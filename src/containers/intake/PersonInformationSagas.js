@@ -11,13 +11,19 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
 
-import { getEntitySetIdFromApp } from '../../utils/DataUtils';
 import {
   GET_INCARCERATION_FACILITIES,
+  SUBMIT_PERSON_INFORMATION_FORM,
   getIncarcerationFacilities,
+  submitPersonInformationForm,
 } from './PersonInformationActions';
+import { submitDataGraph } from '../../core/data/DataActions';
+import { submitDataGraphWorker } from '../../core/data/DataSagas';
+import { isDefined } from '../../utils/LangUtils';
+import { getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -66,7 +72,44 @@ function* getIncarcerationFacilitiesWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_INCARCERATION_FACILITIES, getIncarcerationFacilitiesWorker);
 }
 
+/*
+ *
+ * PersonInformationActions.submitPersonInformationForm()
+ *
+ */
+
+function* submitPersonInformationFormWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+
+  try {
+    yield put(submitPersonInformationForm.request(id, value));
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(submitPersonInformationForm.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in submitPersonInformationFormWorker()', error);
+    yield put(submitPersonInformationForm.failure(id, error));
+  }
+  finally {
+    yield put(submitPersonInformationForm.finally(id));
+  }
+}
+
+function* submitPersonInformationFormWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_PERSON_INFORMATION_FORM, submitPersonInformationFormWorker);
+}
+
 export {
   getIncarcerationFacilitiesWatcher,
   getIncarcerationFacilitiesWorker,
+  submitPersonInformationFormWatcher,
+  submitPersonInformationFormWorker,
 };
