@@ -73,19 +73,11 @@ const PREFERRED_COMMUNICATION_METHODS :string[] = [
 
 // Jail
 
-const JAIL_PRISON_NAMES :string[] = [
-  'NC Prison',
-  'NC Probation/Parole',
-  'County Jail (NC)',
-  'Federal Facility',
-  'Another State'
-];
-
 const REFERRAL_SOURCES :string[] = [
   'NC DPS Prison',
   'NC DPS Probation/Parole',
-  JAIL_PRISON_NAMES[2],
-  JAIL_PRISON_NAMES[4],
+  'County Jail (NC)',
+  'Another State',
   'Community Agency',
   'Self-referral',
   'Relative/Friend',
@@ -413,7 +405,6 @@ export {
   EDUCATION_LEVELS,
   ETHNICITIES,
   GENDERS,
-  JAIL_PRISON_NAMES,
   MARITAL_STATUSES,
   PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
