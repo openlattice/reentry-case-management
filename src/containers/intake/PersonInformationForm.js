@@ -104,7 +104,6 @@ class PersonInformationForm extends Component<Props, State> {
     formDataToProcess = setContactIndices(formDataToProcess);
     // HACK: remove 'registered county' and 'referred from' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
-    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'referredFrom']);
 
     let associations :Array<Array<*>> = [];
     associations = associations.concat(getClientDetailsAssociations(formDataToProcess));

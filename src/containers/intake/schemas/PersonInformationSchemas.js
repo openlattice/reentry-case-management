@@ -28,6 +28,7 @@ const {
   PERSON_DETAILS,
   PERSON_DETAILS_CRIMINAL_JUSTICE,
   PROBATION_PAROLE,
+  REFERRAL_REQUEST,
 } = APP_TYPE_FQNS;
 const {
   CITY,
@@ -50,6 +51,7 @@ const {
   RACE,
   RECOGNIZED_END_DATETIME,
   SEX_OFFENDER,
+  SOURCE,
   SSN,
   STREET,
   TITLE,
@@ -195,7 +197,7 @@ const personInformationSchema :Object = {
           title: 'Release date:',
           format: 'date'
         },
-        referredFrom: {
+        [getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]: {
           type: 'string',
           title: 'Referred from:',
           enum: REFERRAL_SOURCES,

@@ -37,6 +37,7 @@ const {
   PERSON_DETAILS,
   PERSON_DETAILS_CRIMINAL_JUSTICE,
   PROBATION_PAROLE,
+  REFERRAL_REQUEST,
   REPRESENTED_BY,
   SUBJECT_OF,
 } = APP_TYPE_FQNS;
@@ -55,6 +56,7 @@ const {
   PROJECTED_RELEASE_DATETIME,
   RECOGNIZED_END_DATETIME,
   SEX_OFFENDER,
+  SOURCE,
   TITLE,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
@@ -418,10 +420,13 @@ const getClientReleaseAssociations = (formData :Object) => {
     formData,
     [outerPageSectionKey, getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
   );
-  // change to EKID once you hydrate form with real jails from entity set:
   const incarcerationFacilityEKID :any = getIn(
     formData,
     [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
+  );
+  const referredFrom :any = getIn(
+    formData,
+    [outerPageSectionKey, getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]
   );
 
   if (isDefined(releaseDate)) {
@@ -429,6 +434,9 @@ const getClientReleaseAssociations = (formData :Object) => {
   }
   if (isDefined(incarcerationFacilityEKID) && incarcerationFacilityEKID.length) {
     associations.push([LOCATED_AT, 0, JAIL_STAYS, incarcerationFacilityEKID, JAILS_PRISONS, {}]);
+  }
+  if (isDefined(referredFrom)) {
+    associations.push([SUBJECT_OF, 0, PEOPLE, 0, REFERRAL_REQUEST, {}]);
   }
 
   const probationData = getIn(formData, [outerPageSectionKey, getPageSectionKey(1, 7)]);

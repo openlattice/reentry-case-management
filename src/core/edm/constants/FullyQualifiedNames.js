@@ -63,6 +63,7 @@ const PROPERTY_TYPE_FQNS = {
   RACE: new FullyQualifiedName('nc.PersonRace'),
   RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddate'),
   SEX_OFFENDER: new FullyQualifiedName('ol.sexoffender'),
+  SOURCE: new FullyQualifiedName('ol.source'),
   SSN: new FullyQualifiedName('nc.SSN'),
   STREET: new FullyQualifiedName('location.street'),
   TITLE: new FullyQualifiedName('person.title'),
