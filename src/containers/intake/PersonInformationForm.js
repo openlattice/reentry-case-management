@@ -7,15 +7,17 @@ import { Card, CardHeader } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import COLORS from '../../core/style/Colors';
 
-import { getIncarcerationFacilities } from './PersonInformationActions';
+import {
+  SUBMIT_PERSON_INFORMATION_FORM,
+  getIncarcerationFacilities,
+  submitPersonInformationForm
+} from './PersonInformationActions';
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
 import {
-  setContactIndices,
   getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
@@ -31,7 +33,13 @@ import {
   setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
-import { APP, EDM, PERSON_INFORMATION_FORM } from '../../utils/constants/ReduxStateConstants';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import {
+  APP,
+  EDM,
+  PERSON_INFORMATION_FORM,
+  SHARED,
+} from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -43,6 +51,7 @@ const {
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 const { JAILS_PRISONS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
@@ -56,10 +65,14 @@ const CustomCardHeader = styled(CardHeader)`
 type Props = {
   actions:{
     getIncarcerationFacilities :RequestSequence;
+    submitPersonInformationForm :RequestSequence;
   };
   entitySetIdsByFqn :Map;
   incarcerationFacilities :List;
   propertyTypeIdsByFqn :Map;
+  requestStates:{
+    SUBMIT_PERSON_INFORMATION_FORM :RequestState;
+  };
 };
 
 type State = {
@@ -99,7 +112,7 @@ class PersonInformationForm extends Component<Props, State> {
   };
 
   onSubmit = ({ formData } :Object) => {
-    const { entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
+    const { actions, entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
 
     let formDataToProcess = formData;
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
@@ -135,14 +148,17 @@ class PersonInformationForm extends Component<Props, State> {
     );
     console.log('associationEntityData: ', associationEntityData);
 
+    // actions.submitPersonInformationForm({ associationEntityData, entityData });
   }
 
   render() {
+    const { requestStates } = this.props;
     const { schema } = this.state;
     return (
       <Card>
         <CustomCardHeader padding="30px">Person Information</CustomCardHeader>
         <Form
+            isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
             onSubmit={this.onSubmit}
             schema={schema}
             uiSchema={personInformationUiSchema} />
@@ -158,12 +174,20 @@ const mapStateToProps = (state :Map) => {
     [INCARCERATION_FACILITIES]: personInformationForm.get(INCARCERATION_FACILITIES),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
+    requestStates: {
+      [SUBMIT_PERSON_INFORMATION_FORM]: personInformationForm.getIn([
+        ACTIONS,
+        SUBMIT_PERSON_INFORMATION_FORM,
+        REQUEST_STATE
+      ]),
+    },
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getIncarcerationFacilities,
+    submitPersonInformationForm,
   }, dispatch)
 });
 
