@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import {
   Button,
@@ -8,15 +8,26 @@ import {
   Colors,
   DatePicker,
   Input,
+  PaginationToolbar,
+  SearchResults,
 } from 'lattice-ui-kit';
-import { useDispatch } from 'react-redux';
+import { List } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
 import { goToRoute } from '../../core/router/RoutingActions';
+import type { RoutingAction } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
+
+const labels = Map({
+  name: 'Name',
+  releaseDate: 'Release date',
+  releasedFrom: 'Released from',
+});
 
 const ContainerWrapper = styled.div`
   display: flex;
@@ -53,54 +64,80 @@ const Grid = styled.div`
 `;
 
 const Label = styled.div`
-  color: ${NEUTRALS[0]}
+  color: ${NEUTRALS[0]};
   font-size: 14px;
   line-height: 19px;
   margin-bottom: 10px;
 `;
 
-const Releases = () => {
-
-  const dispatch = useDispatch();
-  const goToNewIntake = () => {
-    dispatch(goToRoute(Routes.NEW_INTAKE));
+type Props = {
+  actions:{
+    goToRoute :RoutingAction;
   };
-
-  return (
-    <ContainerWrapper>
-      <HeaderRowWrapper>
-        <Header>New Releases</Header>
-        <StyledButton
-            onClick={goToNewIntake}
-            mode="primary">
-          New Intake
-        </StyledButton>
-      </HeaderRowWrapper>
-      <Card>
-        <CardSegment padding="30px" vertical>
-          <Grid>
-            <div>
-              <Label>Last name</Label>
-              <Input />
-            </div>
-            <div>
-              <Label>First name</Label>
-              <Input />
-            </div>
-            <div>
-              <Label>Start date</Label>
-              <DatePicker />
-            </div>
-            <div>
-              <Label>End date</Label>
-              <DatePicker />
-            </div>
-          </Grid>
-          <Button>Search People</Button>
-        </CardSegment>
-      </Card>
-    </ContainerWrapper>
-  );
 };
 
-export default Releases;
+class Releases extends Component<Props> {
+
+  goToNewIntakeForm = () => {
+    const { actions } = this.props;
+    actions.goToRoute(Routes.NEW_INTAKE);
+  }
+
+  render() {
+    return (
+      <ContainerWrapper>
+        <HeaderRowWrapper>
+          <Header>New Releases</Header>
+          <StyledButton
+              onClick={this.goToNewIntakeForm}
+              mode="primary">
+            New Intake
+          </StyledButton>
+        </HeaderRowWrapper>
+        <Card>
+          <CardSegment padding="30px" vertical>
+            <Grid>
+              <div>
+                <Label>Last name</Label>
+                <Input />
+              </div>
+              <div>
+                <Label>First name</Label>
+                <Input />
+              </div>
+              <div>
+                <Label>Start date</Label>
+                <DatePicker />
+              </div>
+              <div>
+                <Label>End date</Label>
+                <DatePicker />
+              </div>
+            </Grid>
+            <Button>Search People</Button>
+          </CardSegment>
+        </Card>
+        <SearchResults
+            hasSearched={false}
+            isLoading={false}
+            noResults=""
+            resultLabels={labels}
+            results={List()} />
+      </ContainerWrapper>
+    );
+  }
+}
+
+const mapStateToProps = (state :Map) => {
+  return {
+  };
+};
+
+const mapDispatchToProps = (dispatch :Function) => ({
+  actions: bindActionCreators({
+    goToRoute,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(Releases);
