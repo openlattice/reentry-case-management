@@ -85,7 +85,7 @@ class PersonInformationForm extends Component<Props, State> {
     super(props);
 
     this.state = {
-      schema: {}
+      schema: personInformationSchema
     };
   }
 
@@ -140,13 +140,11 @@ class PersonInformationForm extends Component<Props, State> {
     );
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
-    console.log('entityData: ', entityData);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
       entitySetIdsByFqn,
       propertyTypeIdsByFqn
     );
-    console.log('associationEntityData: ', associationEntityData);
 
     actions.submitPersonInformationForm({ associationEntityData, entityData });
   }
