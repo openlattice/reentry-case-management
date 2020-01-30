@@ -34,9 +34,12 @@ import Releases from '../releases/Releases';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import { isNonEmptyString } from '../../utils/LangUtils';
+import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
-const { INITIALIZE_APPLICATION } = AppActions;
+const { INITIALIZE_APPLICATION, switchOrganization } = AppActions;
+const { ORGS, SELECTED_ORG_ID } = APP;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const Error = styled.div`
   text-align: center;
@@ -46,10 +49,13 @@ type Props = {
   actions :{
     initializeApplication :RequestSequence;
     logout :() => void;
+    switchOrganization :RequestSequence;
   };
+  organizations :Map;
   requestStates :{
     INITIALIZE_APPLICATION :RequestState;
   };
+  selectedOrgId :UUID;
 };
 
 class AppContainer extends Component<Props> {
@@ -69,6 +75,16 @@ class AppContainer extends Component<Props> {
     // if (isFunction(gtag)) {
     //   gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
     // }
+  }
+
+  switchOrganization = (organization :Object) => {
+    const { actions, selectedOrgId } = this.props;
+    if (organization.value !== selectedOrgId) {
+      actions.switchOrganization({
+        orgId: organization.value,
+        title: organization.label
+      });
+    }
   }
 
   renderAppContent = () => {
@@ -103,6 +119,8 @@ class AppContainer extends Component<Props> {
 
   render() {
 
+    const { organizations, selectedOrgId } = this.props;
+
     const userInfo = AuthUtils.getUserInfo();
     let user = null;
     if (isNonEmptyString(userInfo.name)) {
@@ -116,8 +134,13 @@ class AppContainer extends Component<Props> {
       <AppContainerWrapper>
         <AppHeaderWrapper
             appIcon={OpenLatticeIcon}
-            appTitle="Reentry Case Management"
+            appTitle="Re-entry Case Management"
             logout={this.logout}
+            organizationsSelect={{
+              onChange: this.switchOrganization,
+              organizations,
+              selectedOrganizationId: selectedOrgId
+            }}
             user={user}>
           <AppNavigationWrapper>
             <NavLink to={Routes.ROOT} />
@@ -134,15 +157,18 @@ class AppContainer extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => ({
+  [ORGS]: state.getIn([APP.APP, ORGS]),
   requestStates: {
-    [INITIALIZE_APPLICATION]: state.getIn(['app', INITIALIZE_APPLICATION, 'requestState']),
-  }
+    [INITIALIZE_APPLICATION]: state.getIn([APP.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
+  },
+  [SELECTED_ORG_ID]: state.getIn([APP.APP, SELECTED_ORG_ID]),
 });
 
 const mapActionsToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout: AuthActions.logout,
+    switchOrganization,
   }, dispatch)
 });
 
