@@ -11,25 +11,6 @@ import {
 
 import COLORS from '../../core/style/Colors';
 
-const FIELDS :Object = [
-  {
-    label: 'Last name',
-    field: <Input />
-  },
-  {
-    label: 'First name',
-    field: <Input />
-  },
-  {
-    label: 'Start date',
-    field: <DatePicker />
-  },
-  {
-    label: 'End date',
-    field: <DatePicker />
-  },
-];
-
 const ContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -57,8 +38,10 @@ const StyledButton = styled(Button)`
 `;
 
 const Grid = styled.div`
+  display: grid;
   grid-gap: 20px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 20px;
   width: 100%;
 `;
 
@@ -69,18 +52,26 @@ const Releases = () => (
       <StyledButton mode="primary">New Intake</StyledButton>
     </HeaderRowWrapper>
     <Card>
-      <CardSegment padding="30px">
+      <CardSegment padding="30px" vertical>
         <Grid>
-          {
-            FIELDS.map((fieldObject :Object) => (
-              <div key={fieldObject.label}>
-                <div>{fieldObject.label}</div>
-                {fieldObject.field}
-              </div>
-            ))
-          }
-          <Button mode="primary">Search</Button>
+          <div>
+            <div>Last name</div>
+            <Input />
+          </div>
+          <div>
+            <div>First name</div>
+            <Input />
+          </div>
+          <div>
+            <div>Start date</div>
+            <DatePicker />
+          </div>
+          <div>
+            <div>End date</div>
+            <DatePicker />
+          </div>
         </Grid>
+        <Button>Search People</Button>
       </CardSegment>
     </Card>
   </ContainerWrapper>
