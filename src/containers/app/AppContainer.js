@@ -27,9 +27,10 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as AppActions from './AppActions';
-
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
+import Releases from '../releases/Releases';
+
+import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import { isNonEmptyString } from '../../utils/LangUtils';
 
@@ -77,8 +78,7 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route exact strict path="/home" />
-          <Route path="/tab1" render={() => (<AppContentWrapper>Tab 1</AppContentWrapper>)} />
-          <Route path="/tab2" render={() => (<AppContentWrapper>Tab 2</AppContentWrapper>)} />
+          <Route path={Routes.RELEASES} component={Releases} />
           <Redirect to="/home" />
         </Switch>
       );
@@ -119,9 +119,7 @@ class AppContainer extends Component<Props> {
             user={user}>
           <AppNavigationWrapper>
             <NavLink to={Routes.ROOT} />
-            <NavLink to="/home">Home</NavLink>
-            <NavLink to="/tab1">Tab 1</NavLink>
-            <NavLink to="/tab2">Tab 2</NavLink>
+            <NavLink to={Routes.RELEASES}>Releases</NavLink>
           </AppNavigationWrapper>
         </AppHeaderWrapper>
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
