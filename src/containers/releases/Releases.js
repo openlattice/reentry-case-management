@@ -5,11 +5,18 @@ import {
   Button,
   Card,
   CardSegment,
+  Colors,
   DatePicker,
   Input,
 } from 'lattice-ui-kit';
+import { useDispatch } from 'react-redux';
 
+import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
+
+import { goToRoute } from '../../core/router/RoutingActions';
+
+const { NEUTRALS } = Colors;
 
 const ContainerWrapper = styled.div`
   display: flex;
@@ -45,36 +52,55 @@ const Grid = styled.div`
   width: 100%;
 `;
 
-const Releases = () => (
-  <ContainerWrapper>
-    <HeaderRowWrapper>
-      <Header>New Releases</Header>
-      <StyledButton mode="primary">New Intake</StyledButton>
-    </HeaderRowWrapper>
-    <Card>
-      <CardSegment padding="30px" vertical>
-        <Grid>
-          <div>
-            <div>Last name</div>
-            <Input />
-          </div>
-          <div>
-            <div>First name</div>
-            <Input />
-          </div>
-          <div>
-            <div>Start date</div>
-            <DatePicker />
-          </div>
-          <div>
-            <div>End date</div>
-            <DatePicker />
-          </div>
-        </Grid>
-        <Button>Search People</Button>
-      </CardSegment>
-    </Card>
-  </ContainerWrapper>
-);
+const Label = styled.div`
+  color: ${NEUTRALS[0]}
+  font-size: 14px;
+  line-height: 19px;
+  margin-bottom: 10px;
+`;
+
+const Releases = () => {
+
+  const dispatch = useDispatch();
+  const goToNewIntake = () => {
+    dispatch(goToRoute(Routes.NEW_INTAKE));
+  };
+
+  return (
+    <ContainerWrapper>
+      <HeaderRowWrapper>
+        <Header>New Releases</Header>
+        <StyledButton
+            onClick={goToNewIntake}
+            mode="primary">
+          New Intake
+        </StyledButton>
+      </HeaderRowWrapper>
+      <Card>
+        <CardSegment padding="30px" vertical>
+          <Grid>
+            <div>
+              <Label>Last name</Label>
+              <Input />
+            </div>
+            <div>
+              <Label>First name</Label>
+              <Input />
+            </div>
+            <div>
+              <Label>Start date</Label>
+              <DatePicker />
+            </div>
+            <div>
+              <Label>End date</Label>
+              <DatePicker />
+            </div>
+          </Grid>
+          <Button>Search People</Button>
+        </CardSegment>
+      </Card>
+    </ContainerWrapper>
+  );
+};
 
 export default Releases;
