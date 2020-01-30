@@ -8,14 +8,15 @@ const { FullyQualifiedName } = Models;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const APP_TYPE_FQNS :Object = {
-
   APPEARS_IN: new FullyQualifiedName('app.appearsin_new'),
   ASSIGNED_TO: new FullyQualifiedName('app.assignedto'),
+  ATTORNEYS: new FullyQualifiedName('app.attorneys'), // general.person
   CONTACTED_VIA: new FullyQualifiedName('app.contactedvia'),
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
   COURT_CASES: new FullyQualifiedName('app.courtcases'),
   EDUCATION: new FullyQualifiedName('app.education'),
   EMPLOYEE: new FullyQualifiedName('app.employee'),
+  EMPLOYMENT: new FullyQualifiedName('app.employment'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
   IS: new FullyQualifiedName('app.is_new'),
@@ -24,6 +25,7 @@ const APP_TYPE_FQNS :Object = {
   JAIL_STAY_LENGTH: new FullyQualifiedName('app.jailstaylength'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
   LOCATION: new FullyQualifiedName('app.location'),
+  OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),
   PART_OF: new FullyQualifiedName('app.partof'),
