@@ -15,18 +15,16 @@ import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
-const {
-  getEntityAddressKey,
-  getPageSectionKey,
-  parseEntityAddressKey
-} = DataProcessingUtils;
+const { getEntityAddressKey, getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 const {
   APPEARS_IN,
   ASSIGNED_TO,
+  ATTORNEYS,
   CONTACTED_VIA,
   CONTACT_INFO,
   EDUCATION,
   EMPLOYEE,
+  EMPLOYMENT,
   HAS,
   HEARINGS,
   IS,
@@ -34,6 +32,7 @@ const {
   JAIL_STAYS,
   LOCATED_AT,
   LOCATION,
+  OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
   PERSON_DETAILS_CRIMINAL_JUSTICE,
@@ -215,73 +214,49 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
   let updatedFormData :Object = formData;
   const probationParolePath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
   const probationOrParoleData :Object = getIn(formData, probationParolePath, {});
-  const attorneyEmployeeKey :string = getEntityAddressKey(0, EMPLOYEE, TITLE);
-  const officerEmployeeKey :string = getEntityAddressKey(1, EMPLOYEE, TITLE);
+  const attorneyEmploymentKey :string = getEntityAddressKey(0, EMPLOYMENT, NAME);
+  const officerEmployeeKey :string = getEntityAddressKey(0, EMPLOYEE, TITLE);
   const keys :string[] = Object.keys(probationOrParoleData);
 
-  if ((keys.length === 2 && keys.includes(attorneyEmployeeKey) && keys.includes(officerEmployeeKey))
+  if ((keys.length === 2 && keys.includes(attorneyEmploymentKey) && keys.includes(officerEmployeeKey))
     || !keys.length) {
-    updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([attorneyEmployeeKey]));
+    updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([attorneyEmploymentKey]));
     updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([officerEmployeeKey]));
     return updatedFormData;
   }
 
-  let personCount :number = 1;
-
-  const attorneyLastNameKey :string = getEntityAddressKey(1, PEOPLE, LAST_NAME);
-  const attorneyFirstNameKey :string = getEntityAddressKey(1, PEOPLE, FIRST_NAME);
+  const attorneyLastNameKey :string = getEntityAddressKey(0, ATTORNEYS, LAST_NAME);
+  const attorneyFirstNameKey :string = getEntityAddressKey(0, ATTORNEYS, FIRST_NAME);
   if (!isDefined(get(probationOrParoleData, attorneyLastNameKey))
     || !isDefined(get(probationOrParoleData, attorneyFirstNameKey))) {
-    updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([attorneyEmployeeKey]));
+    updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([attorneyEmploymentKey]));
   }
-  else personCount += 1;
 
-  const officerLastNameKey :string = getEntityAddressKey(2, PEOPLE, LAST_NAME);
-  const officerFirstNameKey :string = getEntityAddressKey(2, PEOPLE, FIRST_NAME);
-  if (!isDefined(get(probationOrParoleData, officerLastNameKey))
-    && !isDefined(get(probationOrParoleData, officerFirstNameKey))) {
+  const officerLastNameKey :string = getEntityAddressKey(0, OFFICERS, LAST_NAME);
+  const officerFirstNameKey :string = getEntityAddressKey(0, OFFICERS, FIRST_NAME);
+  const officerIsNotDefined :boolean = !isDefined(get(probationOrParoleData, officerLastNameKey))
+    && !isDefined(get(probationOrParoleData, officerFirstNameKey));
+
+  if (officerIsNotDefined) {
     updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([officerEmployeeKey]));
     return updatedFormData;
-  }
-  if (personCount === 1) {
-    updatedFormData = resetKey(
-      updatedFormData,
-      probationParolePath.concat(officerLastNameKey),
-      personCount,
-      { appTypeFqn: PEOPLE, propertyTypeFQN: LAST_NAME }
-    );
-    updatedFormData = resetKey(
-      updatedFormData,
-      probationParolePath.concat(officerFirstNameKey),
-      personCount,
-      { appTypeFqn: PEOPLE, propertyTypeFQN: FIRST_NAME }
-    );
   }
 
   if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === PROBATION
-    && personCount === 2) {
+    && !officerIsNotDefined) {
     updatedFormData = updateFormData(
       updatedFormData,
       probationParolePath.concat([officerEmployeeKey]),
       PROBATION_OFFICER
     );
   }
-  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === PAROLE) {
-    if (personCount === 2) {
-      updatedFormData = updateFormData(
-        updatedFormData,
-        probationParolePath.concat([officerEmployeeKey]),
-        PAROLE_OFFICER
-      );
-    }
-    else {
-      updatedFormData = updateFormData(
-        updatedFormData,
-        probationParolePath.concat([attorneyEmployeeKey]),
-        PAROLE_OFFICER
-      );
-      updatedFormData = deleteKeyFromFormData(updatedFormData, probationParolePath.concat([officerEmployeeKey]));
-    }
+  if (get(probationOrParoleData, getEntityAddressKey(0, PROBATION_PAROLE, TYPE)) === PAROLE
+    && !officerIsNotDefined) {
+    updatedFormData = updateFormData(
+      updatedFormData,
+      probationParolePath.concat([officerEmployeeKey]),
+      PAROLE_OFFICER
+    );
   }
   return updatedFormData;
 };
@@ -474,33 +449,29 @@ const getClientReleaseAssociations = (formData :Object) => {
   }
 
   /*
-    person (client) -> represented by -> employee (attorney)
-    person (attorney) -> is -> employee (attorney)
+    person (client) -> represented by -> employment/occupation (attorney)
+    person (attorney) -> has -> employment/occupation (attorney)
   */
-  const attorneyFilledOutInForm :boolean = isDefined(get(probationData, getEntityAddressKey(1, PEOPLE, LAST_NAME)))
-    || isDefined(get((probationData, getEntityAddressKey(1, PEOPLE, FIRST_NAME))));
+  const attorneyFilledOutInForm :boolean = isDefined(get(probationData, getEntityAddressKey(0, ATTORNEYS, LAST_NAME)))
+    || isDefined(get((probationData, getEntityAddressKey(0, ATTORNEYS, FIRST_NAME))));
 
   // Attorney
   if (attorneyFilledOutInForm) {
-    associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYEE, {}]);
-    associations.push([REPRESENTED_BY, 0, PEOPLE, 1, PEOPLE, {}]);
-    associations.push([IS, 1, PEOPLE, 0, EMPLOYEE, {}]);
+    associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYMENT, {}]);
+    associations.push([HAS, 0, ATTORNEYS, 0, EMPLOYMENT, {}]);
   }
 
   /*
-    parole officer (employee) + person (parole officer) -> assigned to -> person (client)
+    parole officer (employee) -> assigned to -> person (client)
     person (parole officer) -> is -> employee (parole officer)
   */
 
   // Probation/Parole Officer
-  // don't want add this person as index 2 if there's no person at index 1:
-  const officerFilledOutInForm = isDefined(get(probationData, getEntityAddressKey(2, PEOPLE, LAST_NAME)))
-    || isDefined(get((probationData, getEntityAddressKey(2, PEOPLE, FIRST_NAME))));
-  const officerIndex :number = attorneyFilledOutInForm ? 2 : 1;
-  const officerEmployeeIndex :number = attorneyFilledOutInForm ? 1 : 0;
+  const officerFilledOutInForm = isDefined(get(probationData, getEntityAddressKey(0, OFFICERS, LAST_NAME)))
+    || isDefined(get((probationData, getEntityAddressKey(0, OFFICERS, FIRST_NAME))));
   if (officerFilledOutInForm) {
-    associations.push([ASSIGNED_TO, officerEmployeeIndex, EMPLOYEE, 0, PEOPLE, {}]);
-    associations.push([IS, officerIndex, PEOPLE, officerEmployeeIndex, EMPLOYEE, {}]);
+    associations.push([ASSIGNED_TO, 0, EMPLOYEE, 0, PEOPLE, {}]);
+    associations.push([IS, 0, OFFICERS, 0, EMPLOYEE, {}]);
   }
 
   /*
@@ -512,8 +483,8 @@ const getClientReleaseAssociations = (formData :Object) => {
   if (isDefined(get(probationData, getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)))) {
     associations.push([ASSIGNED_TO, 0, PEOPLE, 0, PROBATION_PAROLE, {}]);
     if (officerFilledOutInForm) {
-      associations.push([ASSIGNED_TO, officerEmployeeIndex, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
-      associations.push([ASSIGNED_TO, officerIndex, PEOPLE, 0, PROBATION_PAROLE, {}]);
+      associations.push([ASSIGNED_TO, 0, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
+      associations.push([ASSIGNED_TO, 0, OFFICERS, 0, PROBATION_PAROLE, {}]);
     }
   }
 
@@ -528,45 +499,40 @@ const getOfficerAndAttorneyContactAssociations = (
   const associations :Array<Array<*>> = [];
   let clientContactInfoCount :number = getClientContactInfoCount(originalFormData);
   const probationPath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
-  const probationData :Object = getIn(originalFormData, probationPath);
+  const originalProbationData :Object = getIn(originalFormData, probationPath);
 
-  const firstEmployee :any = getIn(updatedFormData, probationPath.concat([getEntityAddressKey(0, EMPLOYEE, TITLE)]));
-  if (!isDefined(firstEmployee)) return associations;
-  const attorneyIsFirstEmployee :boolean = firstEmployee === 'Attorney';
-
-  let officerPersonIndex :number = 0;
-  if (firstEmployee === PAROLE_OFFICER || firstEmployee === PROBATION_OFFICER) officerPersonIndex = 1;
-
-  const secondEmployee :any = getIn(updatedFormData, probationPath.concat([getEntityAddressKey(1, EMPLOYEE, TITLE)]));
-  if (secondEmployee === PAROLE_OFFICER || secondEmployee === PROBATION_OFFICER) {
-    officerPersonIndex = 2;
+  const attorneyIsDefined :boolean = isDefined(getIn(
+    updatedFormData,
+    probationPath.concat([getEntityAddressKey(0, EMPLOYMENT, NAME)])
+  ));
+  if (attorneyIsDefined) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
+    if (isDefined(get(originalProbationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
+      clientContactInfoCount += 1;
+    }
   }
 
-  if (attorneyIsFirstEmployee) {
-    if (isDefined(get(probationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+  const officerIsDefined :boolean = isDefined(getIn(
+    updatedFormData,
+    probationPath.concat([getEntityAddressKey(0, EMPLOYEE, TITLE)])
+  ));
+  if (officerIsDefined) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
+      associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
-    if (isDefined(get(probationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, 1, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
+    if (isDefined(get(originalProbationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
+      associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
   }
 
-  if (officerPersonIndex > 0) {
-    if (isDefined(get(probationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
-      associations.push([CONTACTED_VIA, officerPersonIndex, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, officerPersonIndex - 1, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
-      clientContactInfoCount += 1;
-    }
-    if (isDefined(get(probationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
-      associations.push([CONTACTED_VIA, officerPersonIndex, PEOPLE, clientContactInfoCount, CONTACT_INFO, {}]);
-      associations.push([CONTACTED_VIA, officerPersonIndex - 1, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
-      clientContactInfoCount += 1;
-    }
-  }
   return associations;
 };
 
