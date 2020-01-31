@@ -11,7 +11,7 @@ import {
   PaginationToolbar,
   SearchResults,
 } from 'lattice-ui-kit';
-import { List } from 'immutable';
+import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -19,9 +19,11 @@ import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
 import { goToRoute } from '../../core/router/RoutingActions';
-import type { RoutingAction } from '../../core/router/RoutingActions';
+import { RELEASES } from '../../utils/constants/ReduxStateConstants';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
+const { JAILS_BY_JAIL_STAY_EKID } = RELEASES;
 
 const labels = Map({
   name: 'Name',
@@ -72,8 +74,9 @@ const Label = styled.div`
 
 type Props = {
   actions:{
-    goToRoute :RoutingAction;
+    goToRoute :GoToRoute;
   };
+  jailsByJailStayEKID :Map;
 };
 
 class Releases extends Component<Props> {
@@ -129,7 +132,9 @@ class Releases extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => {
+  const releases = state.get(RELEASES.RELEASES);
   return {
+    [JAILS_BY_JAIL_STAY_EKID]: releases.get(JAILS_BY_JAIL_STAY_EKID),
   };
 };
 
