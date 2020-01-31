@@ -14,10 +14,12 @@ import {
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
+import { searchReleases } from './ReleasesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { RELEASES } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
@@ -75,11 +77,60 @@ const Label = styled.div`
 type Props = {
   actions:{
     goToRoute :GoToRoute;
+    searchReleases :RequestSequence;
   };
   jailsByJailStayEKID :Map;
 };
 
-class Releases extends Component<Props> {
+type State = {
+  endDate :string;
+  firstName :string;
+  lastName :string;
+  startDate :string;
+};
+
+class Releases extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      endDate: '',
+      firstName: '',
+      lastName: '',
+      startDate: '',
+    };
+  }
+
+  searchForPeopleAndReleases = () => {
+    const { actions } = this.props;
+    const {
+      endDate,
+      firstName,
+      lastName,
+      startDate,
+    } = this.state;
+
+    actions.searchReleases({
+      endDate,
+      firstName,
+      lastName,
+      startDate,
+    });
+  }
+
+  onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
+    const { name, value } = e.currentTarget;
+    this.setState({ [name]: value });
+  }
+
+  setStartDate = () => (date :string) => {
+    this.setState({ startDate: date });
+  }
+
+  setEndDate = () => (date :string) => {
+    this.setState({ endDate: date });
+  }
 
   goToNewIntakeForm = () => {
     const { actions } = this.props;
@@ -102,19 +153,23 @@ class Releases extends Component<Props> {
             <Grid>
               <div>
                 <Label>Last name</Label>
-                <Input />
+                <Input
+                    name="lastName"
+                    onChange={this.onInputChange} />
               </div>
               <div>
                 <Label>First name</Label>
-                <Input />
+                <Input
+                    name="firstName"
+                    onChange={this.onInputChange} />
               </div>
               <div>
                 <Label>Start date</Label>
-                <DatePicker />
+                <DatePicker onChange={this.setStartDate} />
               </div>
               <div>
                 <Label>End date</Label>
-                <DatePicker />
+                <DatePicker onChange={this.setEndDate} />
               </div>
             </Grid>
             <Button>Search People</Button>
@@ -141,6 +196,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
     goToRoute,
+    searchReleases,
   }, dispatch)
 });
 
