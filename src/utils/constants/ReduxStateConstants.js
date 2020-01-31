@@ -22,11 +22,19 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
-const RELEASES :Object = {};
+const PEOPLE :Object = {
+  PEOPLE: 'people',
+  PEOPLE_BY_JAIL_STAY: 'peopleByJailStay',
+};
+
+const RELEASES :Object = {
+  JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
+};
 
 export {
   APP,
   EDM,
+  PEOPLE,
   RELEASES,
   SHARED,
 };
