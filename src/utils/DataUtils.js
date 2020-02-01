@@ -1,5 +1,5 @@
 // @flow
-import { Map, isImmutable } from 'immutable';
+import { Map, isImmutable, set } from 'immutable';
 import { Models } from 'lattice';
 
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
@@ -30,30 +30,30 @@ const getFirstNeighborValue = (
   neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
-const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
+const getEntityProperties = (entityObj :Map, propertyList :FullyQualifiedName[]) => {
 
-  const returnPropertyFields = {};
+  let returnPropertyFields = {};
   if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
-    propertyList.forEach((propertyType) => {
+    propertyList.forEach((propertyType :FullyQualifiedName) => {
       const backUpValue = entityObj.get(propertyType, '');
       const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields[propertyType] = property;
+      returnPropertyFields = set(returnPropertyFields, propertyType, property);
     });
   }
+  // console.log('returnPropertyFields: ', returnPropertyFields);
   return returnPropertyFields;
 };
 
 const getEKID = (entityObj :Map) :string => {
   if (isImmutable(entityObj)) {
-    const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(entityObj, [ENTITY_KEY_ID]);
-    return entityKeyId;
+    return entityObj.getIn([ENTITY_KEY_ID, 0]);
   }
   return '';
 };
 
 const getPTIDFromEDM = (
-  edm :Object | Map, propertyFqn :FullyQualifiedName
-) => edm.getIn([EDM.TYPE_IDS_BY_FQNS, EDM.PROPERTY_TYPES, propertyFqn]);
+  edm :Map, propertyFqn :FullyQualifiedName
+) => edm.getIn([EDM.TYPE_IDS_BY_FQN, EDM.PROPERTY_TYPES, propertyFqn]);
 
 const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
