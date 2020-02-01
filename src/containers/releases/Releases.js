@@ -8,6 +8,7 @@ import {
   Colors,
   DatePicker,
   Input,
+  PaginationToolbar,
   SearchResults,
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
@@ -28,13 +29,20 @@ import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { JAILS_BY_JAIL_STAY_EKID, PEOPLE_BY_JAIL_STAY_EKID, SEARCHED_JAIL_STAYS } = RELEASES;
+const {
+  JAILS_BY_JAIL_STAY_EKID,
+  PEOPLE_BY_JAIL_STAY_EKID,
+  SEARCHED_JAIL_STAYS,
+  TOTAL_HITS,
+} = RELEASES;
 
 const labels = Map({
   name: 'Name',
   releaseDate: 'Release date',
   releasedFrom: 'Released from',
 });
+
+const MAX_HITS :number = 10;
 
 const ContainerWrapper = styled.div`
   display: flex;
@@ -93,12 +101,14 @@ type Props = {
     SEARCH_RELEASES :RequestState;
   };
   searchedJailStays :List;
+  totalHits :number;
 };
 
 type State = {
   endDate :string;
   firstName :string;
   lastName :string;
+  page :number;
   startDate :string;
 };
 
@@ -111,11 +121,12 @@ class Releases extends Component<Props, State> {
       endDate: '',
       firstName: '',
       lastName: '',
+      page: 0,
       startDate: '',
     };
   }
 
-  searchForPeopleAndReleases = () => {
+  searchForPeopleAndReleases = (e :SyntheticEvent<HTMLInputElement>, startIndex :?number) => {
     const { actions } = this.props;
     const {
       endDate,
@@ -125,10 +136,13 @@ class Releases extends Component<Props, State> {
     } = this.state;
 
     if (isNonEmptyString(startDate)) {
+      const start = startIndex || 0;
       actions.searchReleases({
         endDate,
         firstName,
         lastName,
+        start,
+        maxHits: MAX_HITS,
         startDate,
       });
     }
@@ -147,6 +161,15 @@ class Releases extends Component<Props, State> {
     this.setState({ endDate: date });
   }
 
+  setPage = (page :number) => {
+    this.setState({ page });
+  }
+
+  onPageChange = ({ page: newPage, start } :Object) => {
+    this.searchForPeopleAndReleases(start);
+    this.setPage(newPage);
+  }
+
   goToNewIntakeForm = () => {
     const { actions } = this.props;
     actions.goToRoute(Routes.NEW_INTAKE);
@@ -158,7 +181,10 @@ class Releases extends Component<Props, State> {
       peopleByJailStayEKID,
       requestStates,
       searchedJailStays,
+      totalHits,
     } = this.props;
+    const { page } = this.state;
+
     const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES]);
     const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES])
       || requestIsFailure(requestStates[SEARCH_RELEASES]);
@@ -205,6 +231,15 @@ class Releases extends Component<Props, State> {
             </StyledSearchButton>
           </CardSegment>
         </Card>
+        {
+          hasSearched && (
+            <PaginationToolbar
+                count={totalHits}
+                onPageChange={this.onPageChange}
+                page={page}
+                rowsPerPage={MAX_HITS} />
+          )
+        }
         <SearchResults
             hasSearched={hasSearched}
             isLoading={isSearching}
@@ -222,6 +257,7 @@ const mapStateToProps = (state :Map) => {
     [JAILS_BY_JAIL_STAY_EKID]: releases.get(JAILS_BY_JAIL_STAY_EKID),
     [PEOPLE_BY_JAIL_STAY_EKID]: releases.get(PEOPLE_BY_JAIL_STAY_EKID),
     [SEARCHED_JAIL_STAYS]: releases.get(SEARCHED_JAIL_STAYS),
+    [TOTAL_HITS]: releases.get(TOTAL_HITS),
     requestStates: {
       [SEARCH_RELEASES]: releases.getIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE]),
     },

@@ -193,6 +193,7 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
   let jailStays :List = List();
+  let totalHits :number = 0;
 
   try {
     yield put(searchReleases.request(id, value));
@@ -203,10 +204,10 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       endDate,
       firstName,
       lastName,
+      maxHits,
+      start,
       startDate,
     } = value;
-
-    // if (!startDate.length || !endDate.length) throw 'invalid parameter: no dates provided';
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
@@ -216,8 +217,8 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const searchOptions = {
       entitySetIds: [jailStaysESID],
-      start: 0,
-      maxHits: 10000,
+      start,
+      maxHits,
       constraints: []
     };
     let searchTerm :string = '';
@@ -280,11 +281,12 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const updatedJailStayEKIDList :List = response.data;
       jailStays = jailStays.filter((jailStay :Map) => updatedJailStayEKIDList.includes(getEKID(jailStay)));
+      totalHits = updatedJailStayEKIDList.count();
 
       yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ updatedJailStayEKIDList }));
     }
 
-    yield put(searchReleases.success(id, jailStays));
+    yield put(searchReleases.success(id, { jailStays, totalHits }));
   }
   catch (error) {
     LOG.error('caught exception in searchReleasesWorker()', error);

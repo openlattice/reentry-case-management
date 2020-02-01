@@ -27,6 +27,7 @@ const RELEASES :Object = {
   PEOPLE_BY_JAIL_STAY_EKID: 'peopleByJailStayEKID',
   RELEASES: 'releases',
   SEARCHED_JAIL_STAYS: 'searchedJailStays',
+  TOTAL_HITS: 'totalHits',
 };
 
 export {

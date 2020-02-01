@@ -14,7 +14,12 @@ import {
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { JAILS_BY_JAIL_STAY_EKID, PEOPLE_BY_JAIL_STAY_EKID, SEARCHED_JAIL_STAYS } = RELEASES;
+const {
+  JAILS_BY_JAIL_STAY_EKID,
+  PEOPLE_BY_JAIL_STAY_EKID,
+  SEARCHED_JAIL_STAYS,
+  TOTAL_HITS,
+} = RELEASES;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -28,6 +33,7 @@ const INITIAL_STATE :Map = fromJS({
   [JAILS_BY_JAIL_STAY_EKID]: Map(),
   [PEOPLE_BY_JAIL_STAY_EKID]: Map(),
   [SEARCHED_JAIL_STAYS]: Map(),
+  [TOTAL_HITS]: 0,
 });
 
 export default function peopleReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -79,8 +85,10 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Sequen
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
+          const { jailStays, totalHits } = value;
           return state
-            .set(SEARCHED_JAIL_STAYS, value)
+            .set(SEARCHED_JAIL_STAYS, jailStays)
+            .set(TOTAL_HITS, totalHits)
             .setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state.setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.FAILURE),
