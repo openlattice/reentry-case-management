@@ -22,11 +22,6 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
-const PEOPLE :Object = {
-  PEOPLE: 'people',
-  PEOPLE_BY_JAIL_STAY: 'peopleByJailStay',
-};
-
 const RELEASES :Object = {
   JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
   PEOPLE_BY_JAIL_STAY_EKID: 'peopleByJailStayEKID',
@@ -37,7 +32,6 @@ const RELEASES :Object = {
 export {
   APP,
   EDM,
-  PEOPLE,
   RELEASES,
   SHARED,
 };
