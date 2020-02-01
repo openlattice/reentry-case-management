@@ -13,19 +13,22 @@ import {
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
-import { searchReleases } from './ReleasesActions';
+import { SEARCH_RELEASES, searchReleases } from './ReleasesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { formatDataForReleasesList } from './utils/ReleasesUtils';
 import { isNonEmptyString } from '../../utils/LangUtils';
-import { RELEASES } from '../../utils/constants/ReduxStateConstants';
+import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
-const { JAILS_BY_JAIL_STAY_EKID } = RELEASES;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { JAILS_BY_JAIL_STAY_EKID, PEOPLE_BY_JAIL_STAY_EKID, SEARCHED_JAIL_STAYS } = RELEASES;
 
 const labels = Map({
   name: 'Name',
@@ -84,7 +87,12 @@ type Props = {
     goToRoute :GoToRoute;
     searchReleases :RequestSequence;
   };
-  // jailsByJailStayEKID :Map;
+  jailsByJailStayEKID :Map;
+  peopleByJailStayEKID :Map;
+  requestStates:{
+    SEARCH_RELEASES :RequestState;
+  };
+  searchedJailStays :List;
 };
 
 type State = {
@@ -145,6 +153,17 @@ class Releases extends Component<Props, State> {
   }
 
   render() {
+    const {
+      jailsByJailStayEKID,
+      peopleByJailStayEKID,
+      requestStates,
+      searchedJailStays,
+    } = this.props;
+    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES])
+      || requestIsFailure(requestStates[SEARCH_RELEASES]);
+
+    const releasesData :List = formatDataForReleasesList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
     return (
       <ContainerWrapper>
         <HeaderRowWrapper>
@@ -176,7 +195,7 @@ class Releases extends Component<Props, State> {
               </div>
               <div>
                 <Label>End date</Label>
-                <DatePicker required onChange={this.setEndDate} />
+                <DatePicker onChange={this.setEndDate} />
               </div>
             </Grid>
             <StyledSearchButton
@@ -187,11 +206,11 @@ class Releases extends Component<Props, State> {
           </CardSegment>
         </Card>
         <SearchResults
-            hasSearched={false}
-            isLoading={false}
+            hasSearched={hasSearched}
+            isLoading={isSearching}
             noResults=""
             resultLabels={labels}
-            results={List()} />
+            results={releasesData} />
       </ContainerWrapper>
     );
   }
@@ -201,6 +220,11 @@ const mapStateToProps = (state :Map) => {
   const releases = state.get(RELEASES.RELEASES);
   return {
     [JAILS_BY_JAIL_STAY_EKID]: releases.get(JAILS_BY_JAIL_STAY_EKID),
+    [PEOPLE_BY_JAIL_STAY_EKID]: releases.get(PEOPLE_BY_JAIL_STAY_EKID),
+    [SEARCHED_JAIL_STAYS]: releases.get(SEARCHED_JAIL_STAYS),
+    requestStates: {
+      [SEARCH_RELEASES]: releases.getIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE]),
+    },
   };
 };
 
