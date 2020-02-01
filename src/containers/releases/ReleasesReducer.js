@@ -5,14 +5,16 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
+  SEARCH_PEOPLE_BY_JAIL_STAY,
   SEARCH_RELEASES,
   getJailsByJailStayEKID,
+  searchPeopleByJailStay,
   searchReleases,
 } from './ReleasesActions';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { JAILS_BY_JAIL_STAY_EKID } = RELEASES;
+const { JAILS_BY_JAIL_STAY_EKID, PEOPLE_BY_JAIL_STAY_EKID, SEARCHED_JAIL_STAYS } = RELEASES;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -24,6 +26,8 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [JAILS_BY_JAIL_STAY_EKID]: Map(),
+  [PEOPLE_BY_JAIL_STAY_EKID]: Map(),
+  [SEARCHED_JAIL_STAYS]: Map(),
 });
 
 export default function peopleReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -45,6 +49,42 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Sequen
         },
         FAILURE: () => state.setIn([ACTIONS, GET_JAILS_BY_JAIL_STAY_EKID, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_JAILS_BY_JAIL_STAY_EKID, action.id]),
+      });
+    }
+
+    case searchPeopleByJailStay.case(action.type): {
+
+      return searchPeopleByJailStay.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, action.id], action)
+          .setIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(PEOPLE_BY_JAIL_STAY_EKID, value)
+            .setIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, action.id]),
+      });
+    }
+
+    case searchReleases.case(action.type): {
+
+      return searchReleases.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SEARCH_RELEASES, action.id], action)
+          .setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(SEARCHED_JAIL_STAYS, value)
+            .setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_RELEASES, action.id]),
       });
     }
 

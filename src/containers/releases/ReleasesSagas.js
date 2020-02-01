@@ -1,6 +1,5 @@
 // @flow
 import {
-  all,
   call,
   put,
   select,
@@ -12,12 +11,11 @@ import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
-import { getPeopleByJailStay } from '../people/PeopleActions';
-import { getPeopleByJailStayWorker } from '../people/PeopleSagas';
+import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
+  getEntityProperties,
   getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
@@ -25,8 +23,10 @@ import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUt
 import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
+  SEARCH_PEOPLE_BY_JAIL_STAY,
   SEARCH_RELEASES,
   getJailsByJailStayEKID,
+  searchPeopleByJailStay,
   searchReleases,
 } from './ReleasesActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
@@ -36,8 +36,8 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
-const { PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
+const { JAIL_STAYS, JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
+const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -58,7 +58,9 @@ function* getJailsByJailStayEKIDWorker(action :SequenceAction) :Generator<*, *, 
   try {
     yield put(getJailsByJailStayEKID.request(id));
 
-    const { jailStayEKIDs } = value;
+    const { updatedJailStayEKIDList } = value;
+    const jailStayEKIDs :string[] = updatedJailStayEKIDList.toJS();
+
     const app = yield select(getAppFromState);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
     const jailsPrisonsESID :UUID = getESIDFromApp(app, JAILS_PRISONS);
@@ -79,8 +81,8 @@ function* getJailsByJailStayEKIDWorker(action :SequenceAction) :Generator<*, *, 
     const jailStayNeighbors :Map = fromJS(response.data);
     if (!jailStayNeighbors.isEmpty()) {
       jailsByJailStayEKID = jailStayNeighbors
-        .map((neighborList :List) => neighborList
-          .map((neighbor :Map) => getNeighborDetails(neighbor)));
+        .map((neighborList :List) => neighborList.get(0))
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
     }
 
     yield put(getJailsByJailStayEKID.success(id, jailsByJailStayEKID));
@@ -97,6 +99,86 @@ function* getJailsByJailStayEKIDWorker(action :SequenceAction) :Generator<*, *, 
 function* getJailsByJailStayEKIDWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_JAILS_BY_JAIL_STAY_EKID, getJailsByJailStayEKIDWorker);
+}
+
+/*
+ *
+ * ReleasesActions.searchPeopleByJailStay()
+ *
+ */
+
+function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse :Object = {};
+  let response :Object = {};
+  let peopleByJailStayEKID :List = List();
+  let updatedJailStayEKIDList :List = List();
+
+  try {
+    yield put(searchPeopleByJailStay.request(id));
+
+    const { firstName, jailStayEKIDs, lastName } = value;
+    const trimmedInputFirstName :string = firstName.trim().toLowerCase();
+    const trimmedInputLastName :string = lastName.trim().toLowerCase();
+
+    const app = yield select(getAppFromState);
+    const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
+    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+
+    const searchFilter = {
+      entityKeyIds: jailStayEKIDs,
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [peopleESID],
+    };
+
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: jailStaysESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const jailStayNeighborMap :Map = fromJS(response.data);
+    if (!jailStayNeighborMap.isEmpty()) {
+      peopleByJailStayEKID = jailStayNeighborMap
+        .map((neighborList :List) => neighborList.get(0))
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+
+      if (firstName.length || lastName.length) {
+        peopleByJailStayEKID.filter((person :Map) => {
+          // $FlowFixMe
+          const { [FIRST_NAME]: personFirstName, [LAST_NAME]: personLastName } = getEntityProperties(
+            person,
+            [FIRST_NAME, LAST_NAME]
+          );
+          const trimmedFirstName :string = personFirstName.trim().toLowerCase();
+          const trimmedLastName :string = personLastName.trim().toLowerCase();
+          return trimmedFirstName.includes(trimmedInputFirstName) || trimmedLastName.includes(trimmedInputLastName);
+        });
+      }
+
+      updatedJailStayEKIDList = peopleByJailStayEKID.keySeq().toList();
+      workerResponse.data = updatedJailStayEKIDList;
+    }
+
+    yield put(searchPeopleByJailStay.success(id, peopleByJailStayEKID));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in searchPeopleByJailStayWorker()', error);
+    yield put(searchPeopleByJailStay.failure(id, error));
+  }
+  finally {
+    yield put(searchPeopleByJailStay.finally(id));
+  }
+  return workerResponse;
+}
+
+function* searchPeopleByJailStayWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SEARCH_PEOPLE_BY_JAIL_STAY, searchPeopleByJailStayWorker);
 }
 
 /*
@@ -124,6 +206,8 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       startDate,
     } = value;
 
+    // if (!startDate.length || !endDate.length) throw 'invalid parameter: no dates provided';
+
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
 
@@ -134,35 +218,46 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       entitySetIds: [jailStaysESID],
       start: 0,
       maxHits: 10000,
-      constraints: [{
-        min: 1,
-        constraints: []
-      }]
+      constraints: []
     };
     let searchTerm :string = '';
 
     if (checkIfDatesAreEqual(startDate, endDate)) {
       searchTerm = getSearchTerm(projectedReleaseDateTimePTID, startDate);
-      searchOptions.constraints[0].constraints.push({
-        searchTerm,
-        fuzzy: false
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm,
+          fuzzy: false
+        }]
       });
     }
     else {
       const startDateAsDateTime :DateTime = DateTime.fromISO(startDate);
-      const endDateAsDateTime :DateTime = DateTime.fromISO(endDate);
-      searchTerm = getUTCDateRangeSearchString(
-        projectedReleaseDateTimePTID,
-        'day',
-        startDateAsDateTime,
-        endDateAsDateTime
-      );
-      searchOptions.constraints[0].constraints.push({
-        searchTerm,
-        fuzzy: false
+      if (isNonEmptyString(endDate)) {
+        const endDateAsDateTime :DateTime = DateTime.fromISO(endDate);
+        searchTerm = getUTCDateRangeSearchString(
+          projectedReleaseDateTimePTID,
+          'day',
+          startDateAsDateTime,
+          endDateAsDateTime
+        );
+      }
+      else {
+        searchTerm = getUTCDateRangeSearchString(
+          projectedReleaseDateTimePTID,
+          'day',
+          startDateAsDateTime
+        );
+      }
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm,
+          fuzzy: false
+        }]
       });
     }
-
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) {
       throw response.error;
@@ -176,10 +271,17 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
         jailStayEKIDs.push(jailStayEKID);
       });
 
-      yield all([
-        call(getPeopleByJailStayWorker, getPeopleByJailStay({ jailStayEKIDs })),
-        call(getJailsByJailStayEKID, getJailsByJailStayEKID({ jailStayEKIDs })),
-      ]);
+      response = yield call(
+        searchPeopleByJailStayWorker,
+        searchPeopleByJailStay({ firstName, jailStayEKIDs, lastName })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const updatedJailStayEKIDList :List = response.data;
+      jailStays = jailStays.filter((jailStay :Map) => updatedJailStayEKIDList.includes(getEKID(jailStay)));
+
+      yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ updatedJailStayEKIDList }));
     }
 
     yield put(searchReleases.success(id, jailStays));
@@ -201,6 +303,8 @@ function* searchReleasesWatcher() :Generator<*, *, *> {
 export {
   getJailsByJailStayEKIDWatcher,
   getJailsByJailStayEKIDWorker,
+  searchPeopleByJailStayWatcher,
+  searchPeopleByJailStayWorker,
   searchReleasesWatcher,
   searchReleasesWorker
 };

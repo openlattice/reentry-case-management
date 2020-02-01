@@ -8,7 +8,6 @@ import {
   Colors,
   DatePicker,
   Input,
-  PaginationToolbar,
   SearchResults,
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
@@ -21,6 +20,7 @@ import COLORS from '../../core/style/Colors';
 
 import { searchReleases } from './ReleasesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { isNonEmptyString } from '../../utils/LangUtils';
 import { RELEASES } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -54,9 +54,14 @@ const Header = styled.div`
   line-height: 35px;
 `;
 
-const StyledButton = styled(Button)`
+const StyledPrimaryButton = styled(Button)`
   font-size: 14px;
   padding: 8px 32px;
+`;
+
+const StyledSearchButton = styled(Button)`
+  align-self: flex-end;
+  width: 210px;
 `;
 
 const Grid = styled.div`
@@ -79,7 +84,7 @@ type Props = {
     goToRoute :GoToRoute;
     searchReleases :RequestSequence;
   };
-  jailsByJailStayEKID :Map;
+  // jailsByJailStayEKID :Map;
 };
 
 type State = {
@@ -111,12 +116,14 @@ class Releases extends Component<Props, State> {
       startDate,
     } = this.state;
 
-    actions.searchReleases({
-      endDate,
-      firstName,
-      lastName,
-      startDate,
-    });
+    if (isNonEmptyString(startDate)) {
+      actions.searchReleases({
+        endDate,
+        firstName,
+        lastName,
+        startDate,
+      });
+    }
   }
 
   onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -124,11 +131,11 @@ class Releases extends Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  setStartDate = () => (date :string) => {
+  setStartDate = (date :string) => {
     this.setState({ startDate: date });
   }
 
-  setEndDate = () => (date :string) => {
+  setEndDate = (date :string) => {
     this.setState({ endDate: date });
   }
 
@@ -142,11 +149,11 @@ class Releases extends Component<Props, State> {
       <ContainerWrapper>
         <HeaderRowWrapper>
           <Header>New Releases</Header>
-          <StyledButton
+          <StyledPrimaryButton
               onClick={this.goToNewIntakeForm}
               mode="primary">
             New Intake
-          </StyledButton>
+          </StyledPrimaryButton>
         </HeaderRowWrapper>
         <Card>
           <CardSegment padding="30px" vertical>
@@ -164,15 +171,19 @@ class Releases extends Component<Props, State> {
                     onChange={this.onInputChange} />
               </div>
               <div>
-                <Label>Start date</Label>
+                <Label>Start date*</Label>
                 <DatePicker onChange={this.setStartDate} />
               </div>
               <div>
                 <Label>End date</Label>
-                <DatePicker onChange={this.setEndDate} />
+                <DatePicker required onChange={this.setEndDate} />
               </div>
             </Grid>
-            <Button>Search People</Button>
+            <StyledSearchButton
+                type="submit"
+                onClick={this.searchForPeopleAndReleases}>
+              Search People
+            </StyledSearchButton>
           </CardSegment>
         </Card>
         <SearchResults
