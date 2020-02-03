@@ -126,7 +126,7 @@ class Releases extends Component<Props, State> {
     };
   }
 
-  searchForPeopleAndReleases = (e :SyntheticEvent<HTMLInputElement>, startIndex :?number) => {
+  searchForPeopleAndReleases = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
     const { actions } = this.props;
     const {
       endDate,
@@ -166,7 +166,7 @@ class Releases extends Component<Props, State> {
   }
 
   onPageChange = ({ page: newPage, start } :Object) => {
-    this.searchForPeopleAndReleases(start);
+    this.searchForPeopleAndReleases(undefined, start);
     this.setPage(newPage);
   }
 

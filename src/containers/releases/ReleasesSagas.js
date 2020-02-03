@@ -264,6 +264,7 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     jailStays = fromJS(response.data.hits);
+    totalHits = response.data.numHits;
 
     if (!jailStays.isEmpty()) {
       const jailStayEKIDs :UUID[] = [];
@@ -280,8 +281,6 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
         throw response.error;
       }
       const updatedJailStayEKIDList :List = response.data;
-      jailStays = jailStays.filter((jailStay :Map) => updatedJailStayEKIDList.includes(getEKID(jailStay)));
-      totalHits = updatedJailStayEKIDList.count();
 
       yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ updatedJailStayEKIDList }));
     }
