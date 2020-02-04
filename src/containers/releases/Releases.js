@@ -30,7 +30,12 @@ import {
 import { goToRoute } from '../../core/router/RoutingActions';
 import { formatDataForReleasesByDateList, formatDataForReleasesByPersonList } from './utils/ReleasesUtils';
 import { isNonEmptyString } from '../../utils/LangUtils';
-import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import {
+  reduceRequestStates,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess,
+} from '../../utils/RequestStateUtils';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -268,12 +273,12 @@ class Releases extends Component<Props, State> {
     const { requestStates, totalHits } = this.props;
     const { page, searchingByPerson, searchingByDate } = this.state;
 
-    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES_BY_DATE])
-      || requestIsPending(requestStates[SEARCH_RELEASES_BY_PERSON_NAME]);
-    const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES_BY_DATE])
-      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_DATE])
-      || requestIsSuccess(requestStates[SEARCH_RELEASES_BY_PERSON_NAME])
-      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_PERSON_NAME]);
+    const reducedState = reduceRequestStates([
+      requestStates[SEARCH_RELEASES_BY_DATE],
+      requestStates[SEARCH_RELEASES_BY_PERSON_NAME]
+    ]);
+    const isSearching :boolean = requestIsPending(reducedState);
+    const hasSearched :boolean = requestIsSuccess(reducedState) || requestIsFailure(reducedState);
 
     const releasesData :List = this.getReleasesData();
     return (

@@ -33,7 +33,16 @@ const INITIAL_STATE :Map = fromJS({
     [GET_JAILS_BY_JAIL_STAY_EKID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SEARCH_JAIL_STAYS_BY_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SEARCH_PEOPLE_BY_JAIL_STAY]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [SEARCH_RELEASES_BY_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SEARCH_RELEASES_BY_PERSON_NAME]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
