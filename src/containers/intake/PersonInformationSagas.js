@@ -42,19 +42,17 @@ const LOG = new Logger('PersonInformationSagas');
 function* getIncarcerationFacilitiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id } = action;
-  let response :Object = {};
-  let incarcerationFacilities :List = List();
 
   try {
     yield put(getIncarcerationFacilities.request(id));
     const app = yield select(getAppFromState);
     const jailsPrisonsESID :UUID = getEntitySetIdFromApp(app, JAILS_PRISONS);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: jailsPrisonsESID }));
+    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: jailsPrisonsESID }));
     if (response.error) {
       throw response.error;
     }
-    incarcerationFacilities = fromJS(response.data);
+    const incarcerationFacilities :List = fromJS(response.data);
 
     yield put(getIncarcerationFacilities.success(id, incarcerationFacilities));
   }
@@ -82,11 +80,10 @@ function* submitPersonInformationFormWorker(action :SequenceAction) :Generator<*
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :Object = {};
 
   try {
     yield put(submitPersonInformationForm.request(id, value));
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
     }
