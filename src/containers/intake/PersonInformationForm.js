@@ -33,6 +33,7 @@ import {
   setProbationOrParoleValues,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
+import { pipeConcat, pipeValue } from '../../utils/Utils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import {
   APP,
@@ -116,22 +117,26 @@ class PersonInformationForm extends Component<Props, State> {
 
     let formDataToProcess = formData;
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
-    formDataToProcess = setClientContactInfoIndices(formDataToProcess);
-    formDataToProcess = setPreferredMethodOfContact(formDataToProcess);
-    formDataToProcess = setProbationOrParoleValues(formDataToProcess);
-    formDataToProcess = setContactIndices(formDataToProcess);
-    formDataToProcess = setDatesAsDateTimes(formDataToProcess);
-    // HACK: remove 'registered county' and 'referred from' until data model is figured out:
+    formDataToProcess = pipeValue(
+      setClientContactInfoIndices,
+      setPreferredMethodOfContact,
+      setProbationOrParoleValues,
+      setContactIndices,
+      setDatesAsDateTimes
+    )(formDataToProcess);
+    // HACK: remove 'registered county' until data model is figured out:
     formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
 
-    let associations :Array<Array<*>> = [];
-    associations = associations.concat(getClientDetailsAssociations(formDataToProcess));
-    associations = associations.concat(getClientContactAndAddressAssociations(formDataToProcess));
-    associations = associations.concat(getClientEducationAssociations(formDataToProcess));
-    associations = associations.concat(getClientCJDetailsAssociations(formDataToProcess));
-    associations = associations.concat(getClientReleaseAssociations(formDataToProcess));
-    associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
-    associations = associations.concat(getClientHearingAssociations(formDataToProcess));
+    const associations :Array<Array<*>> = pipeConcat(
+      formDataToProcess,
+      getClientDetailsAssociations,
+      getClientContactAndAddressAssociations,
+      getClientEducationAssociations,
+      getClientCJDetailsAssociations,
+      getClientReleaseAssociations,
+      getOfficerAndAttorneyContactAssociations,
+      getClientHearingAssociations,
+    )([]);
 
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
