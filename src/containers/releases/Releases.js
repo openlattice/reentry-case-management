@@ -227,6 +227,7 @@ class Releases extends Component<Props, State> {
     this.setState({
       firstName: '',
       lastName: '',
+      page: 0,
       searchingByDate: true,
       searchingByPerson: false,
     });
@@ -237,6 +238,7 @@ class Releases extends Component<Props, State> {
     actions.clearSearchResults();
     this.setState({
       endDate: '',
+      page: 0,
       searchingByDate: false,
       searchingByPerson: true,
       startDate: '',
