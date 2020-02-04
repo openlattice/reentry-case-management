@@ -9,6 +9,7 @@ import {
   GENDERS,
   HEARING_TYPES,
   MARITAL_STATUSES,
+  NC_COUNTIES,
   PREFERRED_COMMUNICATION_METHODS,
   RACES,
   REFERRAL_SOURCES,
@@ -30,13 +31,14 @@ const {
   OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
-  PERSON_DETAILS_CRIMINAL_JUSTICE,
   PROBATION_PAROLE,
   REFERRAL_REQUEST,
+  SEX_OFFENDER,
 } = APP_TYPE_FQNS;
 const {
   CITY,
   COUNTRY,
+  COUNTY,
   DATE,
   DOB,
   EMAIL,
@@ -49,13 +51,14 @@ const {
   MARITAL_STATUS,
   MIDDLE_NAME,
   NAME,
+  OL_DATETIME,
   PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
   RACE,
   RECOGNIZED_END_DATETIME,
-  SEX_OFFENDER,
+  REGISTERED_FLAG,
   SOURCE,
   SSN,
   STREET,
@@ -298,15 +301,22 @@ const personInformationSchema :Object = {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]: {
+        [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]: {
           type: 'boolean',
           title: 'Is the client a Registered Sex Offender?',
           enum: [true, false],
           enumNames: ['Yes', 'No'],
         },
-        registeredCounty: {
+        [getEntityAddressKey(1, LOCATION, COUNTY)]: {
           type: 'string',
           title: 'Registered NC County',
+          enum: NC_COUNTIES,
+          enumNames: NC_COUNTIES,
+        },
+        [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
+          type: 'string',
+          title: 'Registered date',
+          format: 'date',
         },
       }
     },
@@ -452,16 +462,19 @@ const personInformationUiSchema :Object = {
   },
   [getPageSectionKey(1, 5)]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]: {
-      classNames: 'column-span-6',
+    [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]: {
+      classNames: 'column-span-4',
       'ui:widget': 'RadioWidget',
       'ui:options': {
         row: true
       }
     },
-    registeredCounty: {
-      classNames: 'column-span-6',
-    }
+    [getEntityAddressKey(1, LOCATION, COUNTY)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
+      classNames: 'column-span-4',
+    },
   },
   [getPageSectionKey(1, 6)]: {
     classNames: 'column-span-12 grid-container',
