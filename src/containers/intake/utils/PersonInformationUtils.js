@@ -10,7 +10,8 @@ import {
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { deleteKeyFromFormData, getValuesFromEntityList, updateFormData } from '../../../utils/FormUtils';
+import { getValuesFromEntityList } from '../../../utils/Utils';
+import { deleteKeyFromFormData, updateFormData } from '../../../utils/FormUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
