@@ -22,11 +22,13 @@ import COLORS from '../../core/style/Colors';
 
 import {
   SEARCH_RELEASES_BY_DATE,
+  SEARCH_RELEASES_BY_PERSON_NAME,
   clearSearchResults,
-  searchReleasesByDate
+  searchReleasesByDate,
+  searchReleasesByPersonName,
 } from './ReleasesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { formatDataForReleasesList } from './utils/ReleasesUtils';
+import { formatDataForReleasesByDateList, formatDataForReleasesByPersonList } from './utils/ReleasesUtils';
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
@@ -36,8 +38,10 @@ const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   JAILS_BY_JAIL_STAY_EKID,
+  JAIL_STAYS_BY_PERSON_EKID,
   PEOPLE_BY_JAIL_STAY_EKID,
   SEARCHED_JAIL_STAYS,
+  SEARCHED_PEOPLE,
   TOTAL_HITS,
 } = RELEASES;
 
@@ -113,13 +117,17 @@ type Props = {
     clearSearchResults :() => { type :string };
     goToRoute :GoToRoute;
     searchReleasesByDate :RequestSequence;
+    searchReleasesByPersonName :RequestSequence;
   };
   jailsByJailStayEKID :Map;
+  jailStaysByPersonEKID :Map;
   peopleByJailStayEKID :Map;
   requestStates:{
     SEARCH_RELEASES_BY_DATE :RequestState;
+    SEARCH_RELEASES_BY_PERSON_NAME :RequestState;
   };
   searchedJailStays :List;
+  searchedPeople :List;
   totalHits :number;
 };
 
@@ -167,6 +175,16 @@ class Releases extends Component<Props, State> {
   searchForPeopleByName = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
     const { actions } = this.props;
     const { firstName, lastName } = this.state;
+
+    if (isNonEmptyString(firstName) || isNonEmptyString(lastName)) {
+      const start = startIndex || 0;
+      actions.searchReleasesByPersonName({
+        firstName,
+        lastName,
+        maxHits: MAX_HITS,
+        start,
+      });
+    }
   }
 
   onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -225,21 +243,37 @@ class Releases extends Component<Props, State> {
     });
   }
 
-  render() {
+  getReleasesData = () => {
     const {
       jailsByJailStayEKID,
+      jailStaysByPersonEKID,
       peopleByJailStayEKID,
-      requestStates,
       searchedJailStays,
-      totalHits,
+      searchedPeople,
     } = this.props;
+    const { searchingByPerson, searchingByDate } = this.state;
+    let releasesData :List = List();
+    if (searchingByDate) {
+      releasesData = formatDataForReleasesByDateList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
+    }
+    if (searchingByPerson) {
+      releasesData = formatDataForReleasesByPersonList(searchedPeople, jailStaysByPersonEKID, jailsByJailStayEKID);
+    }
+    return releasesData;
+  }
+
+  render() {
+    const { requestStates, totalHits } = this.props;
     const { page, searchingByPerson, searchingByDate } = this.state;
 
-    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES_BY_DATE]);
+    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES_BY_DATE])
+      || requestIsPending(requestStates[SEARCH_RELEASES_BY_PERSON_NAME]);
     const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES_BY_DATE])
-      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_DATE]);
+      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_DATE])
+      || requestIsSuccess(requestStates[SEARCH_RELEASES_BY_PERSON_NAME])
+      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_PERSON_NAME]);
 
-    const releasesData :List = formatDataForReleasesList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
+    const releasesData :List = this.getReleasesData();
     return (
       <ContainerWrapper>
         <HeaderRowWrapper>
@@ -299,7 +333,7 @@ class Releases extends Component<Props, State> {
                         onChange={this.onInputChange} />
                   </div>
                   <ButtonWrapper>
-                    <StyledSearchButton onClick={this.searchForPeopleByRelease}>Search</StyledSearchButton>
+                    <StyledSearchButton onClick={this.searchForPeopleByName}>Search</StyledSearchButton>
                   </ButtonWrapper>
                 </FieldsGrid>
               )
@@ -330,11 +364,14 @@ const mapStateToProps = (state :Map) => {
   const releases = state.get(RELEASES.RELEASES);
   return {
     [JAILS_BY_JAIL_STAY_EKID]: releases.get(JAILS_BY_JAIL_STAY_EKID),
+    [JAIL_STAYS_BY_PERSON_EKID]: releases.get(JAIL_STAYS_BY_PERSON_EKID),
     [PEOPLE_BY_JAIL_STAY_EKID]: releases.get(PEOPLE_BY_JAIL_STAY_EKID),
     [SEARCHED_JAIL_STAYS]: releases.get(SEARCHED_JAIL_STAYS),
+    [SEARCHED_PEOPLE]: releases.get(SEARCHED_PEOPLE),
     [TOTAL_HITS]: releases.get(TOTAL_HITS),
     requestStates: {
       [SEARCH_RELEASES_BY_DATE]: releases.getIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE]),
+      [SEARCH_RELEASES_BY_PERSON_NAME]: releases.getIn([ACTIONS, SEARCH_RELEASES_BY_PERSON_NAME, REQUEST_STATE]),
     },
   };
 };
@@ -344,6 +381,7 @@ const mapDispatchToProps = (dispatch :Function) => ({
     clearSearchResults,
     goToRoute,
     searchReleasesByDate,
+    searchReleasesByPersonName,
   }, dispatch)
 });
 

@@ -24,9 +24,11 @@ const EDM :Object = {
 
 const RELEASES :Object = {
   JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
+  JAIL_STAYS_BY_PERSON_EKID: 'jailStaysByPersonEKID',
   PEOPLE_BY_JAIL_STAY_EKID: 'peopleByJailStayEKID',
   RELEASES: 'releases',
   SEARCHED_JAIL_STAYS: 'searchedJailStays',
+  SEARCHED_PEOPLE: 'searchedPeople',
   TOTAL_HITS: 'totalHits',
 };
 
