@@ -63,14 +63,14 @@ const CustomCardHeader = styled(CardHeader)`
 `;
 
 type Props = {
-  actions:{
+  actions :{
     getIncarcerationFacilities :RequestSequence;
     submitPersonInformationForm :RequestSequence;
   };
   entitySetIdsByFqn :Map;
   incarcerationFacilities :List;
   propertyTypeIdsByFqn :Map;
-  requestStates:{
+  requestStates :{
     SUBMIT_PERSON_INFORMATION_FORM :RequestState;
   };
 };
