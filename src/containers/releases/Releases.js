@@ -9,6 +9,7 @@ import {
   DatePicker,
   Input,
   PaginationToolbar,
+  Radio,
   SearchResults,
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
@@ -19,7 +20,11 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
-import { SEARCH_RELEASES, searchReleases } from './ReleasesActions';
+import {
+  SEARCH_RELEASES_BY_DATE,
+  clearSearchResults,
+  searchReleasesByDate
+} from './ReleasesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { formatDataForReleasesList } from './utils/ReleasesUtils';
 import { isNonEmptyString } from '../../utils/LangUtils';
@@ -70,17 +75,30 @@ const StyledPrimaryButton = styled(Button)`
   padding: 8px 32px;
 `;
 
-const StyledSearchButton = styled(Button)`
-  align-self: flex-end;
-  width: 210px;
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 `;
 
-const Grid = styled.div`
+const StyledSearchButton = styled(Button)`
+  height: 40px;
+  width: 100%;
+`;
+
+const FieldsGrid = styled.div`
   display: grid;
   grid-gap: 20px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   margin-bottom: 20px;
   width: 100%;
+`;
+
+const ButtonGrid = styled.div`
+  display: grid;
+  grid-gap: 15px;
+  grid-template-columns: repeat(2, 200px);
+  margin-bottom: 40px;
 `;
 
 const Label = styled.div`
@@ -92,13 +110,14 @@ const Label = styled.div`
 
 type Props = {
   actions:{
+    clearSearchResults :() => { type :string };
     goToRoute :GoToRoute;
-    searchReleases :RequestSequence;
+    searchReleasesByDate :RequestSequence;
   };
   jailsByJailStayEKID :Map;
   peopleByJailStayEKID :Map;
   requestStates:{
-    SEARCH_RELEASES :RequestState;
+    SEARCH_RELEASES_BY_DATE :RequestState;
   };
   searchedJailStays :List;
   totalHits :number;
@@ -110,6 +129,8 @@ type State = {
   lastName :string;
   page :number;
   startDate :string;
+  searchingByPerson :boolean;
+  searchingByDate :boolean;
 };
 
 class Releases extends Component<Props, State> {
@@ -123,29 +144,29 @@ class Releases extends Component<Props, State> {
       lastName: '',
       page: 0,
       startDate: '',
+      searchingByPerson: false,
+      searchingByDate: true,
     };
   }
 
-  searchForPeopleAndReleases = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
+  searchForPeopleByRelease = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
     const { actions } = this.props;
-    const {
-      endDate,
-      firstName,
-      lastName,
-      startDate,
-    } = this.state;
+    const { endDate, startDate } = this.state;
 
     if (isNonEmptyString(startDate)) {
       const start = startIndex || 0;
-      actions.searchReleases({
+      actions.searchReleasesByDate({
         endDate,
-        firstName,
-        lastName,
         start,
         maxHits: MAX_HITS,
         startDate,
       });
     }
+  }
+
+  searchForPeopleByName = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
+    const { actions } = this.props;
+    const { firstName, lastName } = this.state;
   }
 
   onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -166,13 +187,42 @@ class Releases extends Component<Props, State> {
   }
 
   onPageChange = ({ page: newPage, start } :Object) => {
-    this.searchForPeopleAndReleases(undefined, start);
+    this.searchForPeopleByRelease(undefined, start);
     this.setPage(newPage);
   }
 
   goToNewIntakeForm = () => {
     const { actions } = this.props;
     actions.goToRoute(Routes.NEW_INTAKE);
+  }
+
+  onSwitchSearchContext = (e :SyntheticEvent<HTMLInputElement>) => {
+    const { currentTarget } = e;
+    const { name } = currentTarget;
+    const { [name]: currentState } = this.state;
+    this.setState({ [name]: !currentState });
+  }
+
+  switchToReleaseDateContext = () => {
+    const { actions } = this.props;
+    actions.clearSearchResults();
+    this.setState({
+      firstName: '',
+      lastName: '',
+      searchingByDate: true,
+      searchingByPerson: false,
+    });
+  }
+
+  switchToPersonContext = () => {
+    const { actions } = this.props;
+    actions.clearSearchResults();
+    this.setState({
+      endDate: '',
+      searchingByDate: false,
+      searchingByPerson: true,
+      startDate: '',
+    });
   }
 
   render() {
@@ -183,11 +233,11 @@ class Releases extends Component<Props, State> {
       searchedJailStays,
       totalHits,
     } = this.props;
-    const { page } = this.state;
+    const { page, searchingByPerson, searchingByDate } = this.state;
 
-    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES]);
-    const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES])
-      || requestIsFailure(requestStates[SEARCH_RELEASES]);
+    const isSearching :boolean = requestIsPending(requestStates[SEARCH_RELEASES_BY_DATE]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[SEARCH_RELEASES_BY_DATE])
+      || requestIsFailure(requestStates[SEARCH_RELEASES_BY_DATE]);
 
     const releasesData :List = formatDataForReleasesList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
     return (
@@ -202,33 +252,58 @@ class Releases extends Component<Props, State> {
         </HeaderRowWrapper>
         <Card>
           <CardSegment padding="30px" vertical>
-            <Grid>
-              <div>
-                <Label>Last name</Label>
-                <Input
-                    name="lastName"
-                    onChange={this.onInputChange} />
-              </div>
-              <div>
-                <Label>First name</Label>
-                <Input
-                    name="firstName"
-                    onChange={this.onInputChange} />
-              </div>
-              <div>
-                <Label>Start date*</Label>
-                <DatePicker onChange={this.setStartDate} />
-              </div>
-              <div>
-                <Label>End date</Label>
-                <DatePicker onChange={this.setEndDate} />
-              </div>
-            </Grid>
-            <StyledSearchButton
-                type="submit"
-                onClick={this.searchForPeopleAndReleases}>
-              Search People
-            </StyledSearchButton>
+            <ButtonGrid>
+              <Radio
+                  checked={searchingByDate}
+                  label="Search by Release Date"
+                  mode="button"
+                  onChange={this.switchToReleaseDateContext}
+                  name="searchingByDate" />
+              <Radio
+                  checked={searchingByPerson}
+                  label="Search by Person"
+                  mode="button"
+                  onChange={this.switchToPersonContext}
+                  name="searchingByPerson" />
+            </ButtonGrid>
+            {
+              searchingByDate && (
+                <FieldsGrid>
+                  <div>
+                    <Label>Start date*</Label>
+                    <DatePicker onChange={this.setStartDate} />
+                  </div>
+                  <div>
+                    <Label>End date</Label>
+                    <DatePicker onChange={this.setEndDate} />
+                  </div>
+                  <ButtonWrapper>
+                    <StyledSearchButton onClick={this.searchForPeopleByRelease}>Search</StyledSearchButton>
+                  </ButtonWrapper>
+                </FieldsGrid>
+              )
+            }
+            {
+              searchingByPerson && (
+                <FieldsGrid>
+                  <div>
+                    <Label>Last name</Label>
+                    <Input
+                        name="lastName"
+                        onChange={this.onInputChange} />
+                  </div>
+                  <div>
+                    <Label>First name</Label>
+                    <Input
+                        name="firstName"
+                        onChange={this.onInputChange} />
+                  </div>
+                  <ButtonWrapper>
+                    <StyledSearchButton onClick={this.searchForPeopleByRelease}>Search</StyledSearchButton>
+                  </ButtonWrapper>
+                </FieldsGrid>
+              )
+            }
           </CardSegment>
         </Card>
         {
@@ -259,15 +334,16 @@ const mapStateToProps = (state :Map) => {
     [SEARCHED_JAIL_STAYS]: releases.get(SEARCHED_JAIL_STAYS),
     [TOTAL_HITS]: releases.get(TOTAL_HITS),
     requestStates: {
-      [SEARCH_RELEASES]: releases.getIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE]),
+      [SEARCH_RELEASES_BY_DATE]: releases.getIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE]),
     },
   };
 };
 
 const mapDispatchToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
+    clearSearchResults,
     goToRoute,
-    searchReleases,
+    searchReleasesByDate,
   }, dispatch)
 });
 
