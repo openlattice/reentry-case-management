@@ -29,6 +29,7 @@ const {
   HAS,
   HEARINGS,
   IS,
+  IS_REGISTERED_SEX_OFFENDER_IN,
   JAILS_PRISONS,
   JAIL_STAYS,
   LOCATED_AT,
@@ -36,13 +37,16 @@ const {
   OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
-  PERSON_DETAILS_CRIMINAL_JUSTICE,
   PROBATION_PAROLE,
+  REGISTERED_FOR,
   REFERRAL_REQUEST,
+  REPORTED,
   REPRESENTED_BY,
+  SEX_OFFENDER,
   SUBJECT_OF,
 } = APP_TYPE_FQNS;
 const {
+  COUNTY,
   EMAIL,
   ENTITY_KEY_ID,
   FIRST_NAME,
@@ -51,12 +55,13 @@ const {
   LAST_NAME,
   MARITAL_STATUS,
   NAME,
+  OL_DATETIME,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
   RECOGNIZED_END_DATETIME,
-  SEX_OFFENDER,
+  REGISTERED_FLAG,
   SOURCE,
   TITLE,
   TYPE,
@@ -202,9 +207,10 @@ const resetKey = (
   const value :any = getIn(updatedFormData, existingPath);
   updatedFormData = deleteKeyFromFormData(updatedFormData, existingPath);
   const { appTypeFqn, propertyTypeFQN } = fqns;
+  const existingPathWithoutOldKey :string[] = existingPath.slice(0, existingPath.length - 1);
   updatedFormData = updateFormData(
     updatedFormData,
-    [existingPath[0], existingPath[1], getEntityAddressKey(newIndex, appTypeFqn, propertyTypeFQN)],
+    existingPathWithoutOldKey.concat(getEntityAddressKey(newIndex, appTypeFqn, propertyTypeFQN)),
     value
   );
   return updatedFormData;
@@ -359,6 +365,45 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+const setRegisteredSexOffender = (formData :Object) :Object => {
+
+  let updatedFormData = formData;
+  const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+
+  const isSexOffenderPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)];
+  const isSexOffenderValue :any = getIn(formData, isSexOffenderPath);
+  const registeredCountyPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, COUNTY)];
+  const registeredDatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
+
+  if (isDefined(isSexOffenderValue) && isSexOffenderValue) {
+    const clientAddressSection :any = get(formData, getPageSectionKey(1, 2));
+    const clientAddressInForm :boolean = Object.keys(clientAddressSection)
+      .filter((entityAddressKey :string) => {
+        const { entitySetName } = parseEntityAddressKey(entityAddressKey);
+        return entitySetName === LOCATION.toString();
+      }).length > 0;
+    if (!clientAddressInForm) {
+      updatedFormData = resetKey(
+        updatedFormData,
+        registeredCountyPath,
+        0,
+        { appTypeFqn: LOCATION, propertyTypeFQN: COUNTY }
+      );
+    }
+
+    const registeredDate :any = getIn(formData, registeredDatePath);
+    if (isDefined(registeredDate)) {
+      const datetimeISO :string = DateTime.fromSQL(registeredDate.concat(' ', currentTime)).toISO();
+      updatedFormData = updateFormData(updatedFormData, registeredDatePath, datetimeISO);
+    }
+  }
+  if ((isDefined(isSexOffenderValue) && !isSexOffenderValue) || !isDefined(isSexOffenderPath)) {
+    updatedFormData = deleteKeyFromFormData(updatedFormData, registeredCountyPath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, registeredDatePath);
+  }
+  return updatedFormData;
+};
+
 // Associations Utils
 
 const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
@@ -407,14 +452,22 @@ const getClientEducationAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
-const getClientCJDetailsAssociations = (formData :Object) :Array<Array<*>> => {
+const getClientSexOffenderAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
-  const educationLevel :any = getIn(
+  const isSexOffenderValue :any = getIn(
     formData,
-    [getPageSectionKey(1, 5), getEntityAddressKey(0, PERSON_DETAILS_CRIMINAL_JUSTICE, SEX_OFFENDER)]
+    [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
   );
-  if (!isDefined(educationLevel)) return associations;
-  associations.push([HAS, 0, PEOPLE, 0, PERSON_DETAILS_CRIMINAL_JUSTICE, {}]);
+  if (!isDefined(isSexOffenderValue)) return associations;
+  const sexOffenderSection :Object = get(formData, getPageSectionKey(1, 5));
+  const countyKey = Object.keys(sexOffenderSection).find((key :string) => {
+    const { entitySetName } = parseEntityAddressKey(key);
+    return entitySetName === LOCATION.toString();
+  });
+  const { entityIndex } = parseEntityAddressKey(countyKey);
+  associations.push([REPORTED, 0, PEOPLE, 0, SEX_OFFENDER, {}]);
+  associations.push([REGISTERED_FOR, 0, SEX_OFFENDER, entityIndex, LOCATION, {}]);
+  associations.push([IS_REGISTERED_SEX_OFFENDER_IN, 0, PEOPLE, entityIndex, LOCATION, {}]);
   return associations;
 };
 
@@ -547,13 +600,13 @@ const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
 };
 
 export {
-  getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
   getClientContactInfoCount,
   getClientDetailsAssociations,
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  getClientSexOffenderAssociations,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -561,4 +614,5 @@ export {
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
+  setRegisteredSexOffender,
 };
