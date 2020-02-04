@@ -1,5 +1,6 @@
 // @flow
 import {
+  all,
   call,
   put,
   select,
@@ -24,10 +25,10 @@ import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_PEOPLE_BY_JAIL_STAY,
-  SEARCH_RELEASES,
+  SEARCH_RELEASES_BY_DATE,
   getJailsByJailStayEKID,
   searchPeopleByJailStay,
-  searchReleases,
+  searchReleasesByDate,
 } from './ReleasesActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
@@ -58,9 +59,7 @@ function* getJailsByJailStayEKIDWorker(action :SequenceAction) :Generator<*, *, 
   try {
     yield put(getJailsByJailStayEKID.request(id));
 
-    const { updatedJailStayEKIDList } = value;
-    const jailStayEKIDs :string[] = updatedJailStayEKIDList.toJS();
-
+    const { jailStayEKIDs } = value;
     const app = yield select(getAppFromState);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
     const jailsPrisonsESID :UUID = getESIDFromApp(app, JAILS_PRISONS);
@@ -111,20 +110,13 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse :Object = {};
   let response :Object = {};
   let peopleByJailStayEKID :List = List();
-  let updatedJailStayEKIDList :List = List();
 
   try {
     yield put(searchPeopleByJailStay.request(id));
 
-    const { firstName, jailStayEKIDs, lastName } = value;
-    console.log(firstName, ' ', lastName);
-    const trimmedInputFirstName :string = firstName.trim().toLowerCase();
-    const trimmedInputLastName :string = lastName.trim().toLowerCase();
-    console.log('trimmedInputFirstName ', trimmedInputFirstName);
-    console.log('trimmedInputLastName ', trimmedInputLastName);
+    const { jailStayEKIDs } = value;
 
     const app = yield select(getAppFromState);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
@@ -148,43 +140,17 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
       peopleByJailStayEKID = jailStayNeighborMap
         .map((neighborList :List) => neighborList.get(0))
         .map((neighbor :Map) => getNeighborDetails(neighbor));
-
-      if (firstName.length || lastName.length) {
-        console.log(firstName, ' ', lastName);
-        peopleByJailStayEKID = peopleByJailStayEKID.filter((person :Map) => {
-          // $FlowFixMe
-          const { [FIRST_NAME]: personFirstName, [LAST_NAME]: personLastName } = getEntityProperties(
-            person,
-            [FIRST_NAME, LAST_NAME]
-          );
-          const trimmedFirstName :string = personFirstName.trim().toLowerCase();
-          const trimmedLastName :string = personLastName.trim().toLowerCase();
-          console.log('trimmedFirstName ', trimmedFirstName);
-          console.log('trimmedLastName ', trimmedLastName);
-          console.log('trimmedInputFirstName.length: ', trimmedInputFirstName.length)
-          console.log(trimmedFirstName.includes(trimmedInputFirstName) || trimmedLastName.includes(trimmedInputLastName));
-          return (trimmedFirstName.includes(trimmedInputFirstName) && trimmedInputFirstName.length)
-            || (trimmedLastName.includes(trimmedInputLastName) && trimmedInputLastName.length);
-        });
-        console.log('peopleByJailStayEKID.toJS() ', peopleByJailStayEKID.toJS());
-      }
-
-      updatedJailStayEKIDList = peopleByJailStayEKID.keySeq().toList();
-      console.log('updatedJailStayEKIDList.toJS() ', updatedJailStayEKIDList.toJS());
-      workerResponse.data = updatedJailStayEKIDList;
     }
 
     yield put(searchPeopleByJailStay.success(id, peopleByJailStayEKID));
   }
   catch (error) {
-    workerResponse.error = error;
     LOG.error('caught exception in searchPeopleByJailStayWorker()', error);
     yield put(searchPeopleByJailStay.failure(id, error));
   }
   finally {
     yield put(searchPeopleByJailStay.finally(id));
   }
-  return workerResponse;
 }
 
 function* searchPeopleByJailStayWatcher() :Generator<*, *, *> {
@@ -194,11 +160,11 @@ function* searchPeopleByJailStayWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ReleasesActions.searchReleases()
+ * ReleasesActions.searchReleasesByDate()
  *
  */
 
-function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
+function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
@@ -207,14 +173,12 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
   let totalHits :number = 0;
 
   try {
-    yield put(searchReleases.request(id, value));
+    yield put(searchReleasesByDate.request(id, value));
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
     const {
       endDate,
-      firstName,
-      lastName,
       maxHits,
       start,
       startDate,
@@ -284,35 +248,26 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
         jailStayEKIDs.push(jailStayEKID);
       });
 
-      response = yield call(
-        searchPeopleByJailStayWorker,
-        searchPeopleByJailStay({ firstName, jailStayEKIDs, lastName })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-      const updatedJailStayEKIDList :List = response.data;
-
-      yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ updatedJailStayEKIDList }));
-
-      jailStays = jailStays.filter((jailStay :Map) => updatedJailStayEKIDList.includes(getEKID(jailStay)));
-      if (jailStays.count() !== updatedJailStayEKIDList.count()) totalHits = jailStays.count();
+      yield all([
+        call(searchPeopleByJailStayWorker, searchPeopleByJailStay({ jailStayEKIDs })),
+        call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ jailStayEKIDs })),
+      ]);
     }
 
-    yield put(searchReleases.success(id, { jailStays, totalHits }));
+    yield put(searchReleasesByDate.success(id, { jailStays, totalHits }));
   }
   catch (error) {
-    LOG.error('caught exception in searchReleasesWorker()', error);
-    yield put(searchReleases.failure(id, error));
+    LOG.error('caught exception in searchReleasesByDateWorker()', error);
+    yield put(searchReleasesByDate.failure(id, error));
   }
   finally {
-    yield put(searchReleases.finally(id));
+    yield put(searchReleasesByDate.finally(id));
   }
 }
 
-function* searchReleasesWatcher() :Generator<*, *, *> {
+function* searchReleasesByDateWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(SEARCH_RELEASES, searchReleasesWorker);
+  yield takeEvery(SEARCH_RELEASES_BY_DATE, searchReleasesByDateWorker);
 }
 
 export {
@@ -320,6 +275,6 @@ export {
   getJailsByJailStayEKIDWorker,
   searchPeopleByJailStayWatcher,
   searchPeopleByJailStayWorker,
-  searchReleasesWatcher,
-  searchReleasesWorker
+  searchReleasesByDateWatcher,
+  searchReleasesByDateWorker
 };

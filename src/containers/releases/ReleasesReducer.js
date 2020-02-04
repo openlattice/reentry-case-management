@@ -4,12 +4,13 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_SEARCH_RESULTS,
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_PEOPLE_BY_JAIL_STAY,
-  SEARCH_RELEASES,
+  SEARCH_RELEASES_BY_DATE,
   getJailsByJailStayEKID,
   searchPeopleByJailStay,
-  searchReleases,
+  searchReleasesByDate,
 } from './ReleasesActions';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 
@@ -26,7 +27,7 @@ const INITIAL_STATE :Map = fromJS({
     [GET_JAILS_BY_JAIL_STAY_EKID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [SEARCH_RELEASES]: {
+    [SEARCH_RELEASES_BY_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -39,6 +40,14 @@ const INITIAL_STATE :Map = fromJS({
 export default function peopleReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_SEARCH_RESULTS: {
+      return state
+        .set(JAILS_BY_JAIL_STAY_EKID, Map())
+        .set(PEOPLE_BY_JAIL_STAY_EKID, Map())
+        .set(SEARCHED_JAIL_STAYS, Map())
+        .set(TOTAL_HITS, 0);
+    }
 
     case getJailsByJailStayEKID.case(action.type): {
 
@@ -76,12 +85,12 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Sequen
       });
     }
 
-    case searchReleases.case(action.type): {
+    case searchReleasesByDate.case(action.type): {
 
-      return searchReleases.reducer(state, action, {
+      return searchReleasesByDate.reducer(state, action, {
         REQUEST: () => state
-          .setIn([ACTIONS, SEARCH_RELEASES, action.id], action)
-          .setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, action.id], action)
+          .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
@@ -89,10 +98,10 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Sequen
           return state
             .set(SEARCHED_JAIL_STAYS, jailStays)
             .set(TOTAL_HITS, totalHits)
-            .setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.SUCCESS);
+            .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => state.setIn([ACTIONS, SEARCH_RELEASES, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_RELEASES, action.id]),
+        FAILURE: () => state.setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_RELEASES_BY_DATE, action.id]),
       });
     }
 
