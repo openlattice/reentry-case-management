@@ -120,8 +120,11 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
     yield put(searchPeopleByJailStay.request(id));
 
     const { firstName, jailStayEKIDs, lastName } = value;
+    console.log(firstName, ' ', lastName);
     const trimmedInputFirstName :string = firstName.trim().toLowerCase();
     const trimmedInputLastName :string = lastName.trim().toLowerCase();
+    console.log('trimmedInputFirstName ', trimmedInputFirstName);
+    console.log('trimmedInputLastName ', trimmedInputLastName);
 
     const app = yield select(getAppFromState);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
@@ -147,7 +150,8 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
         .map((neighbor :Map) => getNeighborDetails(neighbor));
 
       if (firstName.length || lastName.length) {
-        peopleByJailStayEKID.filter((person :Map) => {
+        console.log(firstName, ' ', lastName);
+        peopleByJailStayEKID = peopleByJailStayEKID.filter((person :Map) => {
           // $FlowFixMe
           const { [FIRST_NAME]: personFirstName, [LAST_NAME]: personLastName } = getEntityProperties(
             person,
@@ -155,11 +159,18 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
           );
           const trimmedFirstName :string = personFirstName.trim().toLowerCase();
           const trimmedLastName :string = personLastName.trim().toLowerCase();
-          return trimmedFirstName.includes(trimmedInputFirstName) || trimmedLastName.includes(trimmedInputLastName);
+          console.log('trimmedFirstName ', trimmedFirstName);
+          console.log('trimmedLastName ', trimmedLastName);
+          console.log('trimmedInputFirstName.length: ', trimmedInputFirstName.length)
+          console.log(trimmedFirstName.includes(trimmedInputFirstName) || trimmedLastName.includes(trimmedInputLastName));
+          return (trimmedFirstName.includes(trimmedInputFirstName) && trimmedInputFirstName.length)
+            || (trimmedLastName.includes(trimmedInputLastName) && trimmedInputLastName.length);
         });
+        console.log('peopleByJailStayEKID.toJS() ', peopleByJailStayEKID.toJS());
       }
 
       updatedJailStayEKIDList = peopleByJailStayEKID.keySeq().toList();
+      console.log('updatedJailStayEKIDList.toJS() ', updatedJailStayEKIDList.toJS());
       workerResponse.data = updatedJailStayEKIDList;
     }
 
@@ -283,6 +294,9 @@ function* searchReleasesWorker(action :SequenceAction) :Generator<*, *, *> {
       const updatedJailStayEKIDList :List = response.data;
 
       yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ updatedJailStayEKIDList }));
+
+      jailStays = jailStays.filter((jailStay :Map) => updatedJailStayEKIDList.includes(getEKID(jailStay)));
+      if (jailStays.count() !== updatedJailStayEKIDList.count()) totalHits = jailStays.count();
     }
 
     yield put(searchReleases.success(id, { jailStays, totalHits }));
