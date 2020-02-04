@@ -117,6 +117,11 @@ const Label = styled.div`
   margin-bottom: 10px;
 `;
 
+const PaginationWrapper = styled.div`
+  width: 100%;
+  margin: 30px 0;
+`;
+
 type Props = {
   actions:{
     clearSearchResults :() => { type :string };
@@ -349,11 +354,13 @@ class Releases extends Component<Props, State> {
         </Card>
         {
           hasSearched && (
-            <PaginationToolbar
-                count={totalHits}
-                onPageChange={this.onPageChange}
-                page={page}
-                rowsPerPage={MAX_HITS} />
+            <PaginationWrapper>
+              <PaginationToolbar
+                  count={totalHits}
+                  onPageChange={this.onPageChange}
+                  page={page}
+                  rowsPerPage={MAX_HITS} />
+            </PaginationWrapper>
           )
         }
         <SearchResults
