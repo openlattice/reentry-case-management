@@ -456,7 +456,7 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-6',
       'ui:widget': 'RadioWidget',
       'ui:options': {
-        inline: true
+        row: true
       }
     },
     registeredCounty: {
