@@ -28,30 +28,16 @@ const getFirstNeighborValue = (
   neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
-const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
-
-  const returnPropertyFields = {};
-  if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
-    propertyList.forEach((propertyType) => {
-      const backUpValue = entityObj.get(propertyType, '');
-      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields[propertyType] = property;
-    });
-  }
-  return returnPropertyFields;
-};
-
-const getEntityKeyId = (entityObj :Map) :string => {
+const getEKID = (entityObj :Map) :string => {
   if (isImmutable(entityObj)) {
-    const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(entityObj, [ENTITY_KEY_ID]);
+    const entityKeyId :UUID = entityObj.getIn([ENTITY_KEY_ID, 0]);
     return entityKeyId;
   }
   return '';
 };
 
 export {
-  getEntityKeyId,
-  getEntityProperties,
+  getEKID,
   getEntitySetIdFromApp,
   getFirstNeighborValue,
 };

@@ -2,7 +2,7 @@
 import { List, Map } from 'immutable';
 import { Models } from 'lattice';
 
-import { getEntityKeyId, getFirstNeighborValue } from './DataUtils';
+import { getEKID, getFirstNeighborValue } from './DataUtils';
 
 const { FullyQualifiedName } = Models;
 
@@ -24,7 +24,7 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
       const property = getFirstNeighborValue(entity, propertyType, backUpValue);
       label = label.concat(' ', property);
     });
-    const entityEKID :UUID = getEntityKeyId(entity);
+    const entityEKID :UUID = getEKID(entity);
 
     labels.push(label);
     values.push(entityEKID);
