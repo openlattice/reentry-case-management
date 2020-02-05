@@ -18,12 +18,12 @@ import {
 } from './PersonInformationActions';
 import { personInformationSchema, personInformationUiSchema } from './schemas/PersonInformationSchemas';
 import {
-  getClientCJDetailsAssociations,
   getClientContactAndAddressAssociations,
   getClientDetailsAssociations,
   getClientEducationAssociations,
   getClientHearingAssociations,
   getClientReleaseAssociations,
+  getClientSexOffenderAssociations,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -31,6 +31,7 @@ import {
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
+  setRegisteredSexOffender,
 } from './utils/PersonInformationUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
@@ -122,21 +123,20 @@ class PersonInformationForm extends Component<Props, State> {
       setPreferredMethodOfContact,
       setProbationOrParoleValues,
       setContactIndices,
-      setDatesAsDateTimes
+      setDatesAsDateTimes,
+      setRegisteredSexOffender
     )(formDataToProcess);
-    // HACK: remove 'registered county' until data model is figured out:
-    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 5), 'registeredCounty']);
 
-    const associations :Array<Array<*>> = pipeConcat(
+    let associations :Array<Array<*>> = pipeConcat(
       formDataToProcess,
       getClientDetailsAssociations,
       getClientContactAndAddressAssociations,
       getClientEducationAssociations,
-      getClientCJDetailsAssociations,
+      getClientSexOffenderAssociations,
       getClientReleaseAssociations,
-      getOfficerAndAttorneyContactAssociations,
-      getClientHearingAssociations,
+      getClientHearingAssociations
     )([]);
+    associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
 
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
