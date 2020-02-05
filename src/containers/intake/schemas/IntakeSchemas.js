@@ -11,6 +11,7 @@ import {
   MARITAL_STATUSES,
   NC_COUNTIES,
   PREFERRED_COMMUNICATION_METHODS,
+  PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
   SEXES,
@@ -51,6 +52,7 @@ const {
   MARITAL_STATUS,
   MIDDLE_NAME,
   NAME,
+  NOTES,
   OL_DATETIME,
   PERSON_SEX,
   PHONE_NUMBER,
@@ -487,7 +489,56 @@ const personInformationUiSchema :Object = {
   },
 };
 
-export {
+const needsAssessmentSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 8)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)]: {
+          type: 'array',
+          title: 'Check all the categories that apply.',
+          items: {
+            type: 'string',
+            enum: PROVIDER_TYPES,
+          },
+          uniqueItems: true,
+        },
+        [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
+          type: 'string',
+          title: 'Notes',
+        }
+      },
+    }
+  }
+};
+
+const needsAssessmentUiSchema = {
+  [getPageSectionKey(1, 8)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)]: {
+      classNames: 'column-span-12',
+      'ui:widget': 'checkboxes'
+    },
+    [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
+      classNames: 'column-span-12',
+      'ui:widget': 'TextareaWidget'
+    }
+  }
+};
+
+const schemas = [
   personInformationSchema,
+  needsAssessmentSchema
+];
+const uiSchemas = [
   personInformationUiSchema,
+  needsAssessmentUiSchema
+];
+
+export {
+  schemas,
+  uiSchemas,
 };
