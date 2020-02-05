@@ -55,11 +55,13 @@ const {
   LAST_NAME,
   MARITAL_STATUS,
   NAME,
+  NOTES,
   OL_DATETIME,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
+  REASON,
   RECOGNIZED_END_DATETIME,
   REGISTERED_FLAG,
   SOURCE,
@@ -404,6 +406,40 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+const setReferralRequestFromNeedsAssessment = (formData :Object) :Object => {
+
+  let updatedFormData = formData;
+  const referredFrom :any = getIn(
+    formData,
+    [getPageSectionKey(1, 4), getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]
+  );
+  if (!isDefined(referredFrom)) {
+    const providerTypePath :string[] = [getPageSectionKey(1, 8), getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)];
+    updatedFormData = resetKey(
+      updatedFormData,
+      providerTypePath,
+      0,
+      { appTypeFqn: REFERRAL_REQUEST, propertyTypeFQN: TYPE }
+    );
+    const notesPath :string[] = [getPageSectionKey(1, 8), getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)];
+    updatedFormData = resetKey(
+      updatedFormData,
+      notesPath,
+      0,
+      { appTypeFqn: REFERRAL_REQUEST, propertyTypeFQN: NOTES }
+    );
+    const reasonPath :string[] = [getPageSectionKey(1, 8), getEntityAddressKey(1, REFERRAL_REQUEST, REASON)];
+    updatedFormData = resetKey(
+      updatedFormData,
+      reasonPath,
+      0,
+      { appTypeFqn: REFERRAL_REQUEST, propertyTypeFQN: REASON }
+    );
+  }
+
+  return updatedFormData;
+};
+
 // Associations Utils
 
 const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
@@ -599,6 +635,17 @@ const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
+const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const needsAssessmentSection :Object = get(formData, getPageSectionKey(1, 8));
+  if (!isDefined(needsAssessmentSection) || !Object.values(needsAssessmentSection).length) return associations;
+
+  const firstKey :string = Object.keys(needsAssessmentSection)[0];
+  const { entityIndex } = parseEntityAddressKey(firstKey);
+  associations.push([SUBJECT_OF, 0, PEOPLE, entityIndex, REFERRAL_REQUEST, {}]);
+  return associations;
+};
+
 export {
   getClientContactAndAddressAssociations,
   getClientContactInfoCount,
@@ -607,6 +654,7 @@ export {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
+  getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -614,5 +662,6 @@ export {
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
+  setReferralRequestFromNeedsAssessment,
   setRegisteredSexOffender,
 };
