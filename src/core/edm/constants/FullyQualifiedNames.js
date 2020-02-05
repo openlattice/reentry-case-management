@@ -73,6 +73,7 @@ const PROPERTY_TYPE_FQNS = {
   PREFERRED_METHOD_OF_CONTACT: new FullyQualifiedName('ol.preferredmethod'),
   PROJECTED_RELEASE_DATETIME: new FullyQualifiedName('ol.projectedreleasedatetime'),
   RACE: new FullyQualifiedName('nc.PersonRace'),
+  REASON: new FullyQualifiedName('ol.reason'),
   RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddate'),
   REGISTERED_FLAG: new FullyQualifiedName('ol.registeredflag'),
   SOURCE: new FullyQualifiedName('ol.source'),

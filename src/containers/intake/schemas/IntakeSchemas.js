@@ -59,6 +59,7 @@ const {
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
   RACE,
+  REASON,
   RECOGNIZED_END_DATETIME,
   REGISTERED_FLAG,
   SOURCE,
@@ -509,6 +510,11 @@ const needsAssessmentSchema = {
         [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
           type: 'string',
           title: 'Notes',
+        },
+        [getEntityAddressKey(1, REFERRAL_REQUEST, REASON)]: {
+          type: 'string',
+          title: 'Reason',
+          default: 'Needs Assessment'
         }
       },
     }
@@ -525,6 +531,9 @@ const needsAssessmentUiSchema = {
     [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
       classNames: 'column-span-12',
       'ui:widget': 'TextareaWidget'
+    },
+    [getEntityAddressKey(1, REFERRAL_REQUEST, REASON)]: {
+      'ui:widget': 'hidden',
     }
   }
 };
