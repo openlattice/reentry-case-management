@@ -64,6 +64,7 @@ const PROPERTY_TYPE_FQNS = {
   MARITAL_STATUS: new FullyQualifiedName('person.maritalstatus'),
   MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),
   NAME: new FullyQualifiedName('ol.name'),
+  NOTES: new FullyQualifiedName('ol.notes'),
   OL_DATETIME: new FullyQualifiedName('ol.datetime'),
   OL_ID_FQN: new FullyQualifiedName('ol.id'),
   PERSON_SEX: new FullyQualifiedName('nc.PersonSex'),
