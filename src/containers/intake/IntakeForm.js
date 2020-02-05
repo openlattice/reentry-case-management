@@ -2,7 +2,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
-import { Button, Card, CardHeader } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardHeader,
+  Colors,
+} from 'lattice-ui-kit';
 import { DataProcessingUtils, Form, Paged } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -22,6 +27,7 @@ import {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
+  getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -29,8 +35,9 @@ import {
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
+  setReferralRequestFromNeedsAssessment,
   setRegisteredSexOffender,
-} from './utils/PersonInformationUtils';
+} from './utils/IntakeUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
@@ -42,6 +49,7 @@ import {
 } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
+const { NEUTRALS } = Colors;
 const {
   getEntityAddressKey,
   getPageSectionKey,
@@ -73,6 +81,15 @@ const CustomCardHeader = styled(CardHeader)`
   font-weight: 500;
   font-size: 22px;
   line-height: 30px;
+`;
+
+const DarkerButton = styled(Button)`
+  background-color: ${NEUTRALS[6]};
+
+  :disabled {
+   background-color: ${NEUTRALS[6]};
+ };
+
 `;
 
 type Props = {
@@ -135,7 +152,8 @@ class IntakeForm extends Component<Props, State> {
       setProbationOrParoleValues,
       setContactIndices,
       setDatesAsDateTimes,
-      setRegisteredSexOffender
+      setRegisteredSexOffender,
+      setReferralRequestFromNeedsAssessment
     )(formDataToProcess);
 
     let associations :Array<Array<*>> = pipeConcat(
@@ -145,15 +163,18 @@ class IntakeForm extends Component<Props, State> {
       getClientEducationAssociations,
       getClientSexOffenderAssociations,
       getClientReleaseAssociations,
-      getClientHearingAssociations
+      getClientHearingAssociations,
+      getNeedsAssessmentAssociations
     )([]);
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
+    console.log('associations: ', associations);
 
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
       formDataToProcess,
       [getPageSectionKey(1, 4), getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
     );
+    console.log('formDataToProcess: ', formDataToProcess);
 
     const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
     const associationEntityData :Object = processAssociationEntityData(
@@ -161,8 +182,18 @@ class IntakeForm extends Component<Props, State> {
       entitySetIdsByFqn,
       propertyTypeIdsByFqn
     );
+    console.log('entityData: ', entityData);
+    console.log('associationEntityData: ', associationEntityData);
 
-    actions.submitPersonInformationForm({ associationEntityData, entityData });
+    // actions.submitPersonInformationForm({ associationEntityData, entityData });
+  }
+
+  onPageChange = (newPageNumber :number, formData :Object) => {
+    console.log('onPageChange newPageNumber: ', newPageNumber);
+    console.log('onPageChange formData: ', formData);
+    if (newPageNumber > 1) {
+      this.onSubmit({ formData });
+    }
   }
 
   render() {
@@ -170,6 +201,7 @@ class IntakeForm extends Component<Props, State> {
     const { hydratedSchema } = this.state;
     return (
       <Paged
+          onPageChange={this.onPageChange}
           render={(props :Object) => {
             const {
               formRef,
@@ -182,37 +214,45 @@ class IntakeForm extends Component<Props, State> {
 
             const personInformationPage :boolean = page === 0;
             const needsAssessmentPage :boolean = page === 1;
-            console.log('page: ', page);
 
+            console.log('page: ', page);
+            console.log('pagedData: ', pagedData);
             const handleNext = needsAssessmentPage
               ? this.onSubmit
+              : validateAndSubmit;
+            const handleOnSubmit = personInformationPage
+              ? onNext
               : validateAndSubmit;
 
             const header :string = personInformationPage ? 'Person Information' : 'Needs Assessment';
 
             return (
               <>
-                <Card>
-                  <CustomCardHeader padding="30px">{ header }</CustomCardHeader>
-                  <Form
-                      formData={pagedData}
-                      ref={formRef}
-                      hideSubmit
-                      isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
-                      onSubmit={onNext}
-                      schema={personInformationPage ? hydratedSchema : schemas[page]}
-                      uiSchema={uiSchemas[page]} />
-                </Card>
+                {
+                  page < 2 && (
+                    <Card>
+                      <CustomCardHeader padding="30px">{ header }</CustomCardHeader>
+                      <Form
+                          formData={pagedData}
+                          ref={formRef}
+                          hideSubmit
+                          isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
+                          onSubmit={onNext}
+                          schema={personInformationPage ? hydratedSchema : schemas[page]}
+                          uiSchema={uiSchemas[page]} />
+                    </Card>
+                  )
+                }
                 <ActionRow>
                   <ButtonsWrapper>
-                    <Button
+                    <DarkerButton
                         disabled={!(page > 0)}
                         onClick={onBack}>
                       Back
-                    </Button>
+                    </DarkerButton>
                     <Button
                         mode="primary"
-                        onClick={handleNext}>
+                        onClick={validateAndSubmit}>
                       { personInformationPage ? 'Continue to Needs Assessment' : 'Submit'}
                     </Button>
                   </ButtonsWrapper>
