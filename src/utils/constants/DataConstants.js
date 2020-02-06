@@ -523,6 +523,19 @@ const HEARING_TYPES = [
   'Trial Setting Conference',
 ];
 
+// Provider Types
+const PROVIDER_TYPES :string[] = [
+  'Housing Assistance',
+  'Food & Provisions',
+  'Employment Assistance',
+  'Substance Abuse Treatment',
+  'Mental Health Treatment',
+  'Child Care',
+  'Clothing',
+  'Education / Vocational Training',
+  'Family Support',
+];
+
 export {
   COUNTRIES,
   EDUCATION_LEVELS,
@@ -533,6 +546,7 @@ export {
   NC_COUNTIES,
   PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
+  PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
   SEXES,

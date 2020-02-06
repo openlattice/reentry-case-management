@@ -8,7 +8,7 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import edmReducer from '../edm/EDMReducer';
-import personInformationReducer from '../../containers/intake/PersonInformationReducer';
+import intakeReducer from '../../containers/intake/IntakeReducer';
 
 export default function reduxReducer(routerHistory :any) {
 
@@ -16,7 +16,7 @@ export default function reduxReducer(routerHistory :any) {
     app: appReducer,
     auth: AuthReducer,
     edm: edmReducer,
-    personInformationForm: personInformationReducer,
+    intake: intakeReducer,
     router: connectRouter(routerHistory),
   });
 }

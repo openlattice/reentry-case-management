@@ -5,14 +5,14 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_INCARCERATION_FACILITIES,
-  SUBMIT_PERSON_INFORMATION_FORM,
+  SUBMIT_INTAKE_FORM,
   getIncarcerationFacilities,
-  submitPersonInformationForm,
-} from './PersonInformationActions';
-import { PERSON_INFORMATION_FORM, SHARED } from '../../utils/constants/ReduxStateConstants';
+  submitIntakeForm,
+} from './IntakeActions';
+import { INTAKE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
+const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -21,6 +21,7 @@ const INITIAL_STATE :Map = fromJS({
     }
   },
   [INCARCERATION_FACILITIES]: List(),
+  [NEW_PARTICIPANT_EKID]: '',
 });
 
 export default function personInformationReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -46,15 +47,21 @@ export default function personInformationReducer(state :Map = INITIAL_STATE, act
       });
     }
 
-    case submitPersonInformationForm.case(action.type): {
+    case submitIntakeForm.case(action.type): {
 
-      return submitPersonInformationForm.reducer(state, action, {
+      return submitIntakeForm.reducer(state, action, {
         REQUEST: () => state
-          .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id], action)
-          .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.SUCCESS),
-        FAILURE: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id]),
+          .setIn([ACTIONS, SUBMIT_INTAKE_FORM, action.id], action)
+          .setIn([ACTIONS, SUBMIT_INTAKE_FORM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(NEW_PARTICIPANT_EKID, value)
+            .setIn([ACTIONS, SUBMIT_INTAKE_FORM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, SUBMIT_INTAKE_FORM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_INTAKE_FORM, action.id]),
       });
     }
 

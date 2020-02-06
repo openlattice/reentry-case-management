@@ -1,5 +1,11 @@
 // @flow
-import { removeIn, setIn } from 'immutable';
+import {
+  OrderedSet,
+  fromJS,
+  mergeDeep,
+  removeIn,
+  setIn
+} from 'immutable';
 
 import { isDefined } from './LangUtils';
 
@@ -29,7 +35,31 @@ const updateFormData = (
   return updatedFormData;
 };
 
+const getOrder = (schemas :Object[]) => schemas.reduce(
+  (keySet, schema) => keySet.union(Object.keys(schema.properties)),
+  OrderedSet(),
+).toJS();
+
+const generateReviewSchemas = (schemas :Object[], uiSchemas :Object[]) => {
+  const schemasAsImmutable = fromJS(schemas);
+  const uiSchemasAsImmutable = fromJS(uiSchemas);
+  const reviewSchema = mergeDeep(...schemasAsImmutable).toJS();
+
+  const reviewOrder :Object = {
+    'ui:disabled': true,
+    'ui:order': getOrder(schemas)
+  };
+
+  const reviewUiSchema :Object[] = mergeDeep(...uiSchemasAsImmutable, reviewOrder).toJS();
+
+  return {
+    schemas: schemas.concat(reviewSchema),
+    uiSchemas: uiSchemas.concat(reviewUiSchema)
+  };
+};
+
 export {
   deleteKeyFromFormData,
+  generateReviewSchemas,
   updateFormData,
 };
