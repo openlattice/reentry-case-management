@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
 import {
+  Banner,
   Button,
   Card,
   CardHeader,
@@ -13,12 +14,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 import {
   SUBMIT_PERSON_INFORMATION_FORM,
   getIncarcerationFacilities,
   submitPersonInformationForm
 } from './PersonInformationActions';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { schemas, uiSchemas } from './schemas/IntakeSchemas';
 import {
   getClientContactAndAddressAssociations,
@@ -41,7 +44,7 @@ import {
 } from './utils/IntakeUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
+import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
@@ -49,6 +52,7 @@ import {
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
 const {
@@ -61,7 +65,7 @@ const {
 } = DataProcessingUtils;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
-const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
+const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = PERSON_INFORMATION_FORM;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { JAILS_PRISONS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
@@ -90,18 +94,30 @@ const DarkerButton = styled(Button)`
   background-color: ${NEUTRALS[6]};
 
   :disabled {
-   background-color: ${NEUTRALS[6]};
- };
+    background-color: ${NEUTRALS[6]};
+  }
+`;
 
+const BannerContent = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const BannerButtonWrapper = styled.div`
+  margin-left: 40px;
 `;
 
 type Props = {
   actions :{
     getIncarcerationFacilities :RequestSequence;
+    goToRoute :GoToRoute;
     submitPersonInformationForm :RequestSequence;
   };
   entitySetIdsByFqn :Map;
   incarcerationFacilities :List;
+  newParticipantEKID :UUID;
   propertyTypeIdsByFqn :Map;
   requestStates :{
     SUBMIT_PERSON_INFORMATION_FORM :RequestState;
@@ -130,13 +146,28 @@ class IntakeForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, entitySetIdsByFqn, incarcerationFacilities } = this.props;
+    const {
+      actions,
+      entitySetIdsByFqn,
+      incarcerationFacilities,
+      requestStates,
+    } = this.props;
     if (!prevProps.entitySetIdsByFqn.equals(entitySetIdsByFqn)) {
       actions.getIncarcerationFacilities();
     }
     if (!prevProps.incarcerationFacilities.equals(incarcerationFacilities)) {
       this.updateSchema(incarcerationFacilities);
     }
+    const wasSubmittingIntake :boolean = requestIsPending(prevProps.requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
+    const intakeWasSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
+    if (wasSubmittingIntake && intakeWasSuccessful) {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  goToParticipantProfile = () => {
+    const { actions, newParticipantEKID } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
   }
 
   updateSchema = (incarcerationFacilities :List) => {
@@ -176,7 +207,6 @@ class IntakeForm extends Component<Props, State> {
       formDataToProcess,
       [getPageSectionKey(1, 4), getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
     );
-    console.log('formDataToProcess: ', formDataToProcess);
 
     const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);
     const allTheMappers = Map().withMutations((mappers :Map) => {
@@ -202,10 +232,8 @@ class IntakeForm extends Component<Props, State> {
       entitySetIdsByFqn,
       propertyTypeIdsByFqn
     );
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
 
-    // actions.submitPersonInformationForm({ associationEntityData, entityData });
+    actions.submitPersonInformationForm({ associationEntityData, entityData });
   }
 
   render() {
@@ -243,15 +271,27 @@ class IntakeForm extends Component<Props, State> {
             if (needsAssessmentPage) header = 'Needs Assessment';
             if (reviewPage) header = 'Review';
 
+            const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
+
             return (
               <>
+                <Banner
+                    maxHeight="100px"
+                    isOpen={submissionSuccessful}
+                    mode="success">
+                  <BannerContent>
+                    <div>Intake submission was successful!</div>
+                    <BannerButtonWrapper>
+                      <Button onClick={this.goToParticipantProfile}>Go To Profile</Button>
+                    </BannerButtonWrapper>
+                  </BannerContent>
+                </Banner>
                 <Card>
                   <CustomCardHeader padding="30px">{ header }</CustomCardHeader>
                   <Form
                       formData={pagedData}
                       ref={formRef}
                       hideSubmit
-                      isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
                       uiSchema={uiSchemas[page]} />
@@ -264,6 +304,7 @@ class IntakeForm extends Component<Props, State> {
                       Back
                     </DarkerButton>
                     <Button
+                        isLoading={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
                         mode="primary"
                         onClick={handleNext}>
                       { primaryButtonText }
@@ -282,6 +323,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
     [INCARCERATION_FACILITIES]: personInformationForm.get(INCARCERATION_FACILITIES),
+    [NEW_PARTICIPANT_EKID]: personInformationForm.get(NEW_PARTICIPANT_EKID),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
@@ -297,6 +339,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getIncarcerationFacilities,
+    goToRoute,
     submitPersonInformationForm,
   }, dispatch)
 });
