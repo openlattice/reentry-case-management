@@ -440,6 +440,20 @@ const setReferralRequestFromNeedsAssessment = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+const getNeedsAssessmentTypeKey = (formData :Object) :string => {
+  let needsAssessmentTypeKey :string = getEntityAddressKey(1, REFERRAL_REQUEST, TYPE);
+  const needsAssessmentSection :Object = get(formData, getPageSectionKey(1, 8));
+
+  if (isDefined(needsAssessmentSection)) {
+    const result :any = Object.keys(needsAssessmentSection).find((key :string) => {
+      const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(key);
+      return entitySetName === REFERRAL_REQUEST.toString() && propertyTypeFQN.toString() === TYPE.toString();
+    });
+    if (isDefined(result)) needsAssessmentTypeKey = result;
+  }
+  return needsAssessmentTypeKey;
+};
+
 // Associations Utils
 
 const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
@@ -655,6 +669,7 @@ export {
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
+  getNeedsAssessmentTypeKey,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
