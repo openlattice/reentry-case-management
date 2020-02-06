@@ -40,7 +40,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { JAIL_STAYS, JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
+const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
 const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
@@ -123,12 +123,12 @@ function* searchPeopleByJailStayWorker(action :SequenceAction) :Generator<*, *, 
 
     const app = yield select(getAppFromState);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
-    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+    const inmatesESID :UUID = getESIDFromApp(app, INMATES);
 
     const searchFilter = {
       entityKeyIds: jailStayEKIDs,
       destinationEntitySetIds: [],
-      sourceEntitySetIds: [peopleESID],
+      sourceEntitySetIds: [inmatesESID],
     };
 
     response = yield call(
@@ -292,7 +292,7 @@ function* searchJailStaysByPersonWorker(action :SequenceAction) :Generator<*, *,
     const { peopleEKIDs } = value;
 
     const app = yield select(getAppFromState);
-    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+    const inmatesESID :UUID = getESIDFromApp(app, INMATES);
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
 
     const searchFilter = {
@@ -303,7 +303,7 @@ function* searchJailStaysByPersonWorker(action :SequenceAction) :Generator<*, *,
 
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: inmatesESID, filter: searchFilter })
     );
     if (response.error) {
       throw response.error;
@@ -366,10 +366,10 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
 
-    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+    const inmatesESID :UUID = getESIDFromApp(app, INMATES);
 
     const searchOptions = {
-      entitySetIds: [peopleESID],
+      entitySetIds: [inmatesESID],
       start,
       maxHits,
       constraints: []
