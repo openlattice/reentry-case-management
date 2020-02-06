@@ -28,6 +28,7 @@ import {
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
+  getNeedsAssessmentTypeKey,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -51,6 +52,8 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 
 const { NEUTRALS } = Colors;
 const {
+  KEY_MAPPERS,
+  VALUE_MAPPERS,
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
@@ -167,7 +170,6 @@ class IntakeForm extends Component<Props, State> {
       getNeedsAssessmentAssociations
     )([]);
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
-    console.log('associations: ', associations);
 
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
@@ -176,7 +178,25 @@ class IntakeForm extends Component<Props, State> {
     );
     console.log('formDataToProcess: ', formDataToProcess);
 
-    const entityData :Object = processEntityData(formDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
+    const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);
+    const allTheMappers = Map().withMutations((mappers :Map) => {
+      const keyMappers = Map().withMutations((map :Map) => {
+        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value.toJS()));
+      });
+      mappers.set(KEY_MAPPERS, keyMappers);
+
+      const valueMappers = Map().withMutations((map :Map) => {
+        map.set(needsAssessmentTypeKey, (value) => JSON.parse(value));
+      });
+      mappers.set(VALUE_MAPPERS, valueMappers);
+    });
+
+    const entityData :Object = processEntityData(
+      fromJS(formDataToProcess),
+      entitySetIdsByFqn,
+      propertyTypeIdsByFqn,
+      allTheMappers
+    );
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
       entitySetIdsByFqn,
@@ -188,20 +208,11 @@ class IntakeForm extends Component<Props, State> {
     // actions.submitPersonInformationForm({ associationEntityData, entityData });
   }
 
-  onPageChange = (newPageNumber :number, formData :Object) => {
-    console.log('onPageChange newPageNumber: ', newPageNumber);
-    console.log('onPageChange formData: ', formData);
-    if (newPageNumber > 1) {
-      this.onSubmit({ formData });
-    }
-  }
-
   render() {
     const { requestStates } = this.props;
     const { hydratedSchema } = this.state;
     return (
       <Paged
-          onPageChange={this.onPageChange}
           render={(props :Object) => {
             const {
               formRef,
@@ -214,35 +225,37 @@ class IntakeForm extends Component<Props, State> {
 
             const personInformationPage :boolean = page === 0;
             const needsAssessmentPage :boolean = page === 1;
+            const reviewPage :boolean = page === 2;
 
-            console.log('page: ', page);
-            console.log('pagedData: ', pagedData);
-            const handleNext = needsAssessmentPage
-              ? this.onSubmit
-              : validateAndSubmit;
-            const handleOnSubmit = personInformationPage
-              ? onNext
+            let primaryButtonText :string = 'Continue to Needs Assessment';
+            if (needsAssessmentPage) primaryButtonText = 'Review Form';
+            if (reviewPage) primaryButtonText = 'Submit';
+
+            const submitForm = () => {
+              this.onSubmit({ formData: pagedData });
+            };
+
+            const handleNext = reviewPage
+              ? submitForm
               : validateAndSubmit;
 
-            const header :string = personInformationPage ? 'Person Information' : 'Needs Assessment';
+            let header :string = 'Person Information';
+            if (needsAssessmentPage) header = 'Needs Assessment';
+            if (reviewPage) header = 'Review';
 
             return (
               <>
-                {
-                  page < 2 && (
-                    <Card>
-                      <CustomCardHeader padding="30px">{ header }</CustomCardHeader>
-                      <Form
-                          formData={pagedData}
-                          ref={formRef}
-                          hideSubmit
-                          isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
-                          onSubmit={onNext}
-                          schema={personInformationPage ? hydratedSchema : schemas[page]}
-                          uiSchema={uiSchemas[page]} />
-                    </Card>
-                  )
-                }
+                <Card>
+                  <CustomCardHeader padding="30px">{ header }</CustomCardHeader>
+                  <Form
+                      formData={pagedData}
+                      ref={formRef}
+                      hideSubmit
+                      isSubmitting={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
+                      onSubmit={onNext}
+                      schema={personInformationPage ? hydratedSchema : schemas[page]}
+                      uiSchema={uiSchemas[page]} />
+                </Card>
                 <ActionRow>
                   <ButtonsWrapper>
                     <DarkerButton
@@ -252,8 +265,8 @@ class IntakeForm extends Component<Props, State> {
                     </DarkerButton>
                     <Button
                         mode="primary"
-                        onClick={validateAndSubmit}>
-                      { personInformationPage ? 'Continue to Needs Assessment' : 'Submit'}
+                        onClick={handleNext}>
+                      { primaryButtonText }
                     </Button>
                   </ButtonsWrapper>
                 </ActionRow>
