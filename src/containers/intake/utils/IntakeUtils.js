@@ -509,15 +509,18 @@ const getClientSexOffenderAssociations = (formData :Object) :Array<Array<*>> => 
     [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
   );
   if (!isDefined(isSexOffenderValue)) return associations;
+
+  associations.push([REPORTED, 0, PEOPLE, 0, SEX_OFFENDER, {}]);
   const sexOffenderSection :Object = get(formData, getPageSectionKey(1, 5));
   const countyKey = Object.keys(sexOffenderSection).find((key :string) => {
     const { entitySetName } = parseEntityAddressKey(key);
     return entitySetName === LOCATION.toString();
   });
-  const { entityIndex } = parseEntityAddressKey(countyKey);
-  associations.push([REPORTED, 0, PEOPLE, 0, SEX_OFFENDER, {}]);
-  associations.push([REGISTERED_FOR, 0, SEX_OFFENDER, entityIndex, LOCATION, {}]);
-  associations.push([IS_REGISTERED_SEX_OFFENDER_IN, 0, PEOPLE, entityIndex, LOCATION, {}]);
+  if (isDefined(countyKey)) {
+    const { entityIndex } = parseEntityAddressKey(countyKey);
+    associations.push([REGISTERED_FOR, 0, SEX_OFFENDER, entityIndex, LOCATION, {}]);
+    associations.push([IS_REGISTERED_SEX_OFFENDER_IN, 0, PEOPLE, entityIndex, LOCATION, {}]);
+  }
   return associations;
 };
 
