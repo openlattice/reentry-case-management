@@ -50,7 +50,7 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
     const appConfigsResponse = yield call(getAppConfigsWorker, getAppConfigs(app.id));
     if (appConfigsResponse.error) throw appConfigsResponse.error;
 
-    const appConfigs :Object[] = appConfigsResponse.data;
+    const appConfigs :Object[] = appConfigsResponse.data || [];
 
     yield put(initializeApplication.success(action.id, { appConfigs }));
   }
