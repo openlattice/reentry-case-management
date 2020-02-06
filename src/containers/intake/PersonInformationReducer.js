@@ -12,7 +12,7 @@ import {
 import { PERSON_INFORMATION_FORM, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { INCARCERATION_FACILITIES } = PERSON_INFORMATION_FORM;
+const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = PERSON_INFORMATION_FORM;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -21,6 +21,7 @@ const INITIAL_STATE :Map = fromJS({
     }
   },
   [INCARCERATION_FACILITIES]: List(),
+  [NEW_PARTICIPANT_EKID]: '',
 });
 
 export default function personInformationReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -52,7 +53,13 @@ export default function personInformationReducer(state :Map = INITIAL_STATE, act
         REQUEST: () => state
           .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id], action)
           .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(NEW_PARTICIPANT_EKID, value)
+            .setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state.setIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_INFORMATION_FORM, action.id]),
       });

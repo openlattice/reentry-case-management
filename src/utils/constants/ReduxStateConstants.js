@@ -24,6 +24,7 @@ const EDM :Object = {
 
 const PERSON_INFORMATION_FORM :Object = {
   INCARCERATION_FACILITIES: 'incarcerationFacilities',
+  NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PERSON_INFORMATION_FORM: 'personInformationForm',
 };
 

@@ -27,7 +27,7 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { JAILS_PRISONS } = APP_TYPE_FQNS;
+const { JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 
@@ -87,8 +87,13 @@ function* submitPersonInformationFormWorker(action :SequenceAction) :Generator<*
     if (response.error) {
       throw response.error;
     }
+    const { data } = response;
+    const { entityKeyIds } = data;
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
 
-    yield put(submitPersonInformationForm.success(id));
+    yield put(submitPersonInformationForm.success(id, newParticipantEKID));
   }
   catch (error) {
     LOG.error('caught exception in submitPersonInformationFormWorker()', error);
