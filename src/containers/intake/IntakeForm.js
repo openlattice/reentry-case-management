@@ -17,10 +17,10 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 import {
-  SUBMIT_PERSON_INFORMATION_FORM,
+  SUBMIT_INTAKE_FORM,
   getIncarcerationFacilities,
-  submitPersonInformationForm
-} from './PersonInformationActions';
+  submitIntakeForm
+} from './IntakeActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { schemas, uiSchemas } from './schemas/IntakeSchemas';
 import {
@@ -48,7 +48,7 @@ import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtil
 import {
   APP,
   EDM,
-  PERSON_INFORMATION_FORM,
+  INTAKE,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -65,7 +65,7 @@ const {
 } = DataProcessingUtils;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
-const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = PERSON_INFORMATION_FORM;
+const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { JAILS_PRISONS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
@@ -113,14 +113,14 @@ type Props = {
   actions :{
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;
-    submitPersonInformationForm :RequestSequence;
+    submitIntakeForm :RequestSequence;
   };
   entitySetIdsByFqn :Map;
   incarcerationFacilities :List;
   newParticipantEKID :UUID;
   propertyTypeIdsByFqn :Map;
   requestStates :{
-    SUBMIT_PERSON_INFORMATION_FORM :RequestState;
+    SUBMIT_INTAKE_FORM :RequestState;
   };
 };
 
@@ -158,8 +158,8 @@ class IntakeForm extends Component<Props, State> {
     if (!prevProps.incarcerationFacilities.equals(incarcerationFacilities)) {
       this.updateSchema(incarcerationFacilities);
     }
-    const wasSubmittingIntake :boolean = requestIsPending(prevProps.requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
-    const intakeWasSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
+    const wasSubmittingIntake :boolean = requestIsPending(prevProps.requestStates[SUBMIT_INTAKE_FORM]);
+    const intakeWasSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
     if (wasSubmittingIntake && intakeWasSuccessful) {
       window.scrollTo(0, 0);
     }
@@ -233,7 +233,7 @@ class IntakeForm extends Component<Props, State> {
       propertyTypeIdsByFqn
     );
 
-    actions.submitPersonInformationForm({ associationEntityData, entityData });
+    actions.submitIntakeForm({ associationEntityData, entityData });
   }
 
   render() {
@@ -271,7 +271,7 @@ class IntakeForm extends Component<Props, State> {
             if (needsAssessmentPage) header = 'Needs Assessment';
             if (reviewPage) header = 'Review';
 
-            const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_PERSON_INFORMATION_FORM]);
+            const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
 
             return (
               <>
@@ -304,7 +304,7 @@ class IntakeForm extends Component<Props, State> {
                       Back
                     </DarkerButton>
                     <Button
-                        isLoading={requestIsPending(requestStates[SUBMIT_PERSON_INFORMATION_FORM])}
+                        isLoading={requestIsPending(requestStates[SUBMIT_INTAKE_FORM])}
                         mode="primary"
                         onClick={handleNext}>
                       { primaryButtonText }
@@ -319,7 +319,7 @@ class IntakeForm extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
-  const personInformationForm :Map = state.get(PERSON_INFORMATION_FORM.PERSON_INFORMATION_FORM);
+  const personInformationForm :Map = state.get(INTAKE.INTAKE);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
     [INCARCERATION_FACILITIES]: personInformationForm.get(INCARCERATION_FACILITIES),
@@ -327,9 +327,9 @@ const mapStateToProps = (state :Map) => {
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
-      [SUBMIT_PERSON_INFORMATION_FORM]: personInformationForm.getIn([
+      [SUBMIT_INTAKE_FORM]: personInformationForm.getIn([
         ACTIONS,
-        SUBMIT_PERSON_INFORMATION_FORM,
+        SUBMIT_INTAKE_FORM,
         REQUEST_STATE
       ]),
     },
@@ -340,7 +340,7 @@ const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getIncarcerationFacilities,
     goToRoute,
-    submitPersonInformationForm,
+    submitIntakeForm,
   }, dispatch)
 });
 

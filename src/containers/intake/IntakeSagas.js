@@ -13,10 +13,10 @@ import Logger from '../../utils/Logger';
 
 import {
   GET_INCARCERATION_FACILITIES,
-  SUBMIT_PERSON_INFORMATION_FORM,
+  SUBMIT_INTAKE_FORM,
   getIncarcerationFacilities,
-  submitPersonInformationForm,
-} from './PersonInformationActions';
+  submitIntakeForm,
+} from './IntakeActions';
 import { submitDataGraph } from '../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../core/data/DataSagas';
 import { isDefined } from '../../utils/LangUtils';
@@ -72,17 +72,17 @@ function* getIncarcerationFacilitiesWatcher() :Generator<*, *, *> {
 
 /*
  *
- * PersonInformationActions.submitPersonInformationForm()
+ * PersonInformationActions.submitIntakeForm()
  *
  */
 
-function* submitPersonInformationFormWorker(action :SequenceAction) :Generator<*, *, *> {
+function* submitIntakeFormWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
   try {
-    yield put(submitPersonInformationForm.request(id, value));
+    yield put(submitIntakeForm.request(id, value));
     const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
@@ -93,25 +93,25 @@ function* submitPersonInformationFormWorker(action :SequenceAction) :Generator<*
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
 
-    yield put(submitPersonInformationForm.success(id, newParticipantEKID));
+    yield put(submitIntakeForm.success(id, newParticipantEKID));
   }
   catch (error) {
-    LOG.error('caught exception in submitPersonInformationFormWorker()', error);
-    yield put(submitPersonInformationForm.failure(id, error));
+    LOG.error('caught exception in submitIntakeFormWorker()', error);
+    yield put(submitIntakeForm.failure(id, error));
   }
   finally {
-    yield put(submitPersonInformationForm.finally(id));
+    yield put(submitIntakeForm.finally(id));
   }
 }
 
-function* submitPersonInformationFormWatcher() :Generator<*, *, *> {
+function* submitIntakeFormWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(SUBMIT_PERSON_INFORMATION_FORM, submitPersonInformationFormWorker);
+  yield takeEvery(SUBMIT_INTAKE_FORM, submitIntakeFormWorker);
 }
 
 export {
   getIncarcerationFacilitiesWatcher,
   getIncarcerationFacilitiesWorker,
-  submitPersonInformationFormWatcher,
-  submitPersonInformationFormWorker,
+  submitIntakeFormWatcher,
+  submitIntakeFormWorker,
 };
