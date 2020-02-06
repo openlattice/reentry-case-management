@@ -32,15 +32,16 @@ const RELEASES :Object = {
   TOTAL_HITS: 'totalHits',
 };
 
-const PERSON_INFORMATION_FORM :Object = {
+const INTAKE :Object = {
   INCARCERATION_FACILITIES: 'incarcerationFacilities',
-  PERSON_INFORMATION_FORM: 'personInformationForm',
+  INTAKE: 'intake',
+  NEW_PARTICIPANT_EKID: 'newParticipantEKID',
 };
 
 export {
   APP,
   EDM,
-  PERSON_INFORMATION_FORM,
+  INTAKE,
   RELEASES,
   SHARED,
 };

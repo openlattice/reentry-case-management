@@ -28,7 +28,8 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
-import PersonInformationForm from '../intake/PersonInformationForm';
+import IntakeForm from '../intake/IntakeForm';
+import ParticipantProfile from '../profile/ParticipantProfile';
 import Releases from '../releases/Releases';
 
 import * as AppActions from './AppActions';
@@ -96,8 +97,9 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route exact strict path="/home" />
+          <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
+          <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
           <Route path={Routes.RELEASES} component={Releases} />
-          <Route path={Routes.NEW_INTAKE} component={PersonInformationForm} />
           <Redirect to="/home" />
         </Switch>
       );
