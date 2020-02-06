@@ -19,7 +19,7 @@ const APP_TYPE_FQNS :Object = {
   FOLLOW_UPS: new FullyQualifiedName('app.followups'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
-  INMATE: new FullyQualifiedName('app.inmate'),
+  INMATES: new FullyQualifiedName('app.inmate'),
   IS: new FullyQualifiedName('app.is_new'),
   IS_REGISTERED_SEX_OFFENDER_IN: new FullyQualifiedName('app.isregisteredsexoffenderin'),
   JAILS_PRISONS: new FullyQualifiedName('app.jailsorprisons'),
