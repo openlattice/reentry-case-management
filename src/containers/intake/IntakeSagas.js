@@ -90,7 +90,7 @@ function* submitIntakeFormWorker(action :SequenceAction) :Generator<*, *, *> {
     const { data } = response;
     const { entityKeyIds } = data;
     const app = yield select(getAppFromState);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
     const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
 
     yield put(submitIntakeForm.success(id, newParticipantEKID));
