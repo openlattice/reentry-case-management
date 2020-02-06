@@ -33,6 +33,7 @@ import Releases from '../releases/Releases';
 
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
+
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
