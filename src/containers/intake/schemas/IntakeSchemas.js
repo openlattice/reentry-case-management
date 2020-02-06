@@ -364,13 +364,13 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, PERSON_DETAILS, GENDER)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, SSN)]: {
-      classNames: 'column-span-4',
-    },
     [getEntityAddressKey(0, PEOPLE, RACE)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, PEOPLE, SSN)]: {
       classNames: 'column-span-4',
     },
     'ui:order': [
@@ -380,9 +380,9 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PEOPLE, DOB),
       getEntityAddressKey(0, PEOPLE, PERSON_SEX),
       getEntityAddressKey(0, PERSON_DETAILS, GENDER),
-      getEntityAddressKey(0, PEOPLE, SSN),
       getEntityAddressKey(0, PEOPLE, RACE),
       getEntityAddressKey(0, PEOPLE, ETHNICITY),
+      getEntityAddressKey(0, PEOPLE, SSN),
     ]
   },
   [getPageSectionKey(1, 2)]: {
