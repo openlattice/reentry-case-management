@@ -27,11 +27,13 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as AppActions from './AppActions';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
-import * as Routes from '../../core/router/Routes';
 import IntakeForm from '../intake/IntakeForm';
 import ParticipantProfile from '../profile/ParticipantProfile';
+import Releases from '../releases/Releases';
+
+import * as AppActions from './AppActions';
+import * as Routes from '../../core/router/Routes';
 
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
@@ -97,6 +99,7 @@ class AppContainer extends Component<Props> {
           <Route exact strict path="/home" />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
+          <Route path={Routes.RELEASES} component={Releases} />
           <Redirect to="/home" />
         </Switch>
       );
@@ -144,6 +147,7 @@ class AppContainer extends Component<Props> {
             user={user}>
           <AppNavigationWrapper>
             <NavLink to={Routes.ROOT} />
+            <NavLink to={Routes.RELEASES}>Releases</NavLink>
             <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
           </AppNavigationWrapper>
         </AppHeaderWrapper>

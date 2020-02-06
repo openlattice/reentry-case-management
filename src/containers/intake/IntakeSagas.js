@@ -20,7 +20,7 @@ import {
 import { submitDataGraph } from '../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../core/data/DataSagas';
 import { isDefined } from '../../utils/LangUtils';
-import { getEntitySetIdFromApp } from '../../utils/DataUtils';
+import { getESIDFromApp } from '../../utils/DataUtils';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
@@ -46,7 +46,7 @@ function* getIncarcerationFacilitiesWorker(action :SequenceAction) :Generator<*,
   try {
     yield put(getIncarcerationFacilities.request(id));
     const app = yield select(getAppFromState);
-    const jailsPrisonsESID :UUID = getEntitySetIdFromApp(app, JAILS_PRISONS);
+    const jailsPrisonsESID :UUID = getESIDFromApp(app, JAILS_PRISONS);
 
     const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: jailsPrisonsESID }));
     if (response.error) {

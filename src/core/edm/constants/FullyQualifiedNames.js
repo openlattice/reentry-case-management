@@ -1,6 +1,4 @@
-/*
- * @flow
- */
+// @flow
 
 import { Constants, Models } from 'lattice';
 
@@ -21,6 +19,7 @@ const APP_TYPE_FQNS :Object = {
   FOLLOW_UPS: new FullyQualifiedName('app.followups'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
+  INMATE: new FullyQualifiedName('app.inmate'),
   IS: new FullyQualifiedName('app.is_new'),
   IS_REGISTERED_SEX_OFFENDER_IN: new FullyQualifiedName('app.isregisteredsexoffenderin'),
   JAILS_PRISONS: new FullyQualifiedName('app.jailsorprisons'),
@@ -30,18 +29,20 @@ const APP_TYPE_FQNS :Object = {
   LOCATION: new FullyQualifiedName('app.location'),
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
+  ORGANIZATION: new FullyQualifiedName('app.organization'),
   PART_OF: new FullyQualifiedName('app.partof'),
   PEOPLE: new FullyQualifiedName('app.people'),
   PERSON_DETAILS: new FullyQualifiedName('app.persondetails'),
+  PERSON_DETAILS_CRIMINAL_JUSTICE: new FullyQualifiedName('app.person_details_criminal_justice'),
   PROBATION_PAROLE: new FullyQualifiedName('app.probationorparole'),
   PROBATION_PAROLE_OFFICER: new FullyQualifiedName('app.probation_or_parole_officer'),
   PROVIDED: new FullyQualifiedName('app.provided'),
   PROVIDED_TO: new FullyQualifiedName('app.providedto'),
   PROVIDER: new FullyQualifiedName('app.organization'),
   REFERRAL_REQUEST: new FullyQualifiedName('app.referralrequest'),
+  REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   REPORTED: new FullyQualifiedName('app.reported'),
   REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
-  REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   SEX_OFFENDER: new FullyQualifiedName('app.sexoffender'),
   STAFF: new FullyQualifiedName('app.staff'), // general.person
   STAFF_EMPLOYEE: new FullyQualifiedName('app.staff_employee'),
@@ -76,6 +77,7 @@ const PROPERTY_TYPE_FQNS = {
   REASON: new FullyQualifiedName('ol.reason'),
   RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddate'),
   REGISTERED_FLAG: new FullyQualifiedName('ol.registeredflag'),
+  SEX_OFFENDER: new FullyQualifiedName('ol.sexoffender'),
   SOURCE: new FullyQualifiedName('ol.source'),
   SSN: new FullyQualifiedName('nc.SSN'),
   STREET: new FullyQualifiedName('location.street'),
