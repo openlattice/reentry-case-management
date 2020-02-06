@@ -1,6 +1,7 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
+import { generateReviewSchemas } from '../../../utils/FormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   COUNTRIES,
@@ -372,6 +373,17 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
       classNames: 'column-span-4',
     },
+    'ui:order': [
+      getEntityAddressKey(0, PEOPLE, LAST_NAME),
+      getEntityAddressKey(0, PEOPLE, FIRST_NAME),
+      getEntityAddressKey(0, PEOPLE, MIDDLE_NAME),
+      getEntityAddressKey(0, PEOPLE, DOB),
+      getEntityAddressKey(0, PEOPLE, PERSON_SEX),
+      getEntityAddressKey(0, PERSON_DETAILS, GENDER),
+      getEntityAddressKey(0, PEOPLE, SSN),
+      getEntityAddressKey(0, PEOPLE, RACE),
+      getEntityAddressKey(0, PEOPLE, ETHNICITY),
+    ]
   },
   [getPageSectionKey(1, 2)]: {
     classNames: 'column-span-12 grid-container',
@@ -399,6 +411,16 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: {
       classNames: 'column-span-4',
     },
+    'ui:order': [
+      getEntityAddressKey(0, LOCATION, STREET),
+      getEntityAddressKey(0, LOCATION, CITY),
+      getEntityAddressKey(0, LOCATION, US_STATE),
+      getEntityAddressKey(0, LOCATION, COUNTRY),
+      getEntityAddressKey(0, LOCATION, ZIP),
+      getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
+      getEntityAddressKey(1, CONTACT_INFO, EMAIL),
+      getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
+    ]
   },
   [getPageSectionKey(1, 3)]: {
     classNames: 'column-span-12 grid-container',
@@ -408,6 +430,10 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
       classNames: 'column-span-6',
     },
+    'ui:order': [
+      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
+      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
+    ]
   },
   [getPageSectionKey(1, 4)]: {
     classNames: 'column-span-12 grid-container',
@@ -460,8 +486,29 @@ const personInformationUiSchema :Object = {
       },
       [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
         classNames: 'column-span-4',
-      }
-    }
+      },
+      'ui:order': [
+        getEntityAddressKey(0, PROBATION_PAROLE, TYPE),
+        getEntityAddressKey(0, ATTORNEYS, LAST_NAME),
+        getEntityAddressKey(0, ATTORNEYS, FIRST_NAME),
+        getEntityAddressKey(0, EMPLOYMENT, NAME),
+        getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER),
+        getEntityAddressKey(3, CONTACT_INFO, EMAIL),
+        getEntityAddressKey(0, OFFICERS, LAST_NAME),
+        getEntityAddressKey(0, OFFICERS, FIRST_NAME),
+        getEntityAddressKey(0, EMPLOYEE, TITLE),
+        getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER),
+        getEntityAddressKey(5, CONTACT_INFO, EMAIL),
+        getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME),
+      ]
+    },
+    'ui:order': [
+      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
+      getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME),
+      getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE),
+      'onProbationOrParole',
+      getPageSectionKey(1, 7)
+    ]
   },
   [getPageSectionKey(1, 5)]: {
     classNames: 'column-span-12 grid-container',
@@ -478,6 +525,11 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
       classNames: 'column-span-4',
     },
+    'ui:order': [
+      getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG),
+      getEntityAddressKey(1, LOCATION, COUNTY),
+      getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME),
+    ]
   },
   [getPageSectionKey(1, 6)]: {
     classNames: 'column-span-12 grid-container',
@@ -486,7 +538,11 @@ const personInformationUiSchema :Object = {
     },
     [getEntityAddressKey(0, HEARINGS, TYPE)]: {
       classNames: 'column-span-6',
-    }
+    },
+    'ui:order': [
+      getEntityAddressKey(0, HEARINGS, DATE),
+      getEntityAddressKey(0, HEARINGS, TYPE)
+    ]
   },
 };
 
@@ -526,7 +582,7 @@ const needsAssessmentUiSchema = {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)]: {
       classNames: 'column-span-12',
-      'ui:widget': 'checkboxes'
+      'ui:widget': 'checkboxes',
     },
     [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
       classNames: 'column-span-12',
@@ -534,18 +590,27 @@ const needsAssessmentUiSchema = {
     },
     [getEntityAddressKey(1, REFERRAL_REQUEST, REASON)]: {
       'ui:widget': 'hidden',
-    }
+    },
+    'ui:order': [
+      getEntityAddressKey(1, REFERRAL_REQUEST, TYPE),
+      getEntityAddressKey(1, REFERRAL_REQUEST, NOTES),
+      getEntityAddressKey(1, REFERRAL_REQUEST, REASON)
+    ]
   }
 };
 
-const schemas = [
+const schemasWithoutReview = [
   personInformationSchema,
   needsAssessmentSchema
 ];
-const uiSchemas = [
+const uiSchemasWithoutReview = [
   personInformationUiSchema,
   needsAssessmentUiSchema
 ];
+const {
+  schemas,
+  uiSchemas,
+} = generateReviewSchemas(schemasWithoutReview, uiSchemasWithoutReview);
 
 export {
   schemas,
