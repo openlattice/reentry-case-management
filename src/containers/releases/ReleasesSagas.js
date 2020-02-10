@@ -19,7 +19,7 @@ import {
   getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
-import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { getSearchTerm, getSearchTermNotExact, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
@@ -374,7 +374,6 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
       maxHits,
       constraints: []
     };
-    // let searchTerm :string = '';
 
     const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
     if (firstName.length) {
@@ -396,6 +395,26 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
         constraints: [{
           searchTerm: lastNameConstraint,
           fuzzy: true
+        }]
+      });
+    }
+
+    // get all people
+    if (!firstName.length && !lastName.length) {
+      const firstNameAllConstraint = getSearchTermNotExact(firstNamePTID, '*');
+      const lastNameAllConstraint = getSearchTermNotExact(lastNamePTID, '*');
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm: firstNameAllConstraint,
+          fuzzy: false
+        }]
+      });
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm: lastNameAllConstraint,
+          fuzzy: false
         }]
       });
     }

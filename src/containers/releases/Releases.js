@@ -186,15 +186,13 @@ class Releases extends Component<Props, State> {
     const { actions } = this.props;
     const { firstName, lastName } = this.state;
 
-    if (isNonEmptyString(firstName) || isNonEmptyString(lastName)) {
-      const start = startIndex || 0;
-      actions.searchReleasesByPersonName({
-        firstName,
-        lastName,
-        maxHits: MAX_HITS,
-        start,
-      });
-    }
+    const start = startIndex || 0;
+    actions.searchReleasesByPersonName({
+      firstName,
+      lastName,
+      maxHits: MAX_HITS,
+      start,
+    });
   }
 
   onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -214,8 +212,13 @@ class Releases extends Component<Props, State> {
     this.setState({ page });
   }
 
-  onPageChange = ({ page: newPage, start } :Object) => {
+  onPageChangeReleases = ({ page: newPage, start } :Object) => {
     this.searchForPeopleByRelease(undefined, start);
+    this.setPage(newPage);
+  }
+
+  onPageChangePeople = ({ page: newPage, start } :Object) => {
+    this.searchForPeopleByName(undefined, start);
     this.setPage(newPage);
   }
 
@@ -286,6 +289,10 @@ class Releases extends Component<Props, State> {
     const hasSearched :boolean = reducedState
       ? (requestIsSuccess(reducedState) || requestIsFailure(reducedState))
       : false;
+
+    const onPageChange = searchingByDate
+      ? this.onPageChangeReleases
+      : this.onPageChangePeople;
 
     const releasesData :List = this.getReleasesData();
     return (
@@ -359,7 +366,7 @@ class Releases extends Component<Props, State> {
             <PaginationWrapper>
               <PaginationToolbar
                   count={totalHits}
-                  onPageChange={this.onPageChange}
+                  onPageChange={onPageChange}
                   page={page}
                   rowsPerPage={MAX_HITS} />
             </PaginationWrapper>
