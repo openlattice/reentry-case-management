@@ -29,6 +29,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import IntakeForm from '../intake/IntakeForm';
+import ParticipantsSearch from '../participants/ParticipantsSearch';
 import ParticipantProfile from '../profile/ParticipantProfile';
 import Releases from '../releases/Releases';
 
@@ -100,6 +101,7 @@ class AppContainer extends Component<Props> {
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
           <Route path={Routes.RELEASES} component={Releases} />
+          <Route path={Routes.PARTICIPANTS} component={ParticipantsSearch} />
           <Redirect to="/home" />
         </Switch>
       );
@@ -149,6 +151,7 @@ class AppContainer extends Component<Props> {
             <NavLink to={Routes.ROOT} />
             <NavLink to={Routes.RELEASES}>Releases</NavLink>
             <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
+            <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
           </AppNavigationWrapper>
         </AppHeaderWrapper>
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
