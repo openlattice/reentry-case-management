@@ -218,7 +218,7 @@ class IntakeForm extends Component<Props, State> {
     const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);
     const allTheMappers = Map().withMutations((mappers :Map) => {
       const keyMappers = Map().withMutations((map :Map) => {
-        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value.toJS()));
+        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value));
       });
       mappers.set(KEY_MAPPERS, keyMappers);
 
@@ -229,7 +229,7 @@ class IntakeForm extends Component<Props, State> {
     });
 
     const entityData :Object = processEntityData(
-      fromJS(formDataToProcess),
+      formDataToProcess,
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
       allTheMappers
