@@ -18,6 +18,7 @@ import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 import {
   SUBMIT_INTAKE_FORM,
+  clearSubmitRequestState,
   getIncarcerationFacilities,
   submitIntakeForm
 } from './IntakeActions';
@@ -111,6 +112,7 @@ const BannerButtonWrapper = styled.div`
 
 type Props = {
   actions :{
+    clearSubmitRequestState :() => { type :string };
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;
     submitIntakeForm :RequestSequence;
@@ -163,6 +165,11 @@ class IntakeForm extends Component<Props, State> {
     if (wasSubmittingIntake && intakeWasSuccessful) {
       window.scrollTo(0, 0);
     }
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmitRequestState();
   }
 
   goToParticipantProfile = () => {
@@ -338,6 +345,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearSubmitRequestState,
     getIncarcerationFacilities,
     goToRoute,
     submitIntakeForm,

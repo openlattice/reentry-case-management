@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_SUBMIT_REQUEST_STATE,
   GET_INCARCERATION_FACILITIES,
   SUBMIT_INTAKE_FORM,
   getIncarcerationFacilities,
@@ -18,6 +19,9 @@ const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
     [GET_INCARCERATION_FACILITIES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_INTAKE_FORM]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
     }
   },
   [INCARCERATION_FACILITIES]: List(),
@@ -27,6 +31,11 @@ const INITIAL_STATE :Map = fromJS({
 export default function personInformationReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_SUBMIT_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, SUBMIT_INTAKE_FORM, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case getIncarcerationFacilities.case(action.type): {
 
