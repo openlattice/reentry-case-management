@@ -67,7 +67,7 @@ const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { JAILS_PRISONS } = APP_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const ActionRow = styled.div`
@@ -140,7 +140,7 @@ class IntakeForm extends Component<Props, State> {
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
-    if (entitySetIdsByFqn.has(JAILS_PRISONS)) {
+    if (entitySetIdsByFqn.has(MANUAL_JAILS_PRISONS)) {
       actions.getIncarcerationFacilities();
     }
   }
@@ -205,7 +205,7 @@ class IntakeForm extends Component<Props, State> {
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
       formDataToProcess,
-      [getPageSectionKey(1, 4), getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
+      [getPageSectionKey(1, 4), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
     );
 
     const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);

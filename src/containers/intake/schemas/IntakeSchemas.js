@@ -27,8 +27,8 @@ const {
   EMPLOYEE,
   EMPLOYMENT,
   HEARINGS,
-  JAILS_PRISONS,
-  JAIL_STAYS,
+  MANUAL_JAILS_PRISONS,
+  MANUAL_JAIL_STAYS,
   LOCATION,
   OFFICERS,
   PEOPLE,
@@ -198,13 +198,13 @@ const personInformationSchema :Object = {
       type: 'object',
       title: 'Release Information',
       properties: {
-        [getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]: {
+        [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
           type: 'string',
           title: 'Most recently released from:',
           enum: [],
           enumNames: []
         },
-        [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
+        [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
           type: 'string',
           title: 'Release date:',
           format: 'date'
@@ -437,10 +437,10 @@ const personInformationUiSchema :Object = {
   },
   [getPageSectionKey(1, 4)]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]: {
+    [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
+    [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]: {
@@ -503,8 +503,8 @@ const personInformationUiSchema :Object = {
       ]
     },
     'ui:order': [
-      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
-      getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME),
+      getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
+      getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME),
       getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE),
       'onProbationOrParole',
       getPageSectionKey(1, 7)

@@ -27,6 +27,12 @@ const APP_TYPE_FQNS :Object = {
   JAIL_STAY_LENGTH: new FullyQualifiedName('app.jailstaylength'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
   LOCATION: new FullyQualifiedName('app.location'),
+  MANUAL_JAILS_PRISONS: new FullyQualifiedName('app.manualjailsprisons'),
+  MANUAL_JAIL_STAYS: new FullyQualifiedName('app.manualjailstays'),
+  MANUAL_JAIL_STAYS_LENGTH: new FullyQualifiedName('app.manualjailstaylength'),
+  MANUAL_LOCATED_AT: new FullyQualifiedName('app.manuallocatedat'),
+  MANUAL_OF_LENGTH: new FullyQualifiedName('app.manualoflength'),
+  MANUAL_SUBJECT_OF: new FullyQualifiedName('app.manualsubjectof'),
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),

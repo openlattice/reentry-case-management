@@ -27,7 +27,7 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 
@@ -46,7 +46,7 @@ function* getIncarcerationFacilitiesWorker(action :SequenceAction) :Generator<*,
   try {
     yield put(getIncarcerationFacilities.request(id));
     const app = yield select(getAppFromState);
-    const jailsPrisonsESID :UUID = getESIDFromApp(app, JAILS_PRISONS);
+    const jailsPrisonsESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
 
     const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: jailsPrisonsESID }));
     if (response.error) {

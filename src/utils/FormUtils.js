@@ -53,7 +53,9 @@ const generateReviewSchemas = (schemas :Object[], uiSchemas :Object[]) => {
   const reviewUiSchema :Object[] = mergeDeep(...uiSchemasAsImmutable, reviewOrder).toJS();
 
   return {
+    // $FlowFixMe
     schemas: schemas.concat(reviewSchema),
+    // $FlowFixMe
     uiSchemas: uiSchemas.concat(reviewUiSchema)
   };
 };

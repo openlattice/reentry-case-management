@@ -30,9 +30,9 @@ const {
   HEARINGS,
   IS,
   IS_REGISTERED_SEX_OFFENDER_IN,
-  JAILS_PRISONS,
-  JAIL_STAYS,
-  LOCATED_AT,
+  MANUAL_JAILS_PRISONS,
+  MANUAL_JAIL_STAYS,
+  MANUAL_LOCATED_AT,
   LOCATION,
   OFFICERS,
   PEOPLE,
@@ -43,7 +43,7 @@ const {
   REPORTED,
   REPRESENTED_BY,
   SEX_OFFENDER,
-  SUBJECT_OF,
+  MANUAL_SUBJECT_OF,
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
@@ -85,7 +85,7 @@ const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List)
       'properties',
       getPageSectionKey(1, 4),
       'properties',
-      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
+      getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
       'enum'
     ],
     values
@@ -96,7 +96,7 @@ const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List)
       'properties',
       getPageSectionKey(1, 4),
       'properties',
-      getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID),
+      getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
       'enumNames'
     ],
     labels
@@ -346,7 +346,7 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
 
   const releaseDatePath :string[] = [
     getPageSectionKey(1, 4),
-    getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
+    getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
   ];
   const releaseDate :any = getIn(formData, releaseDatePath);
   const recognizedEndDatePath :string[] = [
@@ -486,7 +486,7 @@ const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*
     const { entitySetName } = parseEntityAddressKey(entityAddressKey);
     return entitySetName === LOCATION.toString() && isDefined(get(contactsAndAddress, entityAddressKey));
   });
-  if (isDefined(address)) associations.push([LOCATED_AT, 0, PEOPLE, 0, LOCATION, {}]);
+  if (isDefined(address)) associations.push([MANUAL_LOCATED_AT, 0, PEOPLE, 0, LOCATION, {}]);
 
   return associations;
 };
@@ -529,11 +529,11 @@ const getClientReleaseAssociations = (formData :Object) => {
   const outerPageSectionKey :string = getPageSectionKey(1, 4);
   const releaseDate :any = getIn(
     formData,
-    [outerPageSectionKey, getEntityAddressKey(0, JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
+    [outerPageSectionKey, getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
   );
   const incarcerationFacilityEKID :any = getIn(
     formData,
-    [outerPageSectionKey, getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
+    [outerPageSectionKey, getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
   );
   const referredFrom :any = getIn(
     formData,
@@ -541,13 +541,13 @@ const getClientReleaseAssociations = (formData :Object) => {
   );
 
   if (isDefined(releaseDate)) {
-    associations.push([SUBJECT_OF, 0, PEOPLE, 0, JAIL_STAYS, {}]);
+    associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, MANUAL_JAIL_STAYS, {}]);
   }
   if (isDefined(incarcerationFacilityEKID) && incarcerationFacilityEKID.length) {
-    associations.push([LOCATED_AT, 0, JAIL_STAYS, incarcerationFacilityEKID, JAILS_PRISONS, {}]);
+    associations.push([MANUAL_LOCATED_AT, 0, MANUAL_JAIL_STAYS, incarcerationFacilityEKID, MANUAL_JAILS_PRISONS, {}]);
   }
   if (isDefined(referredFrom)) {
-    associations.push([SUBJECT_OF, 0, PEOPLE, 0, REFERRAL_REQUEST, {}]);
+    associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, REFERRAL_REQUEST, {}]);
   }
 
   const probationData = getIn(formData, [outerPageSectionKey, getPageSectionKey(1, 7)]);
@@ -659,7 +659,7 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
 
   const firstKey :string = Object.keys(needsAssessmentSection)[0];
   const { entityIndex } = parseEntityAddressKey(firstKey);
-  associations.push([SUBJECT_OF, 0, PEOPLE, entityIndex, REFERRAL_REQUEST, {}]);
+  associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, entityIndex, REFERRAL_REQUEST, {}]);
   return associations;
 };
 
