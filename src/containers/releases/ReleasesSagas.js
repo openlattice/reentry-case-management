@@ -19,7 +19,7 @@ import {
   getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
-import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { getSearchTerm, getSearchTermNotExact, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
@@ -374,7 +374,6 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
       maxHits,
       constraints: []
     };
-    // let searchTerm :string = '';
 
     const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
     if (firstName.length) {

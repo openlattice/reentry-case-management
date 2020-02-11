@@ -18,6 +18,7 @@ import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 import {
   SUBMIT_INTAKE_FORM,
+  clearSubmitRequestState,
   getIncarcerationFacilities,
   submitIntakeForm
 } from './IntakeActions';
@@ -67,7 +68,7 @@ const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { JAILS_PRISONS } = APP_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const ActionRow = styled.div`
@@ -111,6 +112,7 @@ const BannerButtonWrapper = styled.div`
 
 type Props = {
   actions :{
+    clearSubmitRequestState :() => { type :string };
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;
     submitIntakeForm :RequestSequence;
@@ -140,7 +142,7 @@ class IntakeForm extends Component<Props, State> {
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
-    if (entitySetIdsByFqn.has(JAILS_PRISONS)) {
+    if (entitySetIdsByFqn.has(MANUAL_JAILS_PRISONS)) {
       actions.getIncarcerationFacilities();
     }
   }
@@ -163,6 +165,11 @@ class IntakeForm extends Component<Props, State> {
     if (wasSubmittingIntake && intakeWasSuccessful) {
       window.scrollTo(0, 0);
     }
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmitRequestState();
   }
 
   goToParticipantProfile = () => {
@@ -205,13 +212,13 @@ class IntakeForm extends Component<Props, State> {
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
       formDataToProcess,
-      [getPageSectionKey(1, 4), getEntityAddressKey(0, JAILS_PRISONS, ENTITY_KEY_ID)]
+      [getPageSectionKey(1, 4), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
     );
 
     const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);
     const allTheMappers = Map().withMutations((mappers :Map) => {
       const keyMappers = Map().withMutations((map :Map) => {
-        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value.toJS()));
+        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value));
       });
       mappers.set(KEY_MAPPERS, keyMappers);
 
@@ -222,7 +229,7 @@ class IntakeForm extends Component<Props, State> {
     });
 
     const entityData :Object = processEntityData(
-      fromJS(formDataToProcess),
+      formDataToProcess,
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
       allTheMappers
@@ -338,6 +345,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearSubmitRequestState,
     getIncarcerationFacilities,
     goToRoute,
     submitIntakeForm,
