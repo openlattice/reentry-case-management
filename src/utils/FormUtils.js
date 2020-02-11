@@ -40,21 +40,24 @@ const getOrder = (schemas :Object[]) => schemas.reduce(
   OrderedSet(),
 ).toJS();
 
-const generateReviewSchemas = (schemas :Object[], uiSchemas :Object[]) => {
+// NOTE: set these params flowtypes to be :any to get rid of flow errors down below
+const generateReviewSchemas = (schemas :any, uiSchemas :any) => {
   const schemasAsImmutable = fromJS(schemas);
   const uiSchemasAsImmutable = fromJS(uiSchemas);
-  const reviewSchema = mergeDeep(...schemasAsImmutable).toJS();
+  const reviewSchema :Object[] = mergeDeep(...schemasAsImmutable).toJS();
 
   const reviewOrder :Object = {
     'ui:disabled': true,
     'ui:order': getOrder(schemas)
   };
 
-  const reviewUiSchema :Object[] = mergeDeep(...uiSchemasAsImmutable, reviewOrder).toJS();
+  const reviewUiSchema :Object = mergeDeep(...uiSchemasAsImmutable, reviewOrder).toJS();
+  const newSchemas = schemas.concat(reviewSchema);
+  const newUiSchemas = uiSchemas.concat(reviewUiSchema);
 
   return {
-    schemas: schemas.concat(reviewSchema),
-    uiSchemas: uiSchemas.concat(reviewUiSchema)
+    schemas: newSchemas,
+    uiSchemas: newUiSchemas
   };
 };
 
