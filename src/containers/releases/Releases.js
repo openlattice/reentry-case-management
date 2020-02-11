@@ -20,6 +20,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import * as Routes from '../../core/router/Routes';
 import COLORS from '../../core/style/Colors';
 
+import { ButtonWrapper, FieldsGrid, StyledSearchButton } from '../../components/search/SearchStyledComponents';
 import {
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
@@ -82,25 +83,6 @@ const Header = styled.div`
 const StyledPrimaryButton = styled(Button)`
   font-size: 14px;
   padding: 8px 32px;
-`;
-
-const ButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-`;
-
-const StyledSearchButton = styled(Button)`
-  height: 40px;
-  width: 100%;
-`;
-
-const FieldsGrid = styled.div`
-  display: grid;
-  grid-gap: 20px;
-  grid-template-columns: repeat(3, 1fr);
-  margin-bottom: 20px;
-  width: 100%;
 `;
 
 const ButtonGrid = styled.div`
