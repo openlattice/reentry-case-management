@@ -15,7 +15,6 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as Routes from '../../core/router/Routes';
-import COLORS from '../../core/style/Colors';
 import {
   SUBMIT_INTAKE_FORM,
   clearSubmitRequestState,
@@ -46,6 +45,7 @@ import {
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import { COLORS } from '../../core/style/Colors';
 import {
   APP,
   EDM,

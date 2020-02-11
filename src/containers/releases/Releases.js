@@ -18,7 +18,6 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as Routes from '../../core/router/Routes';
-import COLORS from '../../core/style/Colors';
 
 import { ButtonWrapper, FieldsGrid, StyledSearchButton } from '../../components/search/SearchStyledComponents';
 import {
@@ -37,6 +36,7 @@ import {
   requestIsPending,
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
+import { COLORS } from '../../core/style/Colors';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
