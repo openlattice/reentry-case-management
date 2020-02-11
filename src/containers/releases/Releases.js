@@ -41,14 +41,13 @@ import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
-const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
 const {
   JAILS_BY_JAIL_STAY_EKID,
   JAIL_STAYS_BY_PERSON_EKID,
   PEOPLE_BY_JAIL_STAY_EKID,
   SEARCHED_JAIL_STAYS,
   SEARCHED_PEOPLE,
-  TOTAL_HITS,
 } = RELEASES;
 
 const labels = Map({
