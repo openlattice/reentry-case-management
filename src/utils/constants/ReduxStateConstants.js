@@ -3,6 +3,7 @@
 const SHARED :Object = {
   ACTIONS: 'actions',
   REQUEST_STATE: 'requestState',
+  TOTAL_HITS: 'totalHits',
 };
 
 const APP :Object = {
@@ -29,7 +30,6 @@ const RELEASES :Object = {
   RELEASES: 'releases',
   SEARCHED_JAIL_STAYS: 'searchedJailStays',
   SEARCHED_PEOPLE: 'searchedPeople',
-  TOTAL_HITS: 'totalHits',
 };
 
 const INTAKE :Object = {
@@ -38,10 +38,16 @@ const INTAKE :Object = {
   NEW_PARTICIPANT_EKID: 'newParticipantEKID',
 };
 
+const PARTICIPANTS :Object = {
+  PARTICIPANTS: 'participants',
+  SEARCHED_PARTICIPANTS: 'searchedParticipants',
+};
+
 export {
   APP,
   EDM,
   INTAKE,
+  PARTICIPANTS,
   RELEASES,
   SHARED,
 };
