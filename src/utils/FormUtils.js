@@ -44,7 +44,7 @@ const getOrder = (schemas :Object[]) => schemas.reduce(
 const generateReviewSchemas = (schemas :any, uiSchemas :any) => {
   const schemasAsImmutable = fromJS(schemas);
   const uiSchemasAsImmutable = fromJS(uiSchemas);
-  const reviewSchema :Object[] = mergeDeep(...schemasAsImmutable).toJS();
+  const reviewSchema = mergeDeep(...schemasAsImmutable).toJS();
 
   const reviewOrder :Object = {
     'ui:disabled': true,
