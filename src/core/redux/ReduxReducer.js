@@ -9,6 +9,7 @@ import { combineReducers } from 'redux-immutable';
 import appReducer from '../../containers/app/AppReducer';
 import edmReducer from '../edm/EDMReducer';
 import intakeReducer from '../../containers/intake/IntakeReducer';
+import participantsReducer from '../../containers/participants/ParticipantsReducer';
 import releasesReducer from '../../containers/releases/ReleasesReducer';
 
 export default function reduxReducer(routerHistory :any) {
@@ -18,6 +19,7 @@ export default function reduxReducer(routerHistory :any) {
     auth: AuthReducer,
     edm: edmReducer,
     intake: intakeReducer,
+    participants: participantsReducer,
     releases: releasesReducer,
     router: connectRouter(routerHistory),
   });
