@@ -282,8 +282,10 @@ class Releases extends Component<Props, State> {
       requestStates[SEARCH_RELEASES_BY_DATE],
       requestStates[SEARCH_RELEASES_BY_PERSON_NAME]
     ]);
-    const isSearching :boolean = requestIsPending(reducedState);
-    const hasSearched :boolean = requestIsSuccess(reducedState) || requestIsFailure(reducedState);
+    const isSearching :boolean = reducedState ? requestIsPending(reducedState) : false;
+    const hasSearched :boolean = reducedState
+      ? (requestIsSuccess(reducedState) || requestIsFailure(reducedState))
+      : false;
 
     const releasesData :List = this.getReleasesData();
     return (
