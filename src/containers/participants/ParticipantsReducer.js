@@ -4,15 +4,17 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_JAIL_NAMES_FOR_JAIL_STAYS,
   GET_PARTICIPANT_NEIGHBORS,
   SEARCH_PARTICIPANTS,
+  getJailNamesForJailStays,
   getParticipantNeighbors,
   searchParticipants,
 } from './ParticipantsActions';
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
-const { NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTICIPANTS;
+const { JAIL_NAMES_BY_JAIL_STAY_EKID, NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTICIPANTS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -23,6 +25,7 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [JAIL_NAMES_BY_JAIL_STAY_EKID]: Map(),
   [NEIGHBORS]: Map(),
   [SEARCHED_PARTICIPANTS]: List(),
   [TOTAL_HITS]: 0,
@@ -31,6 +34,24 @@ const INITIAL_STATE :Map = fromJS({
 export default function participantsReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case getJailNamesForJailStays.case(action.type): {
+
+      return getJailNamesForJailStays.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, action.id], action)
+          .setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(JAIL_NAMES_BY_JAIL_STAY_EKID, value)
+            .setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, action.id]),
+      });
+    }
 
     case getParticipantNeighbors.case(action.type): {
 

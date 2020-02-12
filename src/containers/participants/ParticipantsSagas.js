@@ -12,19 +12,22 @@ import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
-import { isDefined, isEmptyString, isNonEmptyString } from '../../utils/LangUtils';
+import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
+  getEntityProperties,
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
-import { getSearchTerm, getSearchTermNotExact } from '../../utils/SearchUtils';
+import { getSearchTerm } from '../../utils/SearchUtils';
 import {
+  GET_JAIL_NAMES_FOR_JAIL_STAYS,
   GET_PARTICIPANT_NEIGHBORS,
   SEARCH_PARTICIPANTS,
+  getJailNamesForJailStays,
   getParticipantNeighbors,
   searchParticipants,
 } from './ParticipantsActions';
@@ -36,14 +39,82 @@ const LOG = new Logger('ParticipantsSagas');
 const { FullyQualifiedName } = Models;
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { MANUAL_JAILS_PRISONS, PEOPLE } = APP_TYPE_FQNS;
-const { DOB, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
+const {
+  MANUAL_JAILS_PRISONS,
+  MANUAL_JAIL_STAYS,
+  NEEDS_ASSESSMENT,
+  PEOPLE,
+} = APP_TYPE_FQNS;
+const {
+  DOB,
+  FIRST_NAME,
+  LAST_NAME,
+  NAME,
+} = PROPERTY_TYPE_FQNS;
 
 const DST :string = 'dst';
 const SRC :string = 'src';
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
+/*
+ *
+ * ParticipantsSagas.getJailNamesForJailStays()
+ *
+ */
+
+function* getJailNamesForJailStaysWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(getJailNamesForJailStays.request(id, value));
+    const { jailStayEKIDs } = value;
+
+    const app = yield select(getAppFromState);
+    const manualJailStayESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const manualJailsOrPrisonsESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
+
+    const searchFilter = {
+      entityKeyIds: jailStayEKIDs,
+      destinationEntitySetIds: [manualJailsOrPrisonsESID],
+      sourceEntitySetIds: [],
+    };
+
+    const response :Object = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: manualJailStayESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    const jailNamesByJailStayEKID :Map = fromJS(response.data)
+      .map((neighborList :List) => {
+        if (!neighborList.isEmpty()) {
+          const facilityEntity :Map = getNeighborDetails(neighborList.get(0));
+          // $FlowFixMe
+          const { [NAME]: facilityName } = getEntityProperties(facilityEntity, [NAME]);
+          return facilityName;
+        }
+        return '';
+      });
+
+    yield put(getJailNamesForJailStays.success(id, jailNamesByJailStayEKID));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getJailNamesForJailStays.failure(id, error));
+  }
+  finally {
+    yield put(getJailNamesForJailStays.finally(id));
+  }
+}
+
+function* getJailNamesForJailStaysWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_JAIL_NAMES_FOR_JAIL_STAYS, getJailNamesForJailStaysWorker);
+}
 
 /*
  *
@@ -72,7 +143,6 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       if (direction === DST) searchFilter.destinationEntitySetIds.push(neighborESID);
       if (direction === SRC) searchFilter.sourceEntitySetIds.push(neighborESID);
     });
-    console.log('searchFilter: ', searchFilter);
 
     const response :Object = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -81,7 +151,6 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
     if (response.error) {
       throw response.error;
     }
-    console.log('response.data: ', response.data);
 
     const neighbors :Map = fromJS(response.data)
       .map((neighborList :List) => {
@@ -92,11 +161,24 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
             const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
             const entity :Map = getNeighborDetails(neighbor);
             const entityEKID :UUID = getEKID(entity);
-            personNeighborMap = personNeighborMap.setIn([neighborESID, neighborEntityFqn, entityEKID], entity);
+            personNeighborMap = personNeighborMap.setIn([neighborEntityFqn, entityEKID], entity);
           });
+          return personNeighborMap;
         }
         return neighborList;
       });
+
+    const jailStayEKIDs :UUID[] = [];
+    neighbors.forEach((personNeighborMap :Map) => {
+      if (personNeighborMap.has(MANUAL_JAIL_STAYS)) {
+        personNeighborMap.get(MANUAL_JAIL_STAYS).keySeq().toList().forEach((ekid :string) => {
+          jailStayEKIDs.push(ekid);
+        });
+      }
+    });
+    if (jailStayEKIDs.length) {
+      yield call(getJailNamesForJailStaysWorker, getJailNamesForJailStays({ jailStayEKIDs }));
+    }
 
     yield put(getParticipantNeighbors.success(id, neighbors));
   }
@@ -192,8 +274,12 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     if (totalHits) {
       const participantEKIDs :UUID[] = response.data.hits.map((person :Object) => getEKID(person));
-      const manualJailsOrPrisonsESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
-      const neighborsToGet = [{ direction: DST, neighborESID: manualJailsOrPrisonsESID }];
+      const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+      const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+      const neighborsToGet = [
+        { direction: DST, neighborESID: manualJailStaysESID },
+        { direction: DST, neighborESID: needsAssessmentESID },
+      ];
       yield call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKIDs }));
     }
 
@@ -214,6 +300,8 @@ function* searchParticipantsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  getJailNamesForJailStaysWatcher,
+  getJailNamesForJailStaysWorker,
   getParticipantNeighborsWatcher,
   getParticipantNeighborsWorker,
   searchParticipantsWatcher,

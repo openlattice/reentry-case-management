@@ -40,6 +40,7 @@ const INTAKE :Object = {
 };
 
 const PARTICIPANTS :Object = {
+  JAIL_NAMES_BY_JAIL_STAY_EKID: 'jailNamesByJailStayEKID',
   NEIGHBORS: 'neighbors',
   PARTICIPANTS: 'participants',
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
