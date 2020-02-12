@@ -3,7 +3,6 @@ import { List, Map } from 'immutable';
 import { Models } from 'lattice';
 
 import { getEKID, getFirstNeighborValue } from './DataUtils';
-import { COLORS } from '../core/style/Colors';
 
 const { FullyQualifiedName } = Models;
 
@@ -34,29 +33,7 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
   return [values, labels];
 };
 
-const generateTableHeaders = (headers :string[]) :Object[] => {
-
-  const tableHeaders = [];
-  headers.forEach((header :string) => {
-    tableHeaders.push({
-      cellStyle: {
-        backgroundColor: 'white',
-        color: COLORS.GRAY_01,
-        fontSize: '12px',
-        fontWeight: '600',
-        lineHeight: '16px',
-        textAlign: 'left',
-      },
-      key: header,
-      label: header,
-      sortable: (header && header !== ' ') || false,
-    });
-  });
-  return tableHeaders;
-};
-
 export {
-  generateTableHeaders,
   getValuesFromEntityList,
   pipeConcat,
   pipeValue,
