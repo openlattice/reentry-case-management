@@ -183,17 +183,6 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
 
-    if (isEmptyString(firstName) && isEmptyString(lastName) && isEmptyString(dob)) {
-      const lastNameConstraint = getSearchTermNotExact(lastNamePTID, '*');
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameConstraint,
-          fuzzy: false
-        }]
-      });
-    }
-
     const response :Object = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) {
       throw response.error;
