@@ -19,7 +19,12 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as Routes from '../../core/router/Routes';
 
-import { ButtonWrapper, FieldsGrid, StyledSearchButton } from '../../components/search/SearchStyledComponents';
+import {
+  ButtonWrapper,
+  FieldsGrid,
+  PaginationWrapper,
+  StyledSearchButton,
+} from '../../components/search/SearchStyledComponents';
 import {
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
@@ -96,11 +101,6 @@ const Label = styled.div`
   font-size: 14px;
   line-height: 19px;
   margin-bottom: 10px;
-`;
-
-const PaginationWrapper = styled.div`
-  width: 100%;
-  margin: 30px 0;
 `;
 
 type Props = {

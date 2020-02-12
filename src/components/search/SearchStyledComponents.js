@@ -21,8 +21,14 @@ const ButtonWrapper = styled.div`
   justify-content: flex-end;
 `;
 
+const PaginationWrapper = styled.div`
+  margin: 30px 0;
+  width: 100%;
+`;
+
 export {
   ButtonWrapper,
   FieldsGrid,
+  PaginationWrapper,
   StyledSearchButton,
 };
