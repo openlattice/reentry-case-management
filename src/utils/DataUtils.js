@@ -1,7 +1,13 @@
 // @flow
-import { Map, isImmutable, set } from 'immutable';
+import {
+  Map,
+  getIn,
+  isImmutable,
+  set
+} from 'immutable';
 import { Models } from 'lattice';
 
+import { isDefined } from './LangUtils';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from './constants/ReduxStateConstants';
 
@@ -9,14 +15,24 @@ const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const NEIGHBOR_DETAILS :string = 'neighborDetails';
+const NEIGHBOR_ENTITY_SET :string = 'neighborEntitySet';
+const ID :string = 'id';
 
 const getESIDFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
-
   const orgId :string = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
     APP.ENTITY_SET_IDS_BY_ORG_ID,
     orgId,
     fqn
+  ]);
+};
+
+const getFqnFromApp = (app :Object | Map, esid :UUID) => {
+  const orgId :string = app.get(APP.SELECTED_ORG_ID);
+  return app.getIn([
+    APP.APP_TYPES_BY_ORG_ID,
+    orgId,
+    esid
   ]);
 };
 
@@ -40,13 +56,12 @@ const getEntityProperties = (entityObj :Map, propertyList :FullyQualifiedName[])
       returnPropertyFields = set(returnPropertyFields, propertyType, property);
     });
   }
-  // console.log('returnPropertyFields: ', returnPropertyFields);
   return returnPropertyFields;
 };
 
-const getEKID = (entityObj :Map) :string => {
-  if (isImmutable(entityObj)) {
-    return entityObj.getIn([ENTITY_KEY_ID, 0]);
+const getEKID = (entityObj :Map | Object) :string => {
+  if (isDefined(entityObj)) {
+    return getIn(entityObj, [ENTITY_KEY_ID, 0]);
   }
   return '';
 };
@@ -63,11 +78,15 @@ const getNeighborDetails = (neighborObj :Map) :Map => {
   return neighborDetails;
 };
 
+const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIGHBOR_ENTITY_SET, ID]));
+
 export {
   getEKID,
   getESIDFromApp,
   getEntityProperties,
   getFirstNeighborValue,
+  getFqnFromApp,
   getNeighborDetails,
+  getNeighborESID,
   getPTIDFromEDM,
 };
