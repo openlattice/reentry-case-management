@@ -3,14 +3,14 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
-  Badge,
   Card,
   CardSegment,
   CardStack,
   DatePicker,
   Input,
   Label,
-  Table,
+  PaginationToolbar,
+  SearchResults,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -18,51 +18,46 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import NoResults from '../../components/noresults/NoResults';
 
-import { ButtonWrapper, FieldsGrid, StyledSearchButton } from '../../components/search/SearchStyledComponents';
+import {
+  ButtonWrapper,
+  FieldsGrid,
+  PaginationWrapper,
+  StyledSearchButton,
+} from '../../components/search/SearchStyledComponents';
 import { isNonEmptyString } from '../../utils/LangUtils';
-import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
-import { generateTableHeaders } from '../../utils/Utils';
-import { aggregateTableData } from './utils/ParticipantsUtils';
-import { TABLE_HEADERS } from './constants';
+import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import { aggregateResultsData } from './utils/ParticipantsUtils';
 import { SEARCH_PARTICIPANTS, searchParticipants } from './ParticipantsActions';
-import { APP, PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
-import { COLORS } from '../../core/style/Colors';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
-const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
-const { SEARCHED_PARTICIPANTS } = PARTICIPANTS;
-const { PEOPLE } = APP_TYPE_FQNS;
-const MAX_HITS :number = 5;
-const participantsHeaders :Object[] = generateTableHeaders(TABLE_HEADERS);
+const { JAIL_NAMES_BY_JAIL_STAY_EKID, NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTICIPANTS;
+const MAX_HITS :number = 10;
+
+const NoParticipantsFound = () => (
+  <Card>
+    <NoResults text="No Participants Found" />
+  </Card>
+);
+
+const labels = Map({
+  name: 'Name',
+  dob: 'Date of Birth',
+  jail: 'Jail',
+  enrollmentDate: 'Enrollment Date',
+});
 
 const SearchGrid = styled(FieldsGrid)`
   margin-top: 20px;
   grid-template-columns: repeat(4, 1fr);
 `;
 
-const TableCard = styled(Card)`
-  & > ${CardSegment} {
-    border: none;
-  }
-`;
-
-const TableHeader = styled(CardSegment)`
-  align-items: center;
-  color: ${COLORS.GRAY_01};
-  font-size: 24px;
-  font-weight: 600;
-`;
-
-const TableName = styled.div`
-  margin-right: 10px;
-`;
-
 type Props = {
   actions :{
     searchParticipants :RequestSequence;
   };
-  entitySetIdsByFqn :Map;
+  jailNamesByJailStayEKID :Map;
+  neighbors :Map;
   requestStates :{
     SEARCH_PARTICIPANTS :RequestState;
   };
@@ -86,21 +81,8 @@ class ParticipantsSearch extends Component<Props, State> {
       dob: '',
       firstName: '',
       lastName: '',
-      // page: 0,
+      page: 0,
     };
-  }
-
-  componentDidMount() {
-    const { actions, entitySetIdsByFqn } = this.props;
-    if (entitySetIdsByFqn.has(PEOPLE)) {
-      actions.searchParticipants({
-        dob: '',
-        firstName: '',
-        lastName: '',
-        maxHits: MAX_HITS,
-        start: 0,
-      });
-    }
   }
 
   searchPeople = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
@@ -127,30 +109,35 @@ class ParticipantsSearch extends Component<Props, State> {
     this.setState({ dob: date });
   }
 
-  // setPage = (page :number) => {
-  //   this.setState({ page });
-  // }
+  setPage = (page :number) => {
+    this.setState({ page });
+  }
 
-  onPageChange= (payload :Object) => {
-    console.log('payload: ', payload);
-    debugger;
+  onPageChange= ({ page: newPage, start } :Object) => {
     const { actions } = this.props;
     actions.searchParticipants({
       dob: '',
       firstName: '',
       lastName: '',
       maxHits: MAX_HITS,
-      start: payload.start,
+      start,
     });
-    // this.setPage(newPage);
+    this.setPage(newPage);
   }
 
   render() {
-    const { searchedParticipants, requestStates, totalHits } = this.props;
+    const {
+      jailNamesByJailStayEKID,
+      neighbors,
+      searchedParticipants,
+      requestStates,
+      totalHits
+    } = this.props;
+    const { page } = this.state;
     const isSearching :boolean = requestIsPending(requestStates[SEARCH_PARTICIPANTS]);
-    const searchWasSuccessful :boolean = requestIsSuccess(requestStates[SEARCH_PARTICIPANTS]);
-    const tableData :Object[] = aggregateTableData(searchedParticipants);
-    console.log(tableData)
+    const hasSearched :boolean = requestIsFailure(requestStates[SEARCH_PARTICIPANTS])
+      || requestIsSuccess(requestStates[SEARCH_PARTICIPANTS]);
+    const data :List = aggregateResultsData(searchedParticipants, neighbors, jailNamesByJailStayEKID);
     return (
       <CardStack>
         <Card>
@@ -179,43 +166,35 @@ class ParticipantsSearch extends Component<Props, State> {
             </SearchGrid>
           </CardSegment>
         </Card>
-        <TableCard>
-          {
-            tableData.length ? (
-              <>
-                <TableHeader padding="50px 50px 40px 50px">
-                  <TableName>All Participants</TableName>
-                  <Badge mode="primary" count={totalHits} />
-                </TableHeader>
-                <Table
-                    data={tableData}
-                    exact
-                    headers={participantsHeaders}
-                    isLoading={isSearching}
-                    onPageChange={this.onPageChange}
-                    paginated
-                    rowsPerPageOptions={[MAX_HITS, 10]}
-                    totalRows={totalHits} />
-              </>
-            )
-              : (
-                <NoResults text="No Participants Found" />
-              )
-          }
-        </TableCard>
+        {
+          (hasSearched && !data.isEmpty()) && (
+            <PaginationWrapper>
+              <PaginationToolbar
+                  count={totalHits}
+                  onPageChange={this.onPageChange}
+                  page={page}
+                  rowsPerPage={MAX_HITS} />
+            </PaginationWrapper>
+          )
+        }
+        <SearchResults
+            hasSearched={hasSearched}
+            isLoading={isSearching}
+            noResults={NoParticipantsFound}
+            resultLabels={labels}
+            results={data} />
       </CardStack>
     );
   }
 }
 
 const mapStateToProps = (state :Map) => {
-  const app = state.get(APP.APP);
   const participants = state.get(PARTICIPANTS.PARTICIPANTS);
-  const selectedOrgId :UUID = app.get(SELECTED_ORG_ID, '');
   return {
+    [JAIL_NAMES_BY_JAIL_STAY_EKID]: participants.get(JAIL_NAMES_BY_JAIL_STAY_EKID),
+    [NEIGHBORS]: participants.get(NEIGHBORS),
     [SEARCHED_PARTICIPANTS]: participants.get(SEARCHED_PARTICIPANTS),
     [TOTAL_HITS]: participants.get(TOTAL_HITS),
-    entitySetIdsByFqn: app.getIn([ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId]),
     requestStates: {
       [SEARCH_PARTICIPANTS]: participants.getIn([ACTIONS, SEARCH_PARTICIPANTS, REQUEST_STATE]),
     }
