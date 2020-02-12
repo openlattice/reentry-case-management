@@ -33,6 +33,7 @@ const APP_TYPE_FQNS :Object = {
   MANUAL_LOCATED_AT: new FullyQualifiedName('app.manuallocatedat'),
   MANUAL_OF_LENGTH: new FullyQualifiedName('app.manualoflength'),
   MANUAL_SUBJECT_OF: new FullyQualifiedName('app.manualsubjectof'),
+  NEEDS_ASSESSMENT: new FullyQualifiedName('app.needsassessment'), // ol.referralrequest
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),
@@ -60,6 +61,7 @@ const PROPERTY_TYPE_FQNS = {
   COUNTRY: new FullyQualifiedName('ol.country'),
   COUNTY: new FullyQualifiedName('ol.county'),
   DATE: new FullyQualifiedName('general.date'),
+  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
   EMAIL: new FullyQualifiedName('staff.email'),
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,

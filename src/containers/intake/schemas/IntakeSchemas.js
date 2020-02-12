@@ -1,5 +1,6 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 
 import { generateReviewSchemas } from '../../../utils/FormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -27,9 +28,10 @@ const {
   EMPLOYEE,
   EMPLOYMENT,
   HEARINGS,
+  LOCATION,
   MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
-  LOCATION,
+  NEEDS_ASSESSMENT,
   OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
@@ -42,6 +44,7 @@ const {
   COUNTRY,
   COUNTY,
   DATE,
+  DATETIME_COMPLETED,
   DOB,
   EMAIL,
   ENTITY_KEY_ID,
@@ -60,7 +63,6 @@ const {
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
   RACE,
-  REASON,
   RECOGNIZED_END_DATETIME,
   REGISTERED_FLAG,
   SOURCE,
@@ -554,7 +556,7 @@ const needsAssessmentSchema = {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)]: {
+        [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: {
           type: 'array',
           title: 'Check all the categories that apply.',
           items: {
@@ -563,15 +565,15 @@ const needsAssessmentSchema = {
           },
           uniqueItems: true,
         },
-        [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
+        [getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)]: {
           type: 'string',
           title: 'Notes',
         },
-        [getEntityAddressKey(1, REFERRAL_REQUEST, REASON)]: {
+        [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
           type: 'string',
-          title: 'Reason',
-          default: 'Needs Assessment'
-        }
+          title: 'Intake Date',
+          default: DateTime.local().toISO()
+        },
       },
     }
   }
@@ -580,21 +582,21 @@ const needsAssessmentSchema = {
 const needsAssessmentUiSchema = {
   [getPageSectionKey(1, 8)]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(1, REFERRAL_REQUEST, TYPE)]: {
+    [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: {
       classNames: 'column-span-12',
       'ui:widget': 'checkboxes',
     },
-    [getEntityAddressKey(1, REFERRAL_REQUEST, NOTES)]: {
+    [getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)]: {
       classNames: 'column-span-12',
       'ui:widget': 'TextareaWidget'
     },
-    [getEntityAddressKey(1, REFERRAL_REQUEST, REASON)]: {
+    [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
       'ui:widget': 'hidden',
     },
     'ui:order': [
-      getEntityAddressKey(1, REFERRAL_REQUEST, TYPE),
-      getEntityAddressKey(1, REFERRAL_REQUEST, NOTES),
-      getEntityAddressKey(1, REFERRAL_REQUEST, REASON)
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE),
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES),
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
     ]
   }
 };

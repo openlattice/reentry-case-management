@@ -31,7 +31,6 @@ import {
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
-  getNeedsAssessmentTypeKey,
   getOfficerAndAttorneyContactAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
@@ -39,7 +38,6 @@ import {
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
-  setReferralRequestFromNeedsAssessment,
   setRegisteredSexOffender,
 } from './utils/IntakeUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
@@ -68,8 +66,8 @@ const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { MANUAL_JAILS_PRISONS } = APP_TYPE_FQNS;
-const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPE_FQNS;
 
 const ActionRow = styled.div`
   display: flex;
@@ -193,8 +191,7 @@ class IntakeForm extends Component<Props, State> {
       setProbationOrParoleValues,
       setContactIndices,
       setDatesAsDateTimes,
-      setRegisteredSexOffender,
-      setReferralRequestFromNeedsAssessment
+      setRegisteredSexOffender
     )(formDataToProcess);
 
     let associations :Array<Array<*>> = pipeConcat(
@@ -215,7 +212,7 @@ class IntakeForm extends Component<Props, State> {
       [getPageSectionKey(1, 4), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
     );
 
-    const needsAssessmentTypeKey :string = getNeedsAssessmentTypeKey(formDataToProcess);
+    const needsAssessmentTypeKey :string = getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE);
     const allTheMappers = Map().withMutations((mappers :Map) => {
       const keyMappers = Map().withMutations((map :Map) => {
         map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value));
