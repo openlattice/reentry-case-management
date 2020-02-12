@@ -8,6 +8,7 @@ const SHARED :Object = {
 
 const APP :Object = {
   APP: 'app',
+  APP_TYPES_BY_ORG_ID: 'appTypesByOrgId',
   ENTITY_SET_IDS_BY_ORG_ID: 'entitySetIdsByOrgId',
   INITIALIZE_APPLICATION: 'initializeApplication',
   ORGS: 'organizations',
@@ -39,6 +40,7 @@ const INTAKE :Object = {
 };
 
 const PARTICIPANTS :Object = {
+  NEIGHBORS: 'neighbors',
   PARTICIPANTS: 'participants',
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
