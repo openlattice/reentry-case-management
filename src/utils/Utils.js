@@ -1,6 +1,7 @@
 // @flow
 import { List, Map } from 'immutable';
 import { Models } from 'lattice';
+import { DateTime } from 'luxon';
 
 import { getEKID, getFirstNeighborValue } from './DataUtils';
 
@@ -33,8 +34,19 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
   return [values, labels];
 };
 
+const sortEntitiesByDateProperty = (
+  entityCollection :List | Map,
+  datePropertyPath :FullyQualifiedName[]
+) :List | Map => entityCollection
+
+  .sortBy((entityObj :Map) => {
+    const date = DateTime.fromISO(entityObj.getIn(datePropertyPath.concat([0])));
+    return date.valueOf();
+  });
+
 export {
   getValuesFromEntityList,
   pipeConcat,
   pipeValue,
+  sortEntitiesByDateProperty,
 };
