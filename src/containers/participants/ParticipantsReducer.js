@@ -3,18 +3,27 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { SEARCH_PARTICIPANTS, searchParticipants } from './ParticipantsActions';
+import {
+  GET_PARTICIPANT_NEIGHBORS,
+  SEARCH_PARTICIPANTS,
+  getParticipantNeighbors,
+  searchParticipants,
+} from './ParticipantsActions';
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
-const { SEARCHED_PARTICIPANTS } = PARTICIPANTS;
+const { NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTICIPANTS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [GET_PARTICIPANT_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [SEARCH_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [NEIGHBORS]: Map(),
   [SEARCHED_PARTICIPANTS]: List(),
   [TOTAL_HITS]: 0,
 });
@@ -22,6 +31,24 @@ const INITIAL_STATE :Map = fromJS({
 export default function participantsReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case getParticipantNeighbors.case(action.type): {
+
+      return getParticipantNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(NEIGHBORS, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, action.id]),
+      });
+    }
 
     case searchParticipants.case(action.type): {
 
