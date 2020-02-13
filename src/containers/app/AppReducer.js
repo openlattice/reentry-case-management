@@ -17,7 +17,12 @@ import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { ENTITY_SET_IDS_BY_ORG_ID, ORGS, SELECTED_ORG_ID } = APP;
+const {
+  APP_TYPES_BY_ORG_ID,
+  ENTITY_SET_IDS_BY_ORG_ID,
+  ORGS,
+  SELECTED_ORG_ID
+} = APP;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
@@ -25,6 +30,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     }
   },
+  [APP_TYPES_BY_ORG_ID]: Map(),
   [ENTITY_SET_IDS_BY_ORG_ID]: Map(),
   [ORGS]: Map(),
   [SELECTED_ORG_ID]: '',
@@ -58,6 +64,7 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           let organizations :Map = state.get(ORGS);
 
           let entitySetIdsByOrgId :Map = state.get(ENTITY_SET_IDS_BY_ORG_ID);
+          let appTypesByOrgId :Map = state.get(APP_TYPES_BY_ORG_ID);
 
           appConfigs.forEach((appConfig :Object) => {
 
@@ -74,6 +81,10 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
                 entitySetIdsByOrgId = entitySetIdsByOrgId.setIn(
                   [orgId, fqn],
                   appConfig.config[fqn].entitySetId
+                );
+                appTypesByOrgId = appTypesByOrgId.setIn(
+                  [orgId, appConfig.config[fqn].entitySetId],
+                  fqn
                 );
               });
             }
@@ -93,6 +104,7 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           }
 
           return state
+            .set(APP_TYPES_BY_ORG_ID, appTypesByOrgId)
             .set(ENTITY_SET_IDS_BY_ORG_ID, entitySetIdsByOrgId)
             .set(ORGS, organizations)
             .set(SELECTED_ORG_ID, selectedOrganizationId)

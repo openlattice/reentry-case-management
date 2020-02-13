@@ -3,10 +3,12 @@
 const SHARED :Object = {
   ACTIONS: 'actions',
   REQUEST_STATE: 'requestState',
+  TOTAL_HITS: 'totalHits',
 };
 
 const APP :Object = {
   APP: 'app',
+  APP_TYPES_BY_ORG_ID: 'appTypesByOrgId',
   ENTITY_SET_IDS_BY_ORG_ID: 'entitySetIdsByOrgId',
   INITIALIZE_APPLICATION: 'initializeApplication',
   ORGS: 'organizations',
@@ -29,7 +31,6 @@ const RELEASES :Object = {
   RELEASES: 'releases',
   SEARCHED_JAIL_STAYS: 'searchedJailStays',
   SEARCHED_PEOPLE: 'searchedPeople',
-  TOTAL_HITS: 'totalHits',
 };
 
 const INTAKE :Object = {
@@ -38,10 +39,18 @@ const INTAKE :Object = {
   NEW_PARTICIPANT_EKID: 'newParticipantEKID',
 };
 
+const PARTICIPANTS :Object = {
+  JAIL_NAMES_BY_JAIL_STAY_EKID: 'jailNamesByJailStayEKID',
+  NEIGHBORS: 'neighbors',
+  PARTICIPANTS: 'participants',
+  SEARCHED_PARTICIPANTS: 'searchedParticipants',
+};
+
 export {
   APP,
   EDM,
   INTAKE,
+  PARTICIPANTS,
   RELEASES,
   SHARED,
 };

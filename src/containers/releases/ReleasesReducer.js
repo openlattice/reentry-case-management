@@ -18,14 +18,13 @@ import {
 } from './ReleasesActions';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 
-const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
 const {
   JAILS_BY_JAIL_STAY_EKID,
   JAIL_STAYS_BY_PERSON_EKID,
   PEOPLE_BY_JAIL_STAY_EKID,
   SEARCHED_JAIL_STAYS,
   SEARCHED_PEOPLE,
-  TOTAL_HITS,
 } = RELEASES;
 
 const INITIAL_STATE :Map = fromJS({
@@ -54,18 +53,12 @@ const INITIAL_STATE :Map = fromJS({
   [TOTAL_HITS]: 0,
 });
 
-export default function peopleReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
+export default function releasesReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
 
     case CLEAR_SEARCH_RESULTS: {
-      return state
-        .set(JAILS_BY_JAIL_STAY_EKID, Map())
-        .set(JAIL_STAYS_BY_PERSON_EKID, Map())
-        .set(PEOPLE_BY_JAIL_STAY_EKID, Map())
-        .set(SEARCHED_JAIL_STAYS, List())
-        .set(SEARCHED_PEOPLE, List())
-        .set(TOTAL_HITS, 0);
+      return INITIAL_STATE;
     }
 
     case getJailsByJailStayEKID.case(action.type): {

@@ -7,12 +7,15 @@ const LOGIN :string = '/login';
 
 const RELEASES :string = '/releases';
 const NEW_INTAKE :string = '/newintake';
-const PARTICIPANT_PROFILE :string = '/participants/:participantId';
+const PARTICIPANTS :string = '/participants';
+
+const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
 
 export {
   LOGIN,
   NEW_INTAKE,
+  PARTICIPANTS,
   PARTICIPANT_PROFILE,
-  ROOT,
   RELEASES,
+  ROOT,
 };
