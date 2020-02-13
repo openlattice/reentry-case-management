@@ -40,14 +40,7 @@ export default function participantsReducer(state :Map = INITIAL_STATE, action :
   switch (action.type) {
 
     case CLEAR_SEARCH_RESULTS: {
-      return state
-        .set(JAIL_NAMES_BY_JAIL_STAY_EKID, Map())
-        .set(NEIGHBORS, Map())
-        .set(SEARCHED_PARTICIPANTS, List())
-        .set(TOTAL_HITS, 0)
-        .setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, SEARCH_PARTICIPANTS, REQUEST_STATE], RequestStates.STANDBY);
+      return INITIAL_STATE;
     }
 
     case getJailNamesForJailStays.case(action.type): {

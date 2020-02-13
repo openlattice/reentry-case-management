@@ -58,18 +58,7 @@ export default function releasesReducer(state :Map = INITIAL_STATE, action :Sequ
   switch (action.type) {
 
     case CLEAR_SEARCH_RESULTS: {
-      return state
-        .set(JAILS_BY_JAIL_STAY_EKID, Map())
-        .set(JAIL_STAYS_BY_PERSON_EKID, Map())
-        .set(PEOPLE_BY_JAIL_STAY_EKID, Map())
-        .set(SEARCHED_JAIL_STAYS, List())
-        .set(SEARCHED_PEOPLE, List())
-        .set(TOTAL_HITS, 0)
-        .setIn([ACTIONS, GET_JAILS_BY_JAIL_STAY_EKID, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, SEARCH_JAIL_STAYS_BY_PERSON, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, SEARCH_PEOPLE_BY_JAIL_STAY, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, SEARCH_RELEASES_BY_PERSON_NAME, REQUEST_STATE], RequestStates.STANDBY);
+      return INITIAL_STATE;
     }
 
     case getJailsByJailStayEKID.case(action.type): {
