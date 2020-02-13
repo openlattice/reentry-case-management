@@ -141,8 +141,8 @@ class ParticipantsSearch extends Component<Props, State> {
 
   goToParticipantProfile = (clickedPerson :Map) => {
     const { actions } = this.props;
-    const { id } = clickedPerson;
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', id));
+    const ekid :UUID = clickedPerson.get('id', undefined);
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', ekid));
   }
 
   render() {
