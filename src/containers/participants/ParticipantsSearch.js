@@ -18,6 +18,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import NoResults from '../../components/noresults/NoResults';
 
+import * as Routes from '../../core/router/Routes';
 import {
   ButtonWrapper,
   FieldsGrid,
@@ -27,12 +28,14 @@ import {
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { aggregateResultsData } from './utils/ParticipantsUtils';
+import { goToRoute } from '../../core/router/RoutingActions';
 import {
   SEARCH_PARTICIPANTS,
   clearSearchResults,
   searchParticipants
 } from './ParticipantsActions';
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
 const { JAIL_NAMES_BY_JAIL_STAY_EKID, NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTICIPANTS;
@@ -59,6 +62,7 @@ const SearchGrid = styled(FieldsGrid)`
 type Props = {
   actions :{
     clearSearchResults :RequestSequence;
+    goToRoute :GoToRoute;
     searchParticipants :RequestSequence;
   };
   jailNamesByJailStayEKID :Map;
@@ -135,6 +139,12 @@ class ParticipantsSearch extends Component<Props, State> {
     this.setPage(newPage);
   }
 
+  goToParticipantProfile = (clickedPerson :Map) => {
+    const { actions } = this.props;
+    const { id } = clickedPerson;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', id));
+  }
+
   render() {
     const {
       jailNamesByJailStayEKID,
@@ -191,6 +201,7 @@ class ParticipantsSearch extends Component<Props, State> {
             hasSearched={hasSearched}
             isLoading={isSearching}
             noResults={NoParticipantsFound}
+            onResultClick={this.goToParticipantProfile}
             resultLabels={labels}
             results={data} />
       </CardStack>
@@ -214,6 +225,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     clearSearchResults,
+    goToRoute,
     searchParticipants,
   }, dispatch)
 });

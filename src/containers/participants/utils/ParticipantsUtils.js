@@ -43,6 +43,7 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
       dob: dateOfBirth,
       jail: jailName,
       enrollmentDate,
+      id: personEKID,
     });
     data = data.push(personDataObject);
   });
