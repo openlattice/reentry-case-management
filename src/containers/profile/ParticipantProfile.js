@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
@@ -8,19 +8,44 @@ import {
   CardSegment,
   CardStack,
   Colors,
-  DataGrid
+  DataGrid,
+  Spinner,
 } from 'lattice-ui-kit';
 // $FlowFixMe
 import { faUser } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { Match } from 'react-router';
 
 import COLORS from '../../core/style/Colors';
+import { getFormattedParticipantData } from './utils/ProfileUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
+import { GET_PARTICIPANT, getParticipant } from './ProfileActions';
+import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { NEUTRALS, PURPLES } = Colors;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { PARTICIPANT } = PROFILE;
 const carrot = '>';
+const participantGridLabels = Map({
+  lastName: 'Last name',
+  middleName: 'Middle name',
+  firstName: 'First name',
+  phoneNumber: 'Phone number',
+  dob: 'Date of birth',
+  age: 'Age',
+  gender: 'Gender',
+  race: 'Race',
+});
 
-const HeaderWrapper = styled.div`
+const CardInnerWrapper = styled.div`
   display: flex;
+`;
+
+const HeaderWrapper = styled(CardInnerWrapper)`
   margin-bottom: 21px;
 `;
 
@@ -48,33 +73,88 @@ const CardHeaderTitle = styled.div`
   line-height: 30px;
 `;
 
-const CardInnerWrapper = styled.div`
-  display: flex;
+const PictureWrapper = styled.div`
+  margin-right: 45px;
 `;
 
-const ParticipantProfile = () => (
-  <>
-    <HeaderWrapper>
-      <Header>PARTICIPANTS</Header>
-      <Carrot>{carrot}</Carrot>
-      <NameHeader>PERSON NAME</NameHeader>
-    </HeaderWrapper>
-    <CardStack>
-      <Card>
-        <CardHeader padding="30px">
-          <CardHeaderTitle>Person Profile</CardHeaderTitle>
-        </CardHeader>
-        <CardSegment padding="30px">
-          <CardInnerWrapper>
-            <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="6x" />
-            <DataGrid
-                data={Map()}
-                labelMap={Map()} />
-          </CardInnerWrapper>
-        </CardSegment>
-      </Card>
-    </CardStack>
-  </>
-);
+type Props = {
+  actions :{
+    getParticipant :RequestSequence;
+  };
+  match :Match;
+  participant :Map;
+  requestStates :{
+    GET_PARTICIPANT :RequestState;
+  };
+};
 
-export default ParticipantProfile;
+class ParticipantProfile extends Component<Props> {
+
+  componentDidMount() {
+    const {
+      actions,
+      match: {
+        params: { participantId }
+      }
+    } = this.props;
+    if (participantId) actions.getParticipant({ participantEKID: participantId });
+  }
+
+  render() {
+    const { participant, requestStates } = this.props;
+
+    if (requestIsPending(requestStates[GET_PARTICIPANT])) {
+      return (
+        <Spinner size="2x" />
+      );
+    }
+
+    const participantName :string = getPersonFullName(participant);
+    const participantData :Map = getFormattedParticipantData(participant);
+    return (
+      <>
+        <HeaderWrapper>
+          <Header>PARTICIPANTS</Header>
+          <Carrot>{carrot}</Carrot>
+          <NameHeader>{ participantName }</NameHeader>
+        </HeaderWrapper>
+        <CardStack>
+          <Card>
+            <CardHeader padding="30px">
+              <CardHeaderTitle>Person Profile</CardHeaderTitle>
+            </CardHeader>
+            <CardSegment padding="30px">
+              <CardInnerWrapper>
+                <PictureWrapper>
+                  <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="8x" />
+                </PictureWrapper>
+                <DataGrid
+                    data={participantData}
+                    labelMap={participantGridLabels} />
+              </CardInnerWrapper>
+            </CardSegment>
+          </Card>
+        </CardStack>
+      </>
+    );
+  }
+}
+
+const mapStateToProps = (state :Map) => {
+  const profile = state.get(PROFILE.PROFILE);
+  return {
+    [PARTICIPANT]: profile.get(PARTICIPANT),
+    requestStates: {
+      [GET_PARTICIPANT]: profile.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
+    },
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    getParticipant,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(ParticipantProfile);
