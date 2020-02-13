@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_SEARCH_RESULTS,
   GET_JAIL_NAMES_FOR_JAIL_STAYS,
   GET_PARTICIPANT_NEIGHBORS,
   SEARCH_PARTICIPANTS,
@@ -18,6 +19,9 @@ const { JAIL_NAMES_BY_JAIL_STAY_EKID, NEIGHBORS, SEARCHED_PARTICIPANTS } = PARTI
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [GET_JAIL_NAMES_FOR_JAIL_STAYS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -34,6 +38,17 @@ const INITIAL_STATE :Map = fromJS({
 export default function participantsReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_SEARCH_RESULTS: {
+      return state
+        .set(JAIL_NAMES_BY_JAIL_STAY_EKID, Map())
+        .set(NEIGHBORS, Map())
+        .set(SEARCHED_PARTICIPANTS, List())
+        .set(TOTAL_HITS, 0)
+        .setIn([ACTIONS, GET_JAIL_NAMES_FOR_JAIL_STAYS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, SEARCH_PARTICIPANTS, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case getJailNamesForJailStays.case(action.type): {
 

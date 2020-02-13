@@ -27,7 +27,11 @@ import {
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { aggregateResultsData } from './utils/ParticipantsUtils';
-import { SEARCH_PARTICIPANTS, searchParticipants } from './ParticipantsActions';
+import {
+  SEARCH_PARTICIPANTS,
+  clearSearchResults,
+  searchParticipants
+} from './ParticipantsActions';
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
@@ -54,6 +58,7 @@ const SearchGrid = styled(FieldsGrid)`
 
 type Props = {
   actions :{
+    clearSearchResults :RequestSequence;
     searchParticipants :RequestSequence;
   };
   jailNamesByJailStayEKID :Map;
@@ -83,6 +88,11 @@ class ParticipantsSearch extends Component<Props, State> {
       lastName: '',
       page: 0,
     };
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   searchPeople = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
@@ -203,6 +213,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearSearchResults,
     searchParticipants,
   }, dispatch)
 });
