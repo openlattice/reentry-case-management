@@ -399,26 +399,6 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
       });
     }
 
-    // get all people
-    if (!firstName.length && !lastName.length) {
-      const firstNameAllConstraint = getSearchTermNotExact(firstNamePTID, '*');
-      const lastNameAllConstraint = getSearchTermNotExact(lastNamePTID, '*');
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: firstNameAllConstraint,
-          fuzzy: false
-        }]
-      });
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameAllConstraint,
-          fuzzy: false
-        }]
-      });
-    }
-
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) {
       throw response.error;
