@@ -10,6 +10,7 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as ProfileSagas from '../../containers/profile/ProfileSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
@@ -41,6 +42,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),
     fork(ParticipantsSagas.getParticipantNeighborsWatcher),
     fork(ParticipantsSagas.searchParticipantsWatcher),
+
+    // ProfileSagas
+    fork(ProfileSagas.getParticipantWatcher),
 
     // ReleasesSagas
     fork(ReleasesSagas.getJailsByJailStayEKIDWatcher),

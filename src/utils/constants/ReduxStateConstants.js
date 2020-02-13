@@ -46,11 +46,17 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
+const PROFILE :Object = {
+  PARTICIPANT: 'participant',
+  PROFILE: 'profile',
+};
+
 export {
   APP,
   EDM,
   INTAKE,
   PARTICIPANTS,
+  PROFILE,
   RELEASES,
   SHARED,
 };
