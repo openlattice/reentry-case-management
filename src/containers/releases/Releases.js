@@ -207,8 +207,13 @@ class Releases extends Component<Props, State> {
     this.setState({ page });
   }
 
-  onPageChange = ({ page: newPage, start } :Object) => {
+  onPageChangeReleases = ({ page: newPage, start } :Object) => {
     this.searchForPeopleByRelease(undefined, start);
+    this.setPage(newPage);
+  }
+
+  onPageChangePersonName = ({ page: newPage, start } :Object) => {
+    this.searchForPeopleByName(undefined, start);
     this.setPage(newPage);
   }
 
@@ -279,6 +284,10 @@ class Releases extends Component<Props, State> {
     const hasSearched :boolean = reducedState
       ? (requestIsSuccess(reducedState) || requestIsFailure(reducedState))
       : false;
+
+    const onPageChange = searchingByDate
+      ? this.onPageChangeReleases
+      : this.onPageChangePersonName;
 
     const releasesData :List = this.getReleasesData();
     return (
