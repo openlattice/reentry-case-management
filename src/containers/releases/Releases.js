@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CardSegment,
+  CardStack,
   Colors,
   DatePicker,
   Input,
@@ -17,8 +18,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import NoResults from '../../components/noresults/NoResults';
 import * as Routes from '../../core/router/Routes';
-
 import {
   ButtonWrapper,
   FieldsGrid,
@@ -44,6 +45,12 @@ import {
 import { COLORS } from '../../core/style/Colors';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
+
+const NoReleasesFound = () => (
+  <Card>
+    <NoResults text="No Releases Found" />
+  </Card>
+);
 
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
@@ -146,6 +153,11 @@ class Releases extends Component<Props, State> {
       searchingByPerson: false,
       searchingByDate: true,
     };
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSearchResults();
   }
 
   searchForPeopleByRelease = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
@@ -286,79 +298,81 @@ class Releases extends Component<Props, State> {
             New Intake
           </StyledPrimaryButton>
         </HeaderRowWrapper>
-        <Card>
-          <CardSegment padding="30px" vertical>
-            <ButtonGrid>
-              <Radio
-                  checked={searchingByDate}
-                  label="Search by Release Date"
-                  mode="button"
-                  onChange={this.switchToReleaseDateContext}
-                  name="searchingByDate" />
-              <Radio
-                  checked={searchingByPerson}
-                  label="Search by Person"
-                  mode="button"
-                  onChange={this.switchToPersonContext}
-                  name="searchingByPerson" />
-            </ButtonGrid>
-            {
-              searchingByDate && (
-                <FieldsGrid>
-                  <div>
-                    <Label>Start date*</Label>
-                    <DatePicker onChange={this.setStartDate} />
-                  </div>
-                  <div>
-                    <Label>End date</Label>
-                    <DatePicker onChange={this.setEndDate} />
-                  </div>
-                  <ButtonWrapper>
-                    <StyledSearchButton onClick={this.searchForPeopleByRelease}>Search</StyledSearchButton>
-                  </ButtonWrapper>
-                </FieldsGrid>
-              )
-            }
-            {
-              searchingByPerson && (
-                <FieldsGrid>
-                  <div>
-                    <Label>Last name</Label>
-                    <Input
-                        name="lastName"
-                        onChange={this.onInputChange} />
-                  </div>
-                  <div>
-                    <Label>First name</Label>
-                    <Input
-                        name="firstName"
-                        onChange={this.onInputChange} />
-                  </div>
-                  <ButtonWrapper>
-                    <StyledSearchButton onClick={this.searchForPeopleByName}>Search</StyledSearchButton>
-                  </ButtonWrapper>
-                </FieldsGrid>
-              )
-            }
-          </CardSegment>
-        </Card>
-        {
-          hasSearched && (
-            <PaginationWrapper>
-              <PaginationToolbar
-                  count={totalHits}
-                  onPageChange={onPageChange}
-                  page={page}
-                  rowsPerPage={MAX_HITS} />
-            </PaginationWrapper>
-          )
-        }
-        <SearchResults
-            hasSearched={hasSearched}
-            isLoading={isSearching}
-            noResults=""
-            resultLabels={labels}
-            results={releasesData} />
+        <CardStack>
+          <Card>
+            <CardSegment padding="30px" vertical>
+              <ButtonGrid>
+                <Radio
+                    checked={searchingByDate}
+                    label="Search by Release Date"
+                    mode="button"
+                    onChange={this.switchToReleaseDateContext}
+                    name="searchingByDate" />
+                <Radio
+                    checked={searchingByPerson}
+                    label="Search by Person"
+                    mode="button"
+                    onChange={this.switchToPersonContext}
+                    name="searchingByPerson" />
+              </ButtonGrid>
+              {
+                searchingByDate && (
+                  <FieldsGrid>
+                    <div>
+                      <Label>Start date*</Label>
+                      <DatePicker onChange={this.setStartDate} />
+                    </div>
+                    <div>
+                      <Label>End date</Label>
+                      <DatePicker onChange={this.setEndDate} />
+                    </div>
+                    <ButtonWrapper>
+                      <StyledSearchButton onClick={this.searchForPeopleByRelease}>Search</StyledSearchButton>
+                    </ButtonWrapper>
+                  </FieldsGrid>
+                )
+              }
+              {
+                searchingByPerson && (
+                  <FieldsGrid>
+                    <div>
+                      <Label>Last name</Label>
+                      <Input
+                          name="lastName"
+                          onChange={this.onInputChange} />
+                    </div>
+                    <div>
+                      <Label>First name</Label>
+                      <Input
+                          name="firstName"
+                          onChange={this.onInputChange} />
+                    </div>
+                    <ButtonWrapper>
+                      <StyledSearchButton onClick={this.searchForPeopleByName}>Search</StyledSearchButton>
+                    </ButtonWrapper>
+                  </FieldsGrid>
+                )
+              }
+            </CardSegment>
+          </Card>
+          {
+            (hasSearched && !releasesData.isEmpty()) && (
+              <PaginationWrapper>
+                <PaginationToolbar
+                    count={totalHits}
+                    onPageChange={onPageChange}
+                    page={page}
+                    rowsPerPage={MAX_HITS} />
+              </PaginationWrapper>
+            )
+          }
+          <SearchResults
+              hasSearched={hasSearched}
+              isLoading={isSearching}
+              noResults={NoReleasesFound}
+              resultLabels={labels}
+              results={releasesData} />
+        </CardStack>
       </ContainerWrapper>
     );
   }
