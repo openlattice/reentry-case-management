@@ -19,7 +19,7 @@ import {
   getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
-import { getSearchTerm, getSearchTermNotExact, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
