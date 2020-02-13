@@ -19,6 +19,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import NoResults from '../../components/noresults/NoResults';
+import COLORS from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 import {
   ButtonWrapper,
@@ -42,7 +43,6 @@ import {
   requestIsPending,
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
-import { COLORS } from '../../core/style/Colors';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
