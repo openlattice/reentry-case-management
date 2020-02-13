@@ -160,8 +160,9 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
             const neighborESID :UUID = getNeighborESID(neighbor);
             const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
             const entity :Map = getNeighborDetails(neighbor);
-            const entityEKID :UUID = getEKID(entity);
-            personNeighborMap = personNeighborMap.setIn([neighborEntityFqn, entityEKID], entity);
+            let entityList :List = personNeighborMap.get(neighborEntityFqn, List());
+            entityList = entityList.push(entity);
+            personNeighborMap = personNeighborMap.set(neighborEntityFqn, entityList);
           });
           return personNeighborMap;
         }
@@ -171,8 +172,8 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
     const jailStayEKIDs :UUID[] = [];
     neighbors.forEach((personNeighborMap :Map) => {
       if (personNeighborMap.has(MANUAL_JAIL_STAYS)) {
-        personNeighborMap.get(MANUAL_JAIL_STAYS).keySeq().toList().forEach((ekid :string) => {
-          jailStayEKIDs.push(ekid);
+        personNeighborMap.get(MANUAL_JAIL_STAYS).forEach((jailStay :string) => {
+          jailStayEKIDs.push(getEKID(jailStay));
         });
       }
     });

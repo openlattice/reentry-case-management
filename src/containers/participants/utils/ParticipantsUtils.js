@@ -28,12 +28,12 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const dateOfBirth :string = DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT);
 
     const personEKID :UUID = getEKID(person);
-    const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS]).valueSeq().toList();
+    const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS]);
     const jailStay :Map = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]).last();
     const jailStayEKID :UUID = getEKID(jailStay);
     const jailName :string = jailNamesByJailStayEKID.get(jailStayEKID);
 
-    const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT]).valueSeq().last();
+    const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT]).get(0);
     // $FlowFixMe
     const { [DATETIME_COMPLETED]: enrollmentDateTime } = getEntityProperties(needsAssessment, [DATETIME_COMPLETED]);
     const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
