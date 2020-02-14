@@ -45,6 +45,8 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ProfileSagas
     fork(ProfileSagas.getParticipantWatcher),
+    fork(ProfileSagas.getParticipantNeighborsWatcher),
+    fork(ProfileSagas.loadProfileWatcher),
 
     // ReleasesSagas
     fork(ReleasesSagas.getJailsByJailStayEKIDWatcher),

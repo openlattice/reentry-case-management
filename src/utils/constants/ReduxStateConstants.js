@@ -48,6 +48,7 @@ const PARTICIPANTS :Object = {
 
 const PROFILE :Object = {
   PARTICIPANT: 'participant',
+  PARTICIPANT_NEIGHBORS: 'participantNeighbors',
   PROFILE: 'profile',
 };
 
