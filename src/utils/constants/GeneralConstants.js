@@ -10,8 +10,13 @@ const DATA_URL_IMG_PNG_PREFIX :string = 'data:image/png;base64,';
 // NOTE: this regex has only been tested for png, which has a different encoding format than jpeg and webp
 const DATA_URL_PREFIX_REGEX :RegExp = /^data:image\/[a-z]+;base64,/;
 
+const DST :string = 'dst';
+const SRC :string = 'src';
+
 export {
   APP_NAME,
   DATA_URL_IMG_PNG_PREFIX,
   DATA_URL_PREFIX_REGEX,
+  DST,
+  SRC,
 };
