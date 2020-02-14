@@ -25,10 +25,13 @@ import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
+const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const { NOTES, TYPE } = PROPERTY_TYPE_FQNS;
 const carrot = '>';
 const participantGridLabels = Map({
   lastName: 'Last name',
@@ -73,12 +76,30 @@ const CardHeaderTitle = styled.div`
   line-height: 30px;
 `;
 
+const SmallCardHeaderTitle = styled(CardHeaderTitle)`
+  color: ${NEUTRALS[0]};
+  font-size: 20px;
+`;
+
 const PictureWrapper = styled.div`
   margin-right: 45px;
 `;
 
-const StyledGrid = styled(DataGrid)`
-  flex-grow: 1;
+const NeedsTag = styled.div`
+  background-color: ${NEUTRALS[6]};
+  border-radius: 3px;
+  color: ${NEUTRALS[1]};
+  font-size: 14px;
+  line-height: 19px;
+  margin-right: 20px;
+  padding: 12px 20px;
+  text-align: center;
+`;
+
+const Notes = styled.div`
+  color: ${COLORS.GRAY_01};
+  font-size: 14px;
+  line-height: 19px;
 `;
 
 type Props = {
@@ -116,6 +137,8 @@ class ParticipantProfile extends Component<Props> {
 
     const participantName :string = getPersonFullName(participant);
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
+    const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
+    const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
     return (
       <>
         <HeaderWrapper>
@@ -133,11 +156,26 @@ class ParticipantProfile extends Component<Props> {
                 <PictureWrapper>
                   <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="8x" />
                 </PictureWrapper>
-                <StyledGrid
+                <DataGrid
                     data={participantData}
                     labelMap={participantGridLabels} />
               </CardInnerWrapper>
             </CardSegment>
+          </Card>
+          <Card>
+            <CardHeader padding="30px">
+              <SmallCardHeaderTitle>Needs</SmallCardHeaderTitle>
+            </CardHeader>
+            <CardSegment padding="30px">
+              { needs.map((need :string) => <NeedsTag key={need}>{ need }</NeedsTag>) }
+            </CardSegment>
+            {
+              notes && (
+                <CardSegment padding="30px">
+                  <Notes>{ notes }</Notes>
+                </CardSegment>
+              )
+            }
           </Card>
         </CardStack>
       </>
