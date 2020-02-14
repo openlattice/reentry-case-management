@@ -48,6 +48,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
+  ENROLLMENT_STATUS,
   NEEDS_ASSESSMENT,
   PEOPLE,
   PERSON_DETAILS,
@@ -194,10 +195,12 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
     const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: needsAssessmentESID },
       { direction: DST, neighborESID: contactInfoESID },
+      { direction: DST, neighborESID: enrollmentStatusESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
