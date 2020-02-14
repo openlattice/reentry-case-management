@@ -23,22 +23,22 @@ import COLORS from '../../core/style/Colors';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
-import { GET_PARTICIPANT, getParticipant } from './ProfileActions';
+import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { PARTICIPANT } = PROFILE;
+const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const carrot = '>';
 const participantGridLabels = Map({
   lastName: 'Last name',
-  middleName: 'Middle name',
   firstName: 'First name',
-  phoneNumber: 'Phone number',
   dob: 'Date of birth',
   age: 'Age',
   gender: 'Gender',
   race: 'Race',
+  ethnicity: 'Ethnicity',
+  preferredContact: 'Pref. Contact',
 });
 
 const CardInnerWrapper = styled.div`
@@ -50,10 +50,10 @@ const HeaderWrapper = styled(CardInnerWrapper)`
 `;
 
 const Header = styled.div`
-  font-weight: bold;
-  font-size: 12px;
-  line-height: 16px;
   color: ${PURPLES[1]};
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 16px;
   text-transform: uppercase;
 `;
 
@@ -77,14 +77,19 @@ const PictureWrapper = styled.div`
   margin-right: 45px;
 `;
 
+const StyledGrid = styled(DataGrid)`
+  flex-grow: 1;
+`;
+
 type Props = {
   actions :{
-    getParticipant :RequestSequence;
+    loadProfile :RequestSequence;
   };
   match :Match;
   participant :Map;
+  participantNeighbors :Map;
   requestStates :{
-    GET_PARTICIPANT :RequestState;
+    LOAD_PROFILE :RequestState;
   };
 };
 
@@ -97,20 +102,20 @@ class ParticipantProfile extends Component<Props> {
         params: { participantId }
       }
     } = this.props;
-    if (participantId) actions.getParticipant({ participantEKID: participantId });
+    if (participantId) actions.loadProfile({ participantEKID: participantId });
   }
 
   render() {
-    const { participant, requestStates } = this.props;
+    const { participant, participantNeighbors, requestStates } = this.props;
 
-    if (requestIsPending(requestStates[GET_PARTICIPANT])) {
+    if (requestIsPending(requestStates[LOAD_PROFILE])) {
       return (
         <Spinner size="2x" />
       );
     }
 
     const participantName :string = getPersonFullName(participant);
-    const participantData :Map = getFormattedParticipantData(participant);
+    const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
     return (
       <>
         <HeaderWrapper>
@@ -128,7 +133,7 @@ class ParticipantProfile extends Component<Props> {
                 <PictureWrapper>
                   <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="8x" />
                 </PictureWrapper>
-                <DataGrid
+                <StyledGrid
                     data={participantData}
                     labelMap={participantGridLabels} />
               </CardInnerWrapper>
@@ -144,15 +149,16 @@ const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
   return {
     [PARTICIPANT]: profile.get(PARTICIPANT),
+    [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     requestStates: {
-      [GET_PARTICIPANT]: profile.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
+      [LOAD_PROFILE]: profile.getIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE]),
     },
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    getParticipant,
+    loadProfile,
   }, dispatch)
 });
 
