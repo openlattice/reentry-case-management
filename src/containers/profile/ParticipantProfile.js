@@ -21,7 +21,6 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
-import Grid from '../../components/grid/Grid';
 import COLORS from '../../core/style/Colors';
 import { getFormattedParticipantData, getMostRecentReleaseDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
