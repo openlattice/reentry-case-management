@@ -1,8 +1,10 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { Map } from 'immutable';
+import styled, { css } from 'styled-components';
+import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
+  Button,
   Card,
   CardHeader,
   CardSegment,
@@ -23,6 +25,7 @@ import COLORS from '../../core/style/Colors';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -30,8 +33,14 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
-const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
-const { NOTES, TYPE } = PROPERTY_TYPE_FQNS;
+const { ENROLLMENT_STATUS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const {
+  EFFECTIVE_DATE,
+  DATETIME_COMPLETED,
+  NOTES,
+  STATUS,
+  TYPE
+} = PROPERTY_TYPE_FQNS;
 const carrot = '>';
 const participantGridLabels = Map({
   lastName: 'Last name',
@@ -44,12 +53,25 @@ const participantGridLabels = Map({
   preferredContact: 'Pref. Contact',
 });
 
+const ProfileCardStack = styled(CardStack)`
+  & > div {
+    margin: 15px 0;
+  }
+`;
+
 const CardInnerWrapper = styled.div`
   display: flex;
 `;
 
 const HeaderWrapper = styled(CardInnerWrapper)`
   margin-bottom: 21px;
+  justify-content: space-between;
+`;
+
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 153px;
+  grid-gap: 0 20px;
 `;
 
 const Header = styled.div`
@@ -102,6 +124,54 @@ const Notes = styled.div`
   line-height: 19px;
 `;
 
+const EventsCard = styled(Card)`
+  & > ${CardSegment} {
+    border: none;
+  }
+`;
+
+const GrayBar = styled(CardSegment)`
+  align-items: center;
+  background-color: ${NEUTRALS[6]};
+  color: ${NEUTRALS[0]};
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 19px;
+`;
+
+const EventCardSegment = styled(CardSegment)`
+  border-bottom: 1px solid ${NEUTRALS[4]};
+`;
+
+const eventTextStyles = css`
+  color: ${COLORS.GRAY_01};
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 19px;
+`;
+
+const EventDateWrapper = styled.div`
+  margin-right: 61px;
+`;
+
+const EventWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  ${eventTextStyles}
+`;
+
+const EventText = styled.div`
+  ${eventTextStyles}
+  font-weight: normal;
+  margin-top: 10px;
+`;
+
+const EventStatusText = styled.div`
+  ${eventTextStyles}
+  text-transform: uppercase;
+`;
+
 type Props = {
   actions :{
     loadProfile :RequestSequence;
@@ -139,14 +209,22 @@ class ParticipantProfile extends Component<Props> {
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
     const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
     const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
+    const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
+    const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
     return (
       <>
         <HeaderWrapper>
-          <Header>PARTICIPANTS</Header>
-          <Carrot>{carrot}</Carrot>
-          <NameHeader>{ participantName }</NameHeader>
+          <CardInnerWrapper>
+            <Header>PARTICIPANTS</Header>
+            <Carrot>{carrot}</Carrot>
+            <NameHeader>{ participantName }</NameHeader>
+          </CardInnerWrapper>
+          <ButtonsWrapper>
+            <Button mode="primary">Record Event</Button>
+          </ButtonsWrapper>
         </HeaderWrapper>
-        <CardStack>
+        <ProfileCardStack>
           <Card>
             <CardHeader padding="30px">
               <CardHeaderTitle>Person Profile</CardHeaderTitle>
@@ -177,7 +255,50 @@ class ParticipantProfile extends Component<Props> {
               )
             }
           </Card>
-        </CardStack>
+          <EventsCard>
+            <CardHeader padding="30px">
+              <SmallCardHeaderTitle>Program History</SmallCardHeaderTitle>
+            </CardHeader>
+            <GrayBar padding="15px 30px">
+              <div>Released from: Jail</div>
+              <div>Released: 10/18/2019</div>
+            </GrayBar>
+            {
+              !enrollmentEvents.isEmpty() && (
+                enrollmentEvents.map((enrollmentStatus :Map) => {
+                  // $FlowFixMe
+                  const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
+                    enrollmentStatus,
+                    [EFFECTIVE_DATE, STATUS]
+                  );
+                  const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
+                  return (
+                    <EventCardSegment padding="25px 30px">
+                      <CardInnerWrapper>
+                        <EventDateWrapper>{ date }</EventDateWrapper>
+                        <EventWrapper>
+                          <EventStatusText>{ status }</EventStatusText>
+                          <EventText>Related Organization</EventText>
+                          <EventText>Point of Contact</EventText>
+                        </EventWrapper>
+                      </CardInnerWrapper>
+                    </EventCardSegment>
+                  );
+                })
+              )
+            }
+            <CardSegment padding="25px 30px">
+              <CardInnerWrapper>
+                <EventDateWrapper>{ enrollmentDate }</EventDateWrapper>
+                <EventWrapper>
+                  <EventStatusText>ENROLLED</EventStatusText>
+                  <EventText>Re-entry Program</EventText>
+                  <EventText>Forms Completed: 2/2</EventText>
+                </EventWrapper>
+              </CardInnerWrapper>
+            </CardSegment>
+          </EventsCard>
+        </ProfileCardStack>
       </>
     );
   }
