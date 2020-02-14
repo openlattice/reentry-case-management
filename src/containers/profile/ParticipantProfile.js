@@ -22,7 +22,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import COLORS from '../../core/style/Colors';
-import { getFormattedParticipantData } from './utils/ProfileUtils';
+import { getFormattedParticipantData, getMostRecentReleaseDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -33,7 +33,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
-const { ENROLLMENT_STATUS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS, MANUAL_JAIL_STAYS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const {
   EFFECTIVE_DATE,
   DATETIME_COMPLETED,
@@ -212,6 +212,8 @@ class ParticipantProfile extends Component<Props> {
     const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
     const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
     const enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
+    const releaseDate :string = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
+    const releaseText :string = `Released: ${releaseDate}`;
     return (
       <>
         <HeaderWrapper>
@@ -261,7 +263,7 @@ class ParticipantProfile extends Component<Props> {
             </CardHeader>
             <GrayBar padding="15px 30px">
               <div>Released from: Jail</div>
-              <div>Released: 10/18/2019</div>
+              { releaseDate && (<div>{ releaseText }</div>) }
             </GrayBar>
             {
               !enrollmentEvents.isEmpty() && (

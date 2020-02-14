@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
+import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { CONTACT_INFO, PERSON_DETAILS } = APP_TYPE_FQNS;
@@ -17,6 +18,7 @@ const {
   MIDDLE_NAME,
   PHONE_NUMBER,
   PREFERRED,
+  PROJECTED_RELEASE_DATETIME,
   RACE,
 } = PROPERTY_TYPE_FQNS;
 
@@ -62,7 +64,18 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   return participantData;
 };
 
-/* eslint-disable import/prefer-default-export */
+const getMostRecentReleaseDate = (jailStays :List) :string => {
+
+  if (jailStays.isEmpty()) return '';
+  const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
+  // $FlowFixMe
+  const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
+    sortedJailStays.last(), [PROJECTED_RELEASE_DATETIME]
+  );
+  return DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+};
+
 export {
-  getFormattedParticipantData
+  getFormattedParticipantData,
+  getMostRecentReleaseDate,
 };
