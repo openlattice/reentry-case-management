@@ -21,6 +21,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import Grid from '../../components/grid/Grid';
 import COLORS from '../../core/style/Colors';
 import { getFormattedParticipantData, getMostRecentReleaseDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
@@ -61,6 +62,7 @@ const ProfileCardStack = styled(CardStack)`
 
 const CardInnerWrapper = styled.div`
   display: flex;
+  width: 100%;
 `;
 
 const HeaderWrapper = styled(CardInnerWrapper)`
@@ -238,7 +240,9 @@ class ParticipantProfile extends Component<Props> {
                 </PictureWrapper>
                 <DataGrid
                     data={participantData}
-                    labelMap={participantGridLabels} />
+                    emptyString="----"
+                    labelMap={participantGridLabels}
+                    truncate />
               </CardInnerWrapper>
             </CardSegment>
           </Card>

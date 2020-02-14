@@ -36,7 +36,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [LAST_NAME]: lastName,
     // $FlowFixMe
     [RACE]: race
-  } = getEntityProperties(participant, [DOB, FIRST_NAME, LAST_NAME, MIDDLE_NAME, RACE]);
+  } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE], '----');
   const dob :string = DateTime.fromISO(dobISO).toLocaleString(DateTime.DATE_SHORT);
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
   let gender :string = '';
