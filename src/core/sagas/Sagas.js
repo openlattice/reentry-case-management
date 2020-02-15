@@ -8,6 +8,9 @@ import { SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as IntakeSagas from '../../containers/intake/IntakeSagas';
+import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -25,9 +28,26 @@ export default function* sagas() :Generator<*, *, *> {
 
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
+    fork(AppSagas.switchOrganizationWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
+
+    // IntakeSagas
+    fork(IntakeSagas.getIncarcerationFacilitiesWatcher),
+    fork(IntakeSagas.submitIntakeFormWatcher),
+
+    // ParticipantsSagas
+    fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),
+    fork(ParticipantsSagas.getParticipantNeighborsWatcher),
+    fork(ParticipantsSagas.searchParticipantsWatcher),
+
+    // ReleasesSagas
+    fork(ReleasesSagas.getJailsByJailStayEKIDWatcher),
+    fork(ReleasesSagas.searchJailStaysByPersonWatcher),
+    fork(ReleasesSagas.searchPeopleByJailStayWatcher),
+    fork(ReleasesSagas.searchReleasesByDateWatcher),
+    fork(ReleasesSagas.searchReleasesByPersonNameWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),

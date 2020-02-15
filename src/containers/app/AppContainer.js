@@ -27,14 +27,22 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as AppActions from './AppActions';
-
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
+import IntakeForm from '../intake/IntakeForm';
+import ParticipantsSearch from '../participants/ParticipantsSearch';
+import ParticipantProfile from '../profile/ParticipantProfile';
+import Releases from '../releases/Releases';
+
+import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
+
 import { isNonEmptyString } from '../../utils/LangUtils';
+import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
-const { INITIALIZE_APPLICATION } = AppActions;
+const { INITIALIZE_APPLICATION, switchOrganization } = AppActions;
+const { ORGS, SELECTED_ORG_ID } = APP;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const Error = styled.div`
   text-align: center;
@@ -44,10 +52,13 @@ type Props = {
   actions :{
     initializeApplication :RequestSequence;
     logout :() => void;
+    switchOrganization :RequestSequence;
   };
+  organizations :Map;
   requestStates :{
     INITIALIZE_APPLICATION :RequestState;
   };
+  selectedOrgId :UUID;
 };
 
 class AppContainer extends Component<Props> {
@@ -69,6 +80,16 @@ class AppContainer extends Component<Props> {
     // }
   }
 
+  switchOrganization = (organization :Object) => {
+    const { actions, selectedOrgId } = this.props;
+    if (organization.value !== selectedOrgId) {
+      actions.switchOrganization({
+        orgId: organization.value,
+        title: organization.label
+      });
+    }
+  }
+
   renderAppContent = () => {
 
     const { requestStates } = this.props;
@@ -77,8 +98,10 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route exact strict path="/home" />
-          <Route path="/tab1" render={() => (<AppContentWrapper>Tab 1</AppContentWrapper>)} />
-          <Route path="/tab2" render={() => (<AppContentWrapper>Tab 2</AppContentWrapper>)} />
+          <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
+          <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
+          <Route path={Routes.RELEASES} component={Releases} />
+          <Route path={Routes.PARTICIPANTS} component={ParticipantsSearch} />
           <Redirect to="/home" />
         </Switch>
       );
@@ -101,6 +124,8 @@ class AppContainer extends Component<Props> {
 
   render() {
 
+    const { organizations, selectedOrgId } = this.props;
+
     const userInfo = AuthUtils.getUserInfo();
     let user = null;
     if (isNonEmptyString(userInfo.name)) {
@@ -114,14 +139,19 @@ class AppContainer extends Component<Props> {
       <AppContainerWrapper>
         <AppHeaderWrapper
             appIcon={OpenLatticeIcon}
-            appTitle="Reentry Case Management"
+            appTitle="Re-entry Case Management"
             logout={this.logout}
+            organizationsSelect={{
+              onChange: this.switchOrganization,
+              organizations,
+              selectedOrganizationId: selectedOrgId
+            }}
             user={user}>
           <AppNavigationWrapper>
             <NavLink to={Routes.ROOT} />
-            <NavLink to="/home">Home</NavLink>
-            <NavLink to="/tab1">Tab 1</NavLink>
-            <NavLink to="/tab2">Tab 2</NavLink>
+            <NavLink to={Routes.RELEASES}>Releases</NavLink>
+            <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
+            <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
           </AppNavigationWrapper>
         </AppHeaderWrapper>
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
@@ -133,15 +163,18 @@ class AppContainer extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => ({
+  [ORGS]: state.getIn([APP.APP, ORGS]),
   requestStates: {
-    [INITIALIZE_APPLICATION]: state.getIn(['app', INITIALIZE_APPLICATION, 'requestState']),
-  }
+    [INITIALIZE_APPLICATION]: state.getIn([APP.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
+  },
+  [SELECTED_ORG_ID]: state.getIn([APP.APP, SELECTED_ORG_ID]),
 });
 
 const mapActionsToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout: AuthActions.logout,
+    switchOrganization,
   }, dispatch)
 });
 
