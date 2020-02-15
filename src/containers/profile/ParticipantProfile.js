@@ -21,11 +21,12 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import RecordEventModal from './events/RecordEventModal';
 import COLORS from '../../core/style/Colors';
 import { getFormattedParticipantData, getMostRecentReleaseDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -185,7 +186,19 @@ type Props = {
   };
 };
 
-class ParticipantProfile extends Component<Props> {
+type State = {
+  eventModalIsOpen :boolean;
+};
+
+class ParticipantProfile extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      eventModalIsOpen: false,
+    };
+  }
 
   componentDidMount() {
     const {
@@ -197,8 +210,17 @@ class ParticipantProfile extends Component<Props> {
     if (participantId) actions.loadProfile({ participantEKID: participantId });
   }
 
+  openEventModal = () => {
+    this.setState({ eventModalIsOpen: true });
+  }
+
+  closeEventModal = () => {
+    this.setState({ eventModalIsOpen: false });
+  }
+
   render() {
     const { participant, participantNeighbors, requestStates } = this.props;
+    const { eventModalIsOpen } = this.state;
 
     if (requestIsPending(requestStates[LOAD_PROFILE])) {
       return (
@@ -206,6 +228,7 @@ class ParticipantProfile extends Component<Props> {
       );
     }
 
+    const personEKID :UUID = getEKID(participant);
     const participantName :string = getPersonFullName(participant);
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
     const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
@@ -224,7 +247,7 @@ class ParticipantProfile extends Component<Props> {
             <NameHeader>{ participantName }</NameHeader>
           </CardInnerWrapper>
           <ButtonsWrapper>
-            <Button mode="primary">Record Event</Button>
+            <Button mode="primary" onClick={this.openEventModal}>Record Event</Button>
           </ButtonsWrapper>
         </HeaderWrapper>
         <ProfileCardStack>
@@ -304,6 +327,10 @@ class ParticipantProfile extends Component<Props> {
             </CardSegment>
           </EventsCard>
         </ProfileCardStack>
+        <RecordEventModal
+            isOpen={eventModalIsOpen}
+            onClose={this.closeEventModal}
+            personEKID={personEKID} />
       </>
     );
   }
