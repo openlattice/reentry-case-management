@@ -1,9 +1,11 @@
 // @flow
 import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 
 import { getValuesFromEntityList } from '../../../../utils/Utils';
 import { deleteKeyFromFormData } from '../../../../utils/FormUtils';
+import { isDefined } from '../../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -14,7 +16,7 @@ const {
   PEOPLE,
   PROVIDER,
 } = APP_TYPE_FQNS;
-const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPE_FQNS;
+const { EFFECTIVE_DATE, ENTITY_KEY_ID, NAME } = PROPERTY_TYPE_FQNS;
 
 const hydrateEventSchema = (schema :Object, providers :List) :Object => {
   if (providers.isEmpty()) return schema;
@@ -49,7 +51,18 @@ const prepareFormDataForProcessing = (formData :Object, personEKID :UUID) :Objec
 
   const providerPath :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)];
   const providerEKID :UUID = getIn(formData, providerPath);
-  const entityDataToProcess :Object = deleteKeyFromFormData(formData, providerPath);
+  let entityDataToProcess :Object = deleteKeyFromFormData(formData, providerPath);
+  const datePath :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)];
+  const eventDate :string = getIn(entityDataToProcess, datePath);
+  const now :DateTime = DateTime.local();
+  if (!isDefined(eventDate)) entityDataToProcess = setIn(entityDataToProcess, datePath, now.toISO());
+  else {
+    entityDataToProcess = setIn(
+      entityDataToProcess,
+      datePath,
+      DateTime.fromSQL(eventDate.concat(' ', now.toISOTime())).toISO()
+    );
+  }
 
   const associations :Array<Array<*>> = [
     [HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}],
