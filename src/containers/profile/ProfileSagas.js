@@ -74,7 +74,6 @@ const getAppFromState = (state) => state.get(APP.APP, Map());
 function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse :Object = {};
 
   try {
     yield put(getEnrollmentStatusNeighbors.request(id, value));
@@ -125,7 +124,6 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
       });
     }
 
-    workerResponse.data = response.data;
     yield put(getEnrollmentStatusNeighbors.success(id, { contactNameByProviderEKID, providerByStatusEKID }));
   }
   catch (error) {
@@ -135,7 +133,6 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
   finally {
     yield put(getEnrollmentStatusNeighbors.finally(id));
   }
-  return workerResponse;
 }
 
 function* getEnrollmentStatusNeighborsWatcher() :Generator<*, *, *> {
