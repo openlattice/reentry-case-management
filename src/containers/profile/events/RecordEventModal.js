@@ -6,6 +6,7 @@ import {
   CardSegment,
   Colors,
   Modal,
+  ModalFooter,
 } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { faTimes } from '@fortawesome/pro-light-svg-icons';
@@ -20,6 +21,7 @@ import {
   getProviders,
   recordEnrollmentEvent,
 } from './EventActions';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { schema, uiSchema } from './schemas/RecordEventSchemas';
 import { hydrateEventSchema, prepareFormDataForProcessing } from './utils/EventUtils';
 import {
@@ -32,8 +34,8 @@ import {
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { NEUTRALS } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
-const { TYPE_IDS_BY_FQN } = EDM;
-const { PROPERTY_TYPES, PROVIDERS } = EVENT;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
+const { PROVIDERS } = EVENT;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const ModalCardSegment = styled(CardSegment)`
@@ -92,14 +94,40 @@ type Props = {
   };
 };
 
-class RecordEventModal extends Component<Props> {
+type State = {
+  formData :Object;
+};
+
+class RecordEventModal extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     const { actions } = this.props;
     actions.getProviders();
   }
 
-  onSubmit = ({ formData } :Object) => {
+  componentDidUpdate(prevProps :Props) {
+    const { requestStates, onClose } = this.props;
+    const { requestStates: prevRequestStates } = prevProps;
+    if (requestIsSuccess(requestStates[RECORD_ENROLLMENT_EVENT])
+      && requestIsPending(prevRequestStates[RECORD_ENROLLMENT_EVENT])) {
+      onClose();
+    }
+  }
+
+  onChange = ({ formData } :Object) => {
+    this.setState({ formData });
+  }
+
+  onSubmit = () => {
+    const { formData } = this.state;
     const {
       actions,
       entitySetIdsByFqn,
@@ -123,23 +151,38 @@ class RecordEventModal extends Component<Props> {
     return <Header onClose={onClose} />;
   }
 
+  renderFooter = () => {
+    const { requestStates } = this.props;
+    const isSubmitting :boolean = requestIsPending(requestStates[RECORD_ENROLLMENT_EVENT]);
+    return (
+      <ModalFooter
+          isPendingPrimary={isSubmitting}
+          onClickPrimary={this.onSubmit}
+          textPrimary="Save" />
+    );
+  }
+
   render() {
     const { isOpen, onClose, providers } = this.props;
+    const { formData } = this.state;
     const hydratedSchema :Object = hydrateEventSchema(schema, providers);
     return (
       <Modal
           isVisible={isOpen}
           onClickPrimary={this.onSubmit}
           onClose={onClose}
-          shouldStretchButtons
           textPrimary="Save"
           viewportScrolling
+          withFooter={this.renderFooter}
           withHeader={this.renderHeader}>
         <ActionText>
           Select an event type and the related organization to record it in program history.
         </ActionText>
         <Form
+            formData={formData}
             hideSubmit
+            onChange={this.onChange}
+            onSubmit={this.onSubmit}
             noPadding
             schema={hydratedSchema}
             uiSchema={uiSchema} />
