@@ -4,9 +4,11 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
   LOAD_PROFILE,
+  getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
   loadProfile,
@@ -14,10 +16,18 @@ import {
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
+const {
+  CONTACT_NAME_BY_PROVIDER_EKID,
+  PARTICIPANT,
+  PARTICIPANT_NEIGHBORS,
+  PROVIDER_BY_STATUS_EKID,
+} = PROFILE;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -28,13 +38,34 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [CONTACT_NAME_BY_PROVIDER_EKID]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
+  [PROVIDER_BY_STATUS_EKID]: Map(),
 });
 
 export default function profileReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case getEnrollmentStatusNeighbors.case(action.type): {
+
+      return getEnrollmentStatusNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUS_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUS_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { contactNameByProviderEKID, providerByStatusEKID } = seqAction.value;
+          return state
+            .set(CONTACT_NAME_BY_PROVIDER_EKID, contactNameByProviderEKID)
+            .set(PROVIDER_BY_STATUS_EKID, providerByStatusEKID)
+            .setIn([ACTIONS, GET_ENROLLMENT_STATUS_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_ENROLLMENT_STATUS_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS_NEIGHBORS, action.id]),
+      });
+    }
 
     case getParticipant.case(action.type): {
 

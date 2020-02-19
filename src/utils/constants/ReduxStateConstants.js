@@ -43,9 +43,11 @@ const PARTICIPANTS :Object = {
 };
 
 const PROFILE :Object = {
+  CONTACT_NAME_BY_PROVIDER_EKID: 'contactNameByProviderEKID',
   PARTICIPANT: 'participant',
   PARTICIPANT_NEIGHBORS: 'participantNeighbors',
   PROFILE: 'profile',
+  PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
 };
 
 const RELEASES :Object = {

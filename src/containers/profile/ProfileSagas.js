@@ -26,16 +26,17 @@ import { isDefined } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
-  // getEntityProperties,
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,
-  // getPTIDFromEDM,
 } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import {
+  GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
   LOAD_PROFILE,
+  getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
   loadProfile,
@@ -59,6 +60,7 @@ const {
   PEOPLE,
   PERSON_DETAILS,
   PROVIDER,
+  PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
@@ -81,34 +83,50 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
     const app = yield select(getAppFromState);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const providersESID :UUID = getESIDFromApp(app, PROVIDER);
-    const searchFilter = {
+    let searchFilter :Object = {
       entityKeyIds: enrollmentStatusEKIDs,
       destinationEntitySetIds: [],
       sourceEntitySetIds: [providersESID],
     };
-    const response :Object = yield call(
+    let response :Object = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
     );
     if (response.error) {
       throw response.error;
     }
-    let enrollmentStatusNeighborMap :Map = Map();
-    const neighbors :Map = fromJS(response.data);
-    if (!neighbors.isEmpty()) {
-      neighbors.forEach((neighborList :List, enrollmentStatusEKID :UUID) => {
-        neighborList.forEach((neighbor :Map) => {
-          const entity :Map = getNeighborDetails(neighbor);
-          let entityList :List = enrollmentStatusNeighborMap.get(PROVIDER, List());
-          entityList = entityList.push(entity);
-          personNeighborMap = personNeighborMap.set(neighborEntityFqn, entityList);
-        });
-        return personNeighborMap;
+    let providerByStatusEKID :Map = Map();
+    const providerEKIDs :UUID[] = [];
+    fromJS(response.data).forEach((neighborList :List, enrollmentStatusEKID :UUID) => {
+      const entity :Map = getNeighborDetails(neighborList.get(0));
+      providerByStatusEKID = providerByStatusEKID.set(enrollmentStatusEKID, entity);
+      providerEKIDs.push(getEKID(entity));
+    });
+
+    let contactNameByProviderEKID :Map = Map();
+    if (providerEKIDs.length) {
+      const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
+      searchFilter = {
+        entityKeyIds: providerEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [providerStaffESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: providersESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      fromJS(response.data).forEach((neighborList :List, providerEKID :UUID) => {
+        const firstContactPerson :Map = getNeighborDetails(neighborList.get(0));
+        const contactName :string = getPersonFullName(firstContactPerson);
+        contactNameByProviderEKID = contactNameByProviderEKID.set(providerEKID, contactName);
       });
     }
 
     workerResponse.data = response.data;
-    yield put(getEnrollmentStatusNeighbors.success(id, personNeighborMap));
+    yield put(getEnrollmentStatusNeighbors.success(id, { contactNameByProviderEKID, providerByStatusEKID }));
   }
   catch (error) {
     LOG.error(action.type, error);
@@ -302,6 +320,8 @@ function* loadProfileWatcher() :Generator<*, *, *> {
 }
 
 export {
+  getEnrollmentStatusNeighborsWatcher,
+  getEnrollmentStatusNeighborsWorker,
   getParticipantWatcher,
   getParticipantWorker,
   getParticipantNeighborsWatcher,
