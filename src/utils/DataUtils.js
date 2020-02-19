@@ -70,6 +70,10 @@ const getPTIDFromEDM = (
   edm :Map, propertyFqn :FullyQualifiedName
 ) => edm.getIn([EDM.TYPE_IDS_BY_FQN, EDM.PROPERTY_TYPES, propertyFqn]);
 
+const getPropertyFqnFromEDM = (
+  edm :Map, ptid :UUID
+) => new FullyQualifiedName(edm.getIn([EDM.TYPES_BY_ID, EDM.PROPERTY_TYPES, ptid, 'type']));
+
 const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
   if (isImmutable(neighborObj)) {
@@ -89,4 +93,5 @@ export {
   getNeighborDetails,
   getNeighborESID,
   getPTIDFromEDM,
+  getPropertyFqnFromEDM,
 };
