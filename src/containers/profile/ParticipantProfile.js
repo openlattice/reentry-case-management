@@ -23,10 +23,11 @@ import type { Match } from 'react-router';
 
 import RecordEventModal from './events/RecordEventModal';
 import COLORS from '../../core/style/Colors';
-import { getFormattedParticipantData, getMostRecentReleaseDate } from './utils/ProfileUtils';
+import { getFormattedParticipantData, getMostRecentReleaseDate, getReentryEnrollmentDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
+import { sortEntitiesByDateProperty } from '../../utils/Utils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -39,12 +40,17 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
-const { ENROLLMENT_STATUS, MANUAL_JAIL_STAYS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const {
+  ENROLLMENT_STATUS,
+  MANUAL_JAIL_STAYS,
+  NEEDS_ASSESSMENT,
+  REFERRAL_REQUEST,
+} = APP_TYPE_FQNS;
 const {
   EFFECTIVE_DATE,
-  DATETIME_COMPLETED,
   NAME,
   NOTES,
+  SOURCE,
   STATUS,
   TYPE
 } = PROPERTY_TYPE_FQNS;
@@ -247,11 +253,11 @@ class ParticipantProfile extends Component<Props, State> {
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
     const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
     const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
-    const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
-    const enrollmentDate :string = enrollmentDateTime
-      ? DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT)
-      : '----';
-    const enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
+    const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
+    const referralSource :string = `Referred from: ${participantNeighbors
+      .getIn([REFERRAL_REQUEST, 0, SOURCE, 0], '----')}`;
+    let enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
+    enrollmentEvents = sortEntitiesByDateProperty(enrollmentEvents, [EFFECTIVE_DATE]).reverse();
     const releaseDate :string = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
     const releaseText :string = `Released: ${releaseDate}`;
     return (
@@ -288,9 +294,13 @@ class ParticipantProfile extends Component<Props, State> {
             <CardHeader padding="30px">
               <SmallCardHeaderTitle>Needs</SmallCardHeaderTitle>
             </CardHeader>
-            <CardSegment padding="30px">
-              { needs.map((need :string) => <NeedsTag key={need}>{ need }</NeedsTag>) }
-            </CardSegment>
+            {
+              needs && (
+                <CardSegment padding="30px">
+                  { needs.map((need :string) => <NeedsTag key={need}>{ need }</NeedsTag>) }
+                </CardSegment>
+              )
+            }
             {
               notes && (
                 <CardSegment padding="30px">
@@ -304,7 +314,7 @@ class ParticipantProfile extends Component<Props, State> {
               <SmallCardHeaderTitle>Program History</SmallCardHeaderTitle>
             </CardHeader>
             <GrayBar padding="15px 30px">
-              <div>Released from: Jail</div>
+              <div>{ referralSource }</div>
               { releaseDate && (<div>{ releaseText }</div>) }
             </GrayBar>
             {
@@ -345,7 +355,6 @@ class ParticipantProfile extends Component<Props, State> {
                 <EventWrapper>
                   <EventStatusText>ENROLLED</EventStatusText>
                   <EventText>Re-entry Program</EventText>
-                  <EventText>Forms Completed: 2/2</EventText>
                 </EventWrapper>
               </CardInnerWrapper>
             </CardSegment>

@@ -61,13 +61,14 @@ const {
   PERSON_DETAILS,
   PROVIDER,
   PROVIDER_STAFF,
+  REFERRAL_REQUEST,
 } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 
 /*
  *
- * ParticipantsSagas.getEnrollmentStatusNeighbors()
+ * ProfileActions.getEnrollmentStatusNeighbors()
  *
  */
 
@@ -142,7 +143,7 @@ function* getEnrollmentStatusNeighborsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsSagas.getParticipantNeighbors()
+ * ProfileActions.getParticipantNeighbors()
  *
  */
 
@@ -218,7 +219,7 @@ function* getParticipantNeighborsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ProfileSagas.getParticipant()
+ * ProfileActions.getParticipant()
  *
  */
 
@@ -263,7 +264,7 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ProfileSagas.loadProfile()
+ * ProfileActions.loadProfile()
  *
  */
 
@@ -281,12 +282,14 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: needsAssessmentESID },
       { direction: DST, neighborESID: contactInfoESID },
       { direction: DST, neighborESID: enrollmentStatusESID },
       { direction: DST, neighborESID: manualJailStaysESID },
+      { direction: DST, neighborESID: referralToReentryESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
