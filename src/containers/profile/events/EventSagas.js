@@ -5,7 +5,8 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
+import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -14,7 +15,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
 import { isDefined } from '../../../utils/LangUtils';
-import { getESIDFromApp } from '../../../utils/DataUtils';
+import { getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import {
   GET_PROVIDERS,
   RECORD_ENROLLMENT_EVENT,
@@ -23,16 +24,21 @@ import {
 } from './EventActions';
 import { submitDataGraph } from '../../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../../core/data/DataSagas';
+import { getEnrollmentStatusNeighbors } from '../ProfileActions';
+import { getEnrollmentStatusNeighborsWorker } from '../ProfileSagas';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const LOG = new Logger('EventSagas');
+const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { PROVIDER } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS, PROVIDER } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 
 /*
  *
@@ -89,8 +95,28 @@ function* recordEnrollmentEventWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
 
-    yield put(recordEnrollmentEvent.success(id));
+    const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const newEnrollmentStatusEKID :UUID = entityKeyIds[enrollmentStatusESID][0];
+    const enrollmentStatusData :Object = entityData[enrollmentStatusESID][0];
+    let newEnrollmentStatus :Map = fromJS({
+      [ENTITY_KEY_ID]: [newEnrollmentStatusEKID]
+    });
+    fromJS(enrollmentStatusData).forEach((entityValue :List, ptid :UUID) => {
+      const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+      newEnrollmentStatus = newEnrollmentStatus.set(propertyFqn, entityValue);
+    });
+
+    yield call(
+      getEnrollmentStatusNeighborsWorker,
+      getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs: [newEnrollmentStatusEKID] })
+    );
+
+    yield put(recordEnrollmentEvent.success(id, { newEnrollmentStatus }));
   }
   catch (error) {
     LOG.error(action.type, error);
