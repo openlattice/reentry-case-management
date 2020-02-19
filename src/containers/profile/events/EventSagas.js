@@ -15,7 +15,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
 import { isDefined } from '../../../utils/LangUtils';
-import { getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
+import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import {
   GET_PROVIDERS,
   RECORD_ENROLLMENT_EVENT,
@@ -27,7 +27,7 @@ import { submitDataGraphWorker } from '../../../core/data/DataSagas';
 import { getEnrollmentStatusNeighbors } from '../ProfileActions';
 import { getEnrollmentStatusNeighborsWorker } from '../ProfileSagas';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
+import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const LOG = new Logger('EventSagas');
@@ -36,9 +36,11 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { ENROLLMENT_STATUS, PROVIDER } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { PARTICIPANT_NEIGHBORS } = PROFILE;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
+const getProfileFromState = (state) => state.get(PROFILE.PROFILE, Map());
 
 /*
  *
@@ -99,6 +101,12 @@ function* recordEnrollmentEventWorker(action :SequenceAction) :Generator<*, *, *
     const { entityData } = value;
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
+    const profile = yield select(getProfileFromState);
+    const existingEnrollmentStatuses :List = profile.getIn([PARTICIPANT_NEIGHBORS, ENROLLMENT_STATUS], List());
+    const existingEnrollmentStatusEKIDs :UUID[] = [];
+    existingEnrollmentStatuses.forEach((status :Map) => {
+      existingEnrollmentStatusEKIDs.push(getEKID(status));
+    });
 
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const newEnrollmentStatusEKID :UUID = entityKeyIds[enrollmentStatusESID][0];
@@ -113,7 +121,9 @@ function* recordEnrollmentEventWorker(action :SequenceAction) :Generator<*, *, *
 
     yield call(
       getEnrollmentStatusNeighborsWorker,
-      getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs: [newEnrollmentStatusEKID] })
+      getEnrollmentStatusNeighbors({
+        enrollmentStatusEKIDs: [newEnrollmentStatusEKID].concat(existingEnrollmentStatusEKIDs)
+      })
     );
 
     yield put(recordEnrollmentEvent.success(id, { newEnrollmentStatus }));
