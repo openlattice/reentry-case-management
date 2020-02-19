@@ -110,6 +110,7 @@ class RecordEventModal extends Component<Props, State> {
 
   componentDidMount() {
     const { actions } = this.props;
+    this.setState({ formData: {} });
     actions.getProviders();
   }
 
@@ -118,8 +119,13 @@ class RecordEventModal extends Component<Props, State> {
     const { requestStates: prevRequestStates } = prevProps;
     if (requestIsSuccess(requestStates[RECORD_ENROLLMENT_EVENT])
       && requestIsPending(prevRequestStates[RECORD_ENROLLMENT_EVENT])) {
+      this.resetFormData();
       onClose();
     }
+  }
+
+  resetFormData = () => {
+    this.setState({ formData: {} });
   }
 
   onChange = ({ formData } :Object) => {
