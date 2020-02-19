@@ -248,7 +248,9 @@ class ParticipantProfile extends Component<Props, State> {
     const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
     const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
     const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
-    const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const enrollmentDate :string = enrollmentDateTime
+      ? DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT)
+      : '----';
     const enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
     const releaseDate :string = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
     const releaseText :string = `Released: ${releaseDate}`;
@@ -323,7 +325,7 @@ class ParticipantProfile extends Component<Props, State> {
                   const contactName :string = contactNameByProviderEKID.get(providerEKID, '----');
                   const pointofContact :string = `Point of Contact: ${contactName}`;
                   return (
-                    <EventCardSegment padding="25px 30px">
+                    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px">
                       <CardInnerWrapper>
                         <EventDateWrapper>{ date }</EventDateWrapper>
                         <EventWrapper>
