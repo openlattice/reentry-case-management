@@ -7,8 +7,9 @@ import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { CONTACT_INFO, PERSON_DETAILS } = APP_TYPE_FQNS;
+const { CONTACT_INFO, NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
 const {
+  DATETIME_COMPLETED,
   DOB,
   EMAIL,
   ETHNICITY,
@@ -64,7 +65,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
 };
 
 const getMostRecentReleaseDate = (jailStays :List) :string => {
-
   if (jailStays.isEmpty()) return '';
   const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
   // $FlowFixMe
@@ -74,7 +74,16 @@ const getMostRecentReleaseDate = (jailStays :List) :string => {
   return DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
 };
 
+const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
+  let enrollmentDate :string = '----';
+  const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
+  const enrollmentDateTimeObj :DateTime = DateTime.fromISO(enrollmentDateTime);
+  if (enrollmentDateTimeObj.isValid) enrollmentDate = enrollmentDateTimeObj.toLocaleString(DateTime.DATE_SHORT);
+  return enrollmentDate;
+};
+
 export {
   getFormattedParticipantData,
   getMostRecentReleaseDate,
+  getReentryEnrollmentDate,
 };
