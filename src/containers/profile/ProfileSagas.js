@@ -6,7 +6,12 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  get,
+} from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
@@ -19,7 +24,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { isDefined } from '../../utils/LangUtils';
 import {
-  // getEKID,
+  getEKID,
   getESIDFromApp,
   // getEntityProperties,
   getFqnFromApp,
@@ -53,9 +58,72 @@ const {
   NEEDS_ASSESSMENT,
   PEOPLE,
   PERSON_DETAILS,
+  PROVIDER,
 } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+
+/*
+ *
+ * ParticipantsSagas.getEnrollmentStatusNeighbors()
+ *
+ */
+
+function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse :Object = {};
+
+  try {
+    yield put(getEnrollmentStatusNeighbors.request(id, value));
+    const { enrollmentStatusEKIDs } = value;
+
+    const app = yield select(getAppFromState);
+    const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const providersESID :UUID = getESIDFromApp(app, PROVIDER);
+    const searchFilter = {
+      entityKeyIds: enrollmentStatusEKIDs,
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [providersESID],
+    };
+    const response :Object = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    let enrollmentStatusNeighborMap :Map = Map();
+    const neighbors :Map = fromJS(response.data);
+    if (!neighbors.isEmpty()) {
+      neighbors.forEach((neighborList :List, enrollmentStatusEKID :UUID) => {
+        neighborList.forEach((neighbor :Map) => {
+          const entity :Map = getNeighborDetails(neighbor);
+          let entityList :List = enrollmentStatusNeighborMap.get(PROVIDER, List());
+          entityList = entityList.push(entity);
+          personNeighborMap = personNeighborMap.set(neighborEntityFqn, entityList);
+        });
+        return personNeighborMap;
+      });
+    }
+
+    workerResponse.data = response.data;
+    yield put(getEnrollmentStatusNeighbors.success(id, personNeighborMap));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getEnrollmentStatusNeighbors.failure(id, error));
+  }
+  finally {
+    yield put(getEnrollmentStatusNeighbors.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getEnrollmentStatusNeighborsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENROLLMENT_STATUS_NEIGHBORS, getEnrollmentStatusNeighborsWorker);
+}
 
 /*
  *
@@ -107,6 +175,12 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         });
         return personNeighborMap;
       });
+    }
+    if (isDefined(get(personNeighborMap, ENROLLMENT_STATUS))) {
+      const enrollmentStatusEKIDs :UUID[] = personNeighborMap.get(ENROLLMENT_STATUS)
+        .map((statusEntity :Map) => getEKID(statusEntity))
+        .toJS();
+      yield call(getEnrollmentStatusNeighborsWorker, getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs }));
     }
 
     workerResponse.data = response.data;
