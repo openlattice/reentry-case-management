@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
 import {
@@ -92,31 +92,20 @@ type Props = {
   };
 };
 
-const RecordEventModal = ({
-  actions,
-  entitySetIdsByFqn,
-  isOpen,
-  onClose,
-  personEKID,
-  propertyTypeIdsByFqn,
-  providers,
-} :Props) => {
+class RecordEventModal extends Component<Props> {
 
-  const [eventSchema, setSchema] = useState(schema);
-  const [formData, setFormData] = useState({});
-
-  useEffect(() => {
+  componentDidMount() {
+    const { actions } = this.props;
     actions.getProviders();
-  }, [actions]);
+  }
 
-  useEffect(() => {
-    if (!providers.isEmpty()) {
-      const newSchema :Object = hydrateEventSchema(schema, providers);
-      setSchema(newSchema);
-    }
-  }, [providers]);
-
-  const onSubmit = () => {
+  onSubmit = ({ formData } :Object) => {
+    const {
+      actions,
+      entitySetIdsByFqn,
+      personEKID,
+      propertyTypeIdsByFqn,
+    } = this.props;
     if (Object.keys(formData).length) {
       const { entityDataToProcess, associations } = prepareFormDataForProcessing(formData, personEKID);
       const entityData :Object = processEntityData(entityDataToProcess, entitySetIdsByFqn, propertyTypeIdsByFqn);
@@ -127,33 +116,37 @@ const RecordEventModal = ({
       );
       actions.recordEnrollmentEvent({ associationEntityData, entityData });
     }
-  };
+  }
 
-  const renderHeader = () => (
-    <Header onClose={onClose} />
-  );
-  return (
-    <Modal
-        isVisible={isOpen}
-        onClickPrimary={onSubmit}
-        onClose={onClose}
-        shouldStretchButtons
-        textPrimary="Save"
-        viewportScrolling
-        withHeader={renderHeader}>
-      <ActionText>
-        Select an event type and the related organization to record it in program history.
-      </ActionText>
-      <Form
-          formData={formData}
-          hideSubmit
-          noPadding
-          onChange={setFormData}
-          schema={eventSchema}
-          uiSchema={uiSchema} />
-    </Modal>
-  );
-};
+  renderHeader = () => {
+    const { onClose } = this.props;
+    return <Header onClose={onClose} />;
+  }
+
+  render() {
+    const { isOpen, onClose, providers } = this.props;
+    const hydratedSchema :Object = hydrateEventSchema(schema, providers);
+    return (
+      <Modal
+          isVisible={isOpen}
+          onClickPrimary={this.onSubmit}
+          onClose={onClose}
+          shouldStretchButtons
+          textPrimary="Save"
+          viewportScrolling
+          withHeader={this.renderHeader}>
+        <ActionText>
+          Select an event type and the related organization to record it in program history.
+        </ActionText>
+        <Form
+            hideSubmit
+            noPadding
+            schema={hydratedSchema}
+            uiSchema={uiSchema} />
+      </Modal>
+    );
+  }
+}
 
 const mapStateToProps = (state :Map) => {
   const event = state.get(EVENT.EVENT);
