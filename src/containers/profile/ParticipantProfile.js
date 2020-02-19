@@ -33,11 +33,17 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
+const {
+  CONTACT_NAME_BY_PROVIDER_EKID,
+  PARTICIPANT,
+  PARTICIPANT_NEIGHBORS,
+  PROVIDER_BY_STATUS_EKID,
+} = PROFILE;
 const { ENROLLMENT_STATUS, MANUAL_JAIL_STAYS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const {
   EFFECTIVE_DATE,
   DATETIME_COMPLETED,
+  NAME,
   NOTES,
   STATUS,
   TYPE
@@ -178,9 +184,11 @@ type Props = {
   actions :{
     loadProfile :RequestSequence;
   };
+  contactNameByProviderEKID :Map;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
+  providerByStatusEKID :Map;
   requestStates :{
     LOAD_PROFILE :RequestState;
   };
@@ -219,7 +227,13 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   render() {
-    const { participant, participantNeighbors, requestStates } = this.props;
+    const {
+      contactNameByProviderEKID,
+      participant,
+      participantNeighbors,
+      providerByStatusEKID,
+      requestStates
+    } = this.props;
     const { eventModalIsOpen } = this.state;
 
     if (requestIsPending(requestStates[LOAD_PROFILE])) {
@@ -300,14 +314,22 @@ class ParticipantProfile extends Component<Props, State> {
                     [EFFECTIVE_DATE, STATUS]
                   );
                   const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
+                  const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
+                  const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
+                  // $FlowFixMe
+                  const { [NAME]: providerName } = getEntityProperties(provider, [NAME]);
+                  const relatedOrganization :string = `Related Organization: ${providerName || '----'}`;
+                  const providerEKID :UUID = getEKID(provider);
+                  const contactName :string = contactNameByProviderEKID.get(providerEKID, '----');
+                  const pointofContact :string = `Point of Contact: ${contactName}`;
                   return (
                     <EventCardSegment padding="25px 30px">
                       <CardInnerWrapper>
                         <EventDateWrapper>{ date }</EventDateWrapper>
                         <EventWrapper>
                           <EventStatusText>{ status }</EventStatusText>
-                          <EventText>Related Organization</EventText>
-                          <EventText>Point of Contact</EventText>
+                          <EventText>{ relatedOrganization }</EventText>
+                          <EventText>{ pointofContact }</EventText>
                         </EventWrapper>
                       </CardInnerWrapper>
                     </EventCardSegment>
@@ -339,8 +361,10 @@ class ParticipantProfile extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
   return {
+    [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
+    [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),
     requestStates: {
       [LOAD_PROFILE]: profile.getIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE]),
     },
