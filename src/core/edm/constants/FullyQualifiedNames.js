@@ -6,6 +6,7 @@ const { FullyQualifiedName } = Models;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const APP_TYPE_FQNS :Object = {
+  ADDRESSES: new FullyQualifiedName('app.addresses'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin_new'),
   ASSIGNED_TO: new FullyQualifiedName('app.assignedto'),
   ATTORNEYS: new FullyQualifiedName('app.attorneys'), // general.person
@@ -13,10 +14,12 @@ const APP_TYPE_FQNS :Object = {
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
   COURT_CASES: new FullyQualifiedName('app.courtcases'),
   EDUCATION: new FullyQualifiedName('app.education'),
+  EMPLOYED_BY: new FullyQualifiedName('app.employedby'),
   EMPLOYEE: new FullyQualifiedName('app.employee'),
   EMPLOYMENT: new FullyQualifiedName('app.employment'),
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
-  FOLLOW_UPS: new FullyQualifiedName('app.followups'),
+  FOLLOW_UPS: new FullyQualifiedName('app.issue'),
+  FULFILLS: new FullyQualifiedName('app.fulfills'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
   INMATES: new FullyQualifiedName('app.inmate'),
@@ -33,6 +36,7 @@ const APP_TYPE_FQNS :Object = {
   MANUAL_LOCATED_AT: new FullyQualifiedName('app.manuallocatedat'),
   MANUAL_OF_LENGTH: new FullyQualifiedName('app.manualoflength'),
   MANUAL_SUBJECT_OF: new FullyQualifiedName('app.manualsubjectof'),
+  MEETINGS: new FullyQualifiedName('app.meetings'),
   NEEDS_ASSESSMENT: new FullyQualifiedName('app.needsassessment'), // ol.referralrequest
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
@@ -46,13 +50,15 @@ const APP_TYPE_FQNS :Object = {
   PROVIDED: new FullyQualifiedName('app.provided'),
   PROVIDED_TO: new FullyQualifiedName('app.providedto'),
   PROVIDER: new FullyQualifiedName('app.organization'),
+  PROVIDER_EMPLOYEES: new FullyQualifiedName('app.serviceprovideremployees'), // ol.employee
+  PROVIDER_STAFF: new FullyQualifiedName('app.serviceproviderstaff'), // general.person
+  REENTRY_EMPLOYEES: new FullyQualifiedName('app.staff_employee'), // ol.employee
+  REENTRY_STAFF: new FullyQualifiedName('app.staff'), // general.person
   REFERRAL_REQUEST: new FullyQualifiedName('app.referralrequest'),
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   REPORTED: new FullyQualifiedName('app.reported'),
   REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
   SEX_OFFENDER: new FullyQualifiedName('app.sexoffender'),
-  STAFF: new FullyQualifiedName('app.staff'), // general.person
-  STAFF_EMPLOYEE: new FullyQualifiedName('app.staff_employee'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
 };
 
