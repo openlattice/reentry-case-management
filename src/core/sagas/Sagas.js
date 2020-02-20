@@ -8,8 +8,10 @@ import { SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
@@ -44,6 +46,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),
     fork(ParticipantsSagas.getParticipantNeighborsWatcher),
     fork(ParticipantsSagas.searchParticipantsWatcher),
+
+    // ProvidersSagas
+    fork(ProvidersSagas.getContactInfoWatcher),
+    fork(ProvidersSagas.getProviderNeighborsWatcher),
 
     // ReleasesSagas
     fork(ReleasesSagas.getJailsByJailStayEKIDWatcher),
