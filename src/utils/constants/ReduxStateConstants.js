@@ -24,6 +24,11 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
+const EVENT :Object = {
+  EVENT: 'event',
+  PROVIDERS: 'providers',
+};
+
 const RELEASES :Object = {
   JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
   JAIL_STAYS_BY_PERSON_EKID: 'jailStaysByPersonEKID',
@@ -49,6 +54,7 @@ const PARTICIPANTS :Object = {
 export {
   APP,
   EDM,
+  EVENT,
   INTAKE,
   PARTICIPANTS,
   RELEASES,
