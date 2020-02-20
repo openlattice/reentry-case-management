@@ -11,6 +11,7 @@ import edmReducer from '../edm/EDMReducer';
 import eventReducer from '../../containers/profile/events/EventReducer';
 import intakeReducer from '../../containers/intake/IntakeReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
+import providersReducer from '../../containers/providers/ProvidersReducer';
 import releasesReducer from '../../containers/releases/ReleasesReducer';
 
 export default function reduxReducer(routerHistory :any) {
@@ -22,6 +23,7 @@ export default function reduxReducer(routerHistory :any) {
     event: eventReducer,
     intake: intakeReducer,
     participants: participantsReducer,
+    providers: providersReducer,
     releases: releasesReducer,
     router: connectRouter(routerHistory),
   });

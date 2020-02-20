@@ -51,12 +51,19 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
+const PROVIDERS :Object = {
+  CONTACT_INFO_BY_CONTACT_PERSON_EKID: 'contactInfoByContactPersonEKID',
+  PROVIDERS: 'providers',
+  PROVIDER_NEIGHBOR_MAP: 'providerNeighborMap',
+};
+
 export {
   APP,
   EDM,
   EVENT,
   INTAKE,
   PARTICIPANTS,
+  PROVIDERS,
   RELEASES,
   SHARED,
 };
