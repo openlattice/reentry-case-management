@@ -68,6 +68,7 @@ const PROPERTY_TYPE_FQNS = {
   COUNTY: new FullyQualifiedName('ol.county'),
   DATE: new FullyQualifiedName('general.date'),
   DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
   EMAIL: new FullyQualifiedName('staff.email'),
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
