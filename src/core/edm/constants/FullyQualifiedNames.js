@@ -16,7 +16,6 @@ const APP_TYPE_FQNS :Object = {
   EMPLOYEE: new FullyQualifiedName('app.employee'),
   EMPLOYMENT: new FullyQualifiedName('app.employment'),
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
-  FOLLOW_UPS: new FullyQualifiedName('app.followups'),
   HAS: new FullyQualifiedName('app.has'),
   HEARINGS: new FullyQualifiedName('app.hearings'),
   INMATES: new FullyQualifiedName('app.inmate'),
@@ -33,6 +32,7 @@ const APP_TYPE_FQNS :Object = {
   MANUAL_LOCATED_AT: new FullyQualifiedName('app.manuallocatedat'),
   MANUAL_OF_LENGTH: new FullyQualifiedName('app.manualoflength'),
   MANUAL_SUBJECT_OF: new FullyQualifiedName('app.manualsubjectof'),
+  MEETINGS: new FullyQualifiedName('app.meetings'),
   NEEDS_ASSESSMENT: new FullyQualifiedName('app.needsassessment'), // ol.referralrequest
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
