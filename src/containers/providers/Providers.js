@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import AddProviderModal from './AddProviderModal';
 import COLORS from '../../core/style/Colors';
 import { GET_PROVIDERS, getProviders } from '../profile/events/EventActions';
 import { getListOfContacts } from './utils/ProvidersUtils';
@@ -114,6 +115,8 @@ const Providers = ({
   requestStates,
 } :Props) => {
 
+  const [addModalVisible, setAddModalVisibility] = useState(false);
+
   useEffect(() => {
     actions.getProviders({ fetchNeighbors: true });
   }, [actions]);
@@ -128,7 +131,7 @@ const Providers = ({
     <>
       <HeaderRow>
         <Header>Service Providers</Header>
-        <Button mode="primary" onClick={() => {}}>Add a Provider</Button>
+        <Button mode="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
       </HeaderRow>
       <CardStack>
         {
@@ -180,6 +183,7 @@ const Providers = ({
           })
         }
       </CardStack>
+      <AddProviderModal isVisible={addModalVisible} onClose={() => setAddModalVisibility(false)} />
     </>
   );
 };
