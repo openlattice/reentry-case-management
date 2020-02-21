@@ -8,14 +8,19 @@ const createNewProvider :RequestSequence = newRequestSequence(CREATE_NEW_PROVIDE
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
 
+const GET_PROVIDERS :'GET_PROVIDERS' = 'GET_PROVIDERS';
+const getProviders :RequestSequence = newRequestSequence(GET_PROVIDERS);
+
 const GET_PROVIDER_NEIGHBORS :'GET_PROVIDER_NEIGHBORS' = 'GET_PROVIDER_NEIGHBORS';
 const getProviderNeighbors :RequestSequence = newRequestSequence(GET_PROVIDER_NEIGHBORS);
 
 export {
   CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
+  GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   createNewProvider,
   getContactInfo,
+  getProviders,
   getProviderNeighbors,
 };

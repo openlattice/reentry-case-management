@@ -8,6 +8,8 @@ import {
 import { Models } from 'lattice';
 import { List, Map, fromJS } from 'immutable';
 import {
+  DataApiActions,
+  DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
@@ -28,17 +30,21 @@ import { submitDataGraphWorker } from '../../core/data/DataSagas';
 import {
   CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
+  GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   createNewProvider,
   getContactInfo,
+  getProviders,
   getProviderNeighbors,
 } from './ProvidersActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP } from '../../utils/constants/ReduxStateConstants';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const LOG = new Logger('EventSagas');
 const { FullyQualifiedName } = Models;
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -172,6 +178,53 @@ function* getProviderNeighborsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ProvidersActions.getProviders()
+ *
+ */
+
+function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(getProviders.request(id));
+    const { fetchNeighbors } = value;
+
+    const app = yield select(getAppFromState);
+    const providersESID :UUID = getESIDFromApp(app, PROVIDER);
+
+    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: providersESID }));
+    if (response.error) {
+      throw response.error;
+    }
+    const providers :List = fromJS(response.data);
+
+    if (fetchNeighbors) {
+      const providerEKIDs :UUID[] = [];
+      providers.forEach((provider :Map) => {
+        providerEKIDs.push(getEKID(provider));
+      });
+      yield call(getProviderNeighborsWorker, getProviderNeighbors({ providerEKIDs }));
+    }
+
+    yield put(getProviders.success(id, providers));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getProviders.failure(id, error));
+  }
+  finally {
+    yield put(getProviders.finally(id));
+  }
+}
+
+function* getProvidersWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PROVIDERS, getProvidersWorker);
+}
+
+/*
+ *
  * ProvidersActions.createNewProvider()
  *
  */
@@ -227,6 +280,8 @@ export {
   createNewProviderWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getProvidersWatcher,
+  getProvidersWorker,
   getProviderNeighborsWatcher,
   getProviderNeighborsWorker,
 };

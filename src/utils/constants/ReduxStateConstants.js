@@ -24,20 +24,6 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
-const EVENT :Object = {
-  EVENT: 'event',
-  PROVIDERS: 'providers',
-};
-
-const RELEASES :Object = {
-  JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
-  JAIL_STAYS_BY_PERSON_EKID: 'jailStaysByPersonEKID',
-  PEOPLE_BY_JAIL_STAY_EKID: 'peopleByJailStayEKID',
-  RELEASES: 'releases',
-  SEARCHED_JAIL_STAYS: 'searchedJailStays',
-  SEARCHED_PEOPLE: 'searchedPeople',
-};
-
 const INTAKE :Object = {
   INCARCERATION_FACILITIES: 'incarcerationFacilities',
   INTAKE: 'intake',
@@ -54,13 +40,22 @@ const PARTICIPANTS :Object = {
 const PROVIDERS :Object = {
   CONTACT_INFO_BY_CONTACT_PERSON_EKID: 'contactInfoByContactPersonEKID',
   PROVIDERS: 'providers',
+  PROVIDERS_LIST: 'providersList',
   PROVIDER_NEIGHBOR_MAP: 'providerNeighborMap',
+};
+
+const RELEASES :Object = {
+  JAILS_BY_JAIL_STAY_EKID: 'jailsByJailStayEKID',
+  JAIL_STAYS_BY_PERSON_EKID: 'jailStaysByPersonEKID',
+  PEOPLE_BY_JAIL_STAY_EKID: 'peopleByJailStayEKID',
+  RELEASES: 'releases',
+  SEARCHED_JAIL_STAYS: 'searchedJailStays',
+  SEARCHED_PEOPLE: 'searchedPeople',
 };
 
 export {
   APP,
   EDM,
-  EVENT,
   INTAKE,
   PARTICIPANTS,
   PROVIDERS,

@@ -17,13 +17,13 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddProviderModal from './AddProviderModal';
 import COLORS from '../../core/style/Colors';
-import { GET_PROVIDERS, getProviders } from '../profile/events/EventActions';
+import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 import { getListOfContacts } from './utils/ProvidersUtils';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { getAddress } from '../../utils/FormattingUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { EVENT, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { NEUTRALS } = Colors;
 const { LOCATION, PROVIDER_STAFF } = APP_TYPE_FQNS;
@@ -32,7 +32,7 @@ const {
   NAME,
   TYPE
 } = PROPERTY_TYPE_FQNS;
-const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
+const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const labels = Map({
@@ -101,7 +101,7 @@ type Props = {
   };
   contactInfoByContactPersonEKID :Map;
   providerNeighborMap :Map;
-  providers :List;
+  providersList :List;
   requestStates :{
     GET_PROVIDERS :RequestState;
   };
@@ -111,7 +111,7 @@ const Providers = ({
   actions,
   contactInfoByContactPersonEKID,
   providerNeighborMap,
-  providers,
+  providersList,
   requestStates,
 } :Props) => {
 
@@ -121,82 +121,83 @@ const Providers = ({
     actions.getProviders({ fetchNeighbors: true });
   }, [actions]);
 
-  if (requestIsPending(requestStates[GET_PROVIDERS])) {
-    return (
-      <Spinner size="2x" />
-    );
-  }
-
   return (
     <>
       <HeaderRow>
         <Header>Service Providers</Header>
         <Button mode="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
       </HeaderRow>
-      <CardStack>
-        {
-          providers.map((provider :Map) => {
-            const providerEKID :UUID = getEKID(provider);
-            const { [DESCRIPTION]: description, [NAME]: providerName, [TYPE]: types } = getEntityProperties(
-              provider,
-              [DESCRIPTION, NAME, TYPE]
-            );
-            const address :Map = providerNeighborMap.getIn([providerEKID, LOCATION, 0], Map());
-            const formattedAddress = getAddress(address);
-            const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
-            const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
-            return (
-              <Card key={providerEKID}>
-                <CardSegment padding="40px" vertical>
-                  <ProviderHeaderRow>
-                    <ProviderHeader>{ providerName }</ProviderHeader>
-                    {
-                      typeof types === 'string'
-                        ? (
-                          <TypeTag>{ types }</TypeTag>
-                        )
-                        : (
-                          types.map((type :string) => <TypeTag key={type}>{ type }</TypeTag>)
-                        )
-                    }
-                  </ProviderHeaderRow>
-                  { !address.isEmpty() && (<Description>{ formattedAddress }</Description>) }
-                  { description && (<Description>{ description }</Description>) }
-                  {
-                    !pointsOfContact.isEmpty() && (
-                      <>
-                        <PointOfContactTitle>Point of Contact</PointOfContactTitle>
+      {
+        requestIsPending(requestStates[GET_PROVIDERS])
+          ? (
+            <Spinner size="2x" />
+          )
+          : (
+            <CardStack>
+              {
+                providersList.map((provider :Map) => {
+                  const providerEKID :UUID = getEKID(provider);
+                  const { [DESCRIPTION]: description, [NAME]: providerName, [TYPE]: types } = getEntityProperties(
+                    provider,
+                    [DESCRIPTION, NAME, TYPE]
+                  );
+                  const address :Map = providerNeighborMap.getIn([providerEKID, LOCATION, 0], Map());
+                  const formattedAddress = getAddress(address);
+                  const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
+                  const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
+                  return (
+                    <Card key={providerEKID}>
+                      <CardSegment padding="40px" vertical>
+                        <ProviderHeaderRow>
+                          <ProviderHeader>{ providerName }</ProviderHeader>
+                          {
+                            typeof types === 'string'
+                              ? (
+                                <TypeTag>{ types }</TypeTag>
+                              )
+                              : (
+                                types.map((type :string) => <TypeTag key={type}>{ type }</TypeTag>)
+                              )
+                          }
+                        </ProviderHeaderRow>
+                        { !address.isEmpty() && (<Description>{ formattedAddress }</Description>) }
+                        { description && (<Description>{ description }</Description>) }
                         {
-                          pointsOfContact.map((contact :Map) => (
-                            <DataGrid
-                                key={contact.get('id')}
-                                data={contact}
-                                labelMap={labels} />
-                          ))
+                          !pointsOfContact.isEmpty() && (
+                            <>
+                              <PointOfContactTitle>Point of Contact</PointOfContactTitle>
+                              {
+                                pointsOfContact.map((contact :Map) => (
+                                  <DataGrid
+                                      key={contact.get('id')}
+                                      data={contact}
+                                      labelMap={labels} />
+                                ))
+                              }
+                            </>
+                          )
                         }
-                      </>
-                    )
-                  }
-                </CardSegment>
-              </Card>
-            );
-          })
-        }
-      </CardStack>
+                      </CardSegment>
+                    </Card>
+                  );
+                })
+              }
+            </CardStack>
+          )
+      }
       <AddProviderModal isVisible={addModalVisible} onClose={() => setAddModalVisibility(false)} />
     </>
   );
 };
 
 const mapStateToProps = (state :Map) => {
-  const events :Map = state.get(EVENT.EVENT);
   const providers :Map = state.get(PROVIDERS.PROVIDERS);
   return {
     [CONTACT_INFO_BY_CONTACT_PERSON_EKID]: providers.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID),
-    [EVENT.PROVIDERS]: events.get(EVENT.PROVIDERS),
+    [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
     [PROVIDER_NEIGHBOR_MAP]: providers.get(PROVIDER_NEIGHBOR_MAP),
     requestStates: {
-      [GET_PROVIDERS]: events.getIn([ACTIONS, GET_PROVIDERS, REQUEST_STATE]),
+      [GET_PROVIDERS]: providers.getIn([ACTIONS, GET_PROVIDERS, REQUEST_STATE]),
     }
   };
 };
