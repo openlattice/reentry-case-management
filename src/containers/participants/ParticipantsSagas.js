@@ -93,7 +93,6 @@ function* getJailNamesForJailStaysWorker(action :SequenceAction) :Generator<*, *
       .map((neighborList :List) => {
         if (!neighborList.isEmpty()) {
           const facilityEntity :Map = getNeighborDetails(neighborList.get(0));
-          // $FlowFixMe
           const { [NAME]: facilityName } = getEntityProperties(facilityEntity, [NAME]);
           return facilityName;
         }

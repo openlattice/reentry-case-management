@@ -1,5 +1,6 @@
 // @flow
 import {
+  List,
   Map,
   getIn,
   isImmutable,
@@ -36,24 +37,30 @@ const getFqnFromApp = (app :Object | Map, esid :UUID) => {
   ]);
 };
 
-const getFirstNeighborValue = (
-  neighborObj :Map,
+const getFirstEntityValue = (
+  entityObj :Map,
   fqn :FullyQualifiedName | string,
   defaultValue :string = ''
-) => neighborObj.getIn(
-
-  [NEIGHBOR_DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
+) => (
+  entityObj.getIn([fqn, 0], defaultValue)
 );
 
-const getEntityProperties = (entityObj :Map, propertyList :FullyQualifiedName[]) => {
+const getEntityProperties = (
+  entityObj :Map,
+  propertyList :FullyQualifiedName[]
+) :{ [FullyQualifiedName]:string | Array<*> } => {
 
   let returnPropertyFields = {};
-  if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
+  if (propertyList.length && isImmutable(entityObj) && !entityObj.isEmpty()) {
     propertyList.forEach((propertyType :FullyQualifiedName) => {
-      const backUpValue = entityObj.get(propertyType, '');
-      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields = set(returnPropertyFields, propertyType, property);
+      const value :List = entityObj.get(propertyType, List());
+      if (List.isList(value) && value.count() > 1) {
+        returnPropertyFields = set(returnPropertyFields, propertyType, value.toJS());
+      }
+      else {
+        const property = getFirstEntityValue(entityObj, propertyType, '');
+        returnPropertyFields = set(returnPropertyFields, propertyType, property);
+      }
     });
   }
   return returnPropertyFields;
@@ -84,7 +91,7 @@ export {
   getEKID,
   getESIDFromApp,
   getEntityProperties,
-  getFirstNeighborValue,
+  getFirstEntityValue,
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,

@@ -3,7 +3,7 @@ import { List, Map } from 'immutable';
 import { Models } from 'lattice';
 import { DateTime } from 'luxon';
 
-import { getEKID, getFirstNeighborValue } from './DataUtils';
+import { getEKID, getFirstEntityValue } from './DataUtils';
 
 const { FullyQualifiedName } = Models;
 
@@ -21,8 +21,7 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
 
     let label :string = '';
     propertyList.forEach((propertyType) => {
-      const backUpValue = entity.get(propertyType, '');
-      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
+      const property = getFirstEntityValue(entity, propertyType, '');
       label = label.concat(' ', property);
     });
     const entityEKID :UUID = getEKID(entity);

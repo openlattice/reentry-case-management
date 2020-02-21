@@ -120,7 +120,6 @@ const Providers = ({ actions, providerNeighborMap, providers } :Props) => {
             const types = provider.get(TYPE);
             const address :Map = providerNeighborMap.getIn([providerEKID, LOCATION, 0], Map());
             const firstProviderStaff :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF, 0], Map());
-            // $FlowFixMe
             const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
               firstProviderStaff,
               [FIRST_NAME, LAST_NAME]
