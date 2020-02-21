@@ -1,13 +1,16 @@
 // @flow
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
+  createNewProvider,
   getContactInfo,
+  getProviders,
   getProviderNeighbors,
 } from './ProvidersActions';
 import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
@@ -27,11 +30,34 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [CONTACT_INFO_BY_CONTACT_PERSON_EKID]: Map(),
+  [PROVIDERS_LIST]: List(),
+  [PROVIDER_NEIGHBOR_MAP]: Map(),
 });
 
 export default function providersReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case createNewProvider.case(action.type): {
+
+      return createNewProvider.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_NEW_PROVIDER, action.id], action)
+          .setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const providersList :List = state.get(PROVIDERS_LIST)
+            .push(value);
+          return state
+            .set(PROVIDERS_LIST, providersList)
+            .setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_PROVIDER, action.id]),
+      });
+    }
 
     case getContactInfo.case(action.type): {
 
