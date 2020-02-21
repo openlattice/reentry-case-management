@@ -25,7 +25,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 
-const FixedWidthModal = styled(Modal)`
+const FixedWidthModal = styled.div`
   width: 400px;
 `;
 
@@ -85,7 +85,7 @@ const AddProviderModal = ({
   };
 
   return (
-    <FixedWidthModal
+    <Modal
         isVisible={isVisible}
         onClickPrimary={onSubmit}
         onClose={onClose}
@@ -93,14 +93,16 @@ const AddProviderModal = ({
         textPrimary="Save"
         withFooter={renderFooter}
         withHeader={renderHeader}>
-      <Form
-          formData={formData}
-          hideSubmit
-          noPadding
-          onChange={onChange}
-          schema={schema}
-          uiSchema={uiSchema} />
-    </FixedWidthModal>
+      <FixedWidthModal>
+        <Form
+            formData={formData}
+            hideSubmit
+            noPadding
+            onChange={onChange}
+            schema={schema}
+            uiSchema={uiSchema} />
+      </FixedWidthModal>
+    </Modal>
   );
 };
 
