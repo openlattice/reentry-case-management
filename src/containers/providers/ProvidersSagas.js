@@ -21,16 +21,21 @@ import {
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,
+  getPropertyFqnFromEDM,
 } from '../../utils/DataUtils';
+import { submitDataGraph } from '../../core/data/DataActions';
+import { submitDataGraphWorker } from '../../core/data/DataSagas';
 import {
+  CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDER_NEIGHBORS,
+  createNewProvider,
   getContactInfo,
   getProviderNeighbors,
 } from './ProvidersActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const LOG = new Logger('EventSagas');
 const { FullyQualifiedName } = Models;
@@ -42,12 +47,14 @@ const {
   PROVIDER,
   PROVIDER_STAFF
 } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 
 /*
  *
- * EventSagas.getContactInfo()
+ * ProvidersActions.getContactInfo()
  *
  */
 
@@ -95,7 +102,7 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 
 /*
  *
- * EventSagas.getProviderNeighbors()
+ * ProvidersActions.getProviderNeighbors()
  *
  */
 
@@ -163,7 +170,61 @@ function* getProviderNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PROVIDER_NEIGHBORS, getProviderNeighborsWorker);
 }
 
+/*
+ *
+ * ProvidersActions.createNewProvider()
+ *
+ */
+
+function* createNewProviderWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(createNewProvider.request(id, value));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const providerESID :UUID = getESIDFromApp(app, PROVIDER);
+
+    const { data } = response;
+    const { entityKeyIds } = data;
+    const newProviderEKID :UUID = entityKeyIds[providerESID][0];
+    const { entityData } = value;
+    const providerData :Object = entityData[providerESID][0];
+
+    let newProvider :Map = fromJS({
+      [ENTITY_KEY_ID]: [newProviderEKID]
+    });
+    fromJS(providerData).forEach((entityValue :List, ptid :UUID) => {
+      const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+      newProvider = newProvider.set(propertyFqn, entityValue);
+    });
+
+    yield put(createNewProvider.success(id, newProvider));
+  }
+  catch (error) {
+    LOG.error('caught exception in createNewProviderWorker()', error);
+    yield put(createNewProvider.failure(id, error));
+  }
+  finally {
+    yield put(createNewProvider.finally(id));
+  }
+}
+
+function* createNewProviderWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_NEW_PROVIDER, createNewProviderWorker);
+}
+
 export {
+  createNewProviderWatcher,
+  createNewProviderWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
   getProviderNeighborsWatcher,
