@@ -28,6 +28,7 @@ import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../utils/Utils';
+import { createDateTime } from '../../utils/DateTimeUtils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -320,16 +321,15 @@ class ParticipantProfile extends Component<Props, State> {
             {
               !enrollmentEvents.isEmpty() && (
                 enrollmentEvents.map((enrollmentStatus :Map) => {
-                  // $FlowFixMe
                   const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
                     enrollmentStatus,
                     [EFFECTIVE_DATE, STATUS]
                   );
-                  const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
+                  const date :string = createDateTime(datetime).toLocaleString(DateTime.DATE_SHORT);
                   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
                   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
-                  // $FlowFixMe
-                  const { [NAME]: providerName } = getEntityProperties(provider, [NAME]);
+                  const { [NAME]: name } = getEntityProperties(provider, [NAME]);
+                  const providerName :string = typeof name === 'string' ? name : name[0];
                   const relatedOrganization :string = `Related Organization: ${providerName || '----'}`;
                   const providerEKID :UUID = getEKID(provider);
                   const contactName :string = contactNameByProviderEKID.get(providerEKID, '----');
