@@ -1,8 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -22,13 +21,20 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import RecordEventModal from './events/RecordEventModal';
+import Event from './events/Event';
 import COLORS from '../../core/style/Colors';
+import {
+  CardInnerWrapper,
+  EventDateWrapper,
+  EventStatusText,
+  EventText,
+  EventWrapper,
+} from './styled/EventStyles';
 import { getFormattedParticipantData, getMostRecentReleaseDate, getReentryEnrollmentDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
-import { getEKID, getEntityProperties } from '../../utils/DataUtils';
+import { getEKID } from '../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../utils/Utils';
-import { createDateTime } from '../../utils/DateTimeUtils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -49,10 +55,8 @@ const {
 } = APP_TYPE_FQNS;
 const {
   EFFECTIVE_DATE,
-  NAME,
   NOTES,
   SOURCE,
-  STATUS,
   TYPE
 } = PROPERTY_TYPE_FQNS;
 const carrot = '>';
@@ -71,11 +75,6 @@ const ProfileCardStack = styled(CardStack)`
   & > div {
     margin: 15px 0;
   }
-`;
-
-const CardInnerWrapper = styled.div`
-  display: flex;
-  width: 100%;
 `;
 
 const HeaderWrapper = styled(CardInnerWrapper)`
@@ -152,39 +151,6 @@ const GrayBar = styled(CardSegment)`
   justify-content: space-between;
   font-size: 14px;
   line-height: 19px;
-`;
-
-const EventCardSegment = styled(CardSegment)`
-  border-bottom: 1px solid ${NEUTRALS[4]};
-`;
-
-const eventTextStyles = css`
-  color: ${COLORS.GRAY_01};
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 19px;
-`;
-
-const EventDateWrapper = styled.div`
-  margin-right: 61px;
-`;
-
-const EventWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  ${eventTextStyles}
-`;
-
-const EventText = styled.div`
-  ${eventTextStyles}
-  font-weight: normal;
-  margin-top: 10px;
-`;
-
-const EventStatusText = styled.div`
-  ${eventTextStyles}
-  text-transform: uppercase;
 `;
 
 type Props = {
@@ -320,33 +286,13 @@ class ParticipantProfile extends Component<Props, State> {
             </GrayBar>
             {
               !enrollmentEvents.isEmpty() && (
-                enrollmentEvents.map((enrollmentStatus :Map) => {
-                  const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
-                    enrollmentStatus,
-                    [EFFECTIVE_DATE, STATUS]
-                  );
-                  const date :string = createDateTime(datetime).toLocaleString(DateTime.DATE_SHORT);
-                  const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
-                  const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
-                  const { [NAME]: name } = getEntityProperties(provider, [NAME]);
-                  const providerName :string = typeof name === 'string' ? name : name[0];
-                  const relatedOrganization :string = `Related Organization: ${providerName || '----'}`;
-                  const providerEKID :UUID = getEKID(provider);
-                  const contactName :string = contactNameByProviderEKID.get(providerEKID, '----');
-                  const pointofContact :string = `Point of Contact: ${contactName}`;
-                  return (
-                    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px">
-                      <CardInnerWrapper>
-                        <EventDateWrapper>{ date }</EventDateWrapper>
-                        <EventWrapper>
-                          <EventStatusText>{ status }</EventStatusText>
-                          <EventText>{ relatedOrganization }</EventText>
-                          <EventText>{ pointofContact }</EventText>
-                        </EventWrapper>
-                      </CardInnerWrapper>
-                    </EventCardSegment>
-                  );
-                })
+                enrollmentEvents.map((enrollmentStatus :Map) => (
+                  <Event
+                      key={getEKID(enrollmentStatus)}
+                      contactNameByProviderEKID={contactNameByProviderEKID}
+                      enrollmentStatus={enrollmentStatus}
+                      providerByStatusEKID={providerByStatusEKID} />
+                ))
               )
             }
             <CardSegment padding="25px 30px">
