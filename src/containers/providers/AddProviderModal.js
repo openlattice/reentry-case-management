@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
@@ -52,19 +52,21 @@ const AddProviderModal = ({
 } :Props) => {
 
   const [formData, updateFormData] = useState({});
-  const resetFormData = () => {
+
+  const closeModal = useCallback(() => {
     updateFormData({});
-  };
+    onClose();
+  }, [onClose]);
+
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
 
   useEffect(() => {
     if (requestIsSuccess(requestStates[CREATE_NEW_PROVIDER])) {
-      resetFormData();
-      onClose();
+      closeModal();
     }
-  }, [onClose, requestStates]);
+  }, [closeModal, requestStates]);
 
   const onSubmit = () => {
     if (Object.keys(formData).length) {
@@ -73,7 +75,7 @@ const AddProviderModal = ({
     }
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="Add Provider" />);
+  const renderHeader = () => (<ModalHeader onClose={closeModal} title="Add Provider" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[CREATE_NEW_PROVIDER]);
     return (
@@ -88,7 +90,7 @@ const AddProviderModal = ({
     <Modal
         isVisible={isVisible}
         onClickPrimary={onSubmit}
-        onClose={onClose}
+        onClose={closeModal}
         viewportScrolling
         textPrimary="Save"
         withFooter={renderFooter}
