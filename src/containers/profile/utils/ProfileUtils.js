@@ -26,15 +26,10 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
 
   const age = getPersonAge(participant);
   const {
-    // $FlowFixMe
     [DOB]: dobISO,
-    // $FlowFixMe
     [ETHNICITY]: ethnicity,
-    // $FlowFixMe
     [FIRST_NAME]: firstName,
-    // $FlowFixMe
     [LAST_NAME]: lastName,
-    // $FlowFixMe
     [RACE]: race
   } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE]);
   const dob :string = DateTime.fromISO(dobISO).toLocaleString(DateTime.DATE_SHORT);
