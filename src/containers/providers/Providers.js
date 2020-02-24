@@ -2,44 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import {
-  Button,
-  Card,
-  CardSegment,
-  CardStack,
-  Colors,
-  DataGrid,
-  Spinner,
-} from 'lattice-ui-kit';
+import { Button, CardStack, Spinner } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddProviderModal from './AddProviderModal';
+import ProviderCard from './ProviderCard';
 import COLORS from '../../core/style/Colors';
 import { GET_PROVIDERS, getProviders } from './ProvidersActions';
-import { getListOfContacts } from './utils/ProvidersUtils';
-import { getEKID, getEntityProperties } from '../../utils/DataUtils';
-import { getAddress } from '../../utils/FormattingUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../utils/DataUtils';
 import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
-const { NEUTRALS } = Colors;
-const { LOCATION, PROVIDER_STAFF } = APP_TYPE_FQNS;
-const {
-  DESCRIPTION,
-  NAME,
-  TYPE
-} = PROPERTY_TYPE_FQNS;
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-
-const labels = Map({
-  name: 'Name',
-  phone: 'Phone',
-  email: 'Email'
-});
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -53,46 +30,6 @@ const Header = styled.div`
   font-size: 26px;
   font-weight: 600;
   line-height: 35px;
-`;
-
-const ProviderHeaderRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const ProviderHeader = styled(Header)`
-  font-size: 20px;
-  line-height: 27px;
-`;
-
-const TypeTag = styled.div`
-  align-items: center;
-  background-color: ${COLORS.GRAY_02};
-  border-radius: 2px;
-  color: ${NEUTRALS[0]};
-  display: flex;
-  font-size: 11px;
-  font-weight: bold;
-  justify-content: center;
-  line-height: 15px;
-  margin-left: 10px;
-  padding: 5px 10px;
-  text-transform: uppercase;
-`;
-
-const PointOfContactTitle = styled.div`
-  color: ${COLORS.GRAY_01};
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 22px;
-  margin: 35px 0 27px;
-`;
-
-const Description = styled.div`
-  color: ${COLORS.GRAY_01};
-  font-size: 16px;
-  line-height: 22px;
-  margin-top: 20px;
 `;
 
 type Props = {
@@ -135,52 +72,13 @@ const Providers = ({
           : (
             <CardStack>
               {
-                providersList.map((provider :Map) => {
-                  const providerEKID :UUID = getEKID(provider);
-                  const { [DESCRIPTION]: description, [NAME]: providerName, [TYPE]: types } = getEntityProperties(
-                    provider,
-                    [DESCRIPTION, NAME, TYPE]
-                  );
-                  const address :Map = providerNeighborMap.getIn([providerEKID, LOCATION, 0], Map());
-                  const formattedAddress = getAddress(address);
-                  const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
-                  const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
-                  return (
-                    <Card key={providerEKID}>
-                      <CardSegment padding="40px" vertical>
-                        <ProviderHeaderRow>
-                          <ProviderHeader>{ providerName }</ProviderHeader>
-                          {
-                            typeof types === 'string'
-                              ? (
-                                <TypeTag>{ types }</TypeTag>
-                              )
-                              : (
-                                types.map((type :string) => <TypeTag key={type}>{ type }</TypeTag>)
-                              )
-                          }
-                        </ProviderHeaderRow>
-                        { !address.isEmpty() && (<Description>{ formattedAddress }</Description>) }
-                        { description && (<Description>{ description }</Description>) }
-                        {
-                          !pointsOfContact.isEmpty() && (
-                            <>
-                              <PointOfContactTitle>Point of Contact</PointOfContactTitle>
-                              {
-                                pointsOfContact.map((contact :Map) => (
-                                  <DataGrid
-                                      key={contact.get('id')}
-                                      data={contact}
-                                      labelMap={labels} />
-                                ))
-                              }
-                            </>
-                          )
-                        }
-                      </CardSegment>
-                    </Card>
-                  );
-                })
+                providersList.map((provider :Map) => (
+                  <ProviderCard
+                      key={getEKID(provider)}
+                      contactInfoByContactPersonEKID={contactInfoByContactPersonEKID}
+                      provider={provider}
+                      providerNeighborMap={providerNeighborMap} />
+                ))
               }
             </CardStack>
           )
