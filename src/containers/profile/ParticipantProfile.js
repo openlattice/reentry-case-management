@@ -92,7 +92,7 @@ const Header = styled.div`
   color: ${PURPLES[1]};
   font-size: 12px;
   font-weight: bold;
-  line-height: 16px;
+  line-height: 1.35;
   text-transform: uppercase;
 `;
 
@@ -109,7 +109,7 @@ const CardHeaderTitle = styled.div`
   color: ${COLORS.GRAY_01};
   font-size: 22px;
   font-weight: 600;
-  line-height: 30px;
+  line-height: 1.35;
 `;
 
 const SmallCardHeaderTitle = styled(CardHeaderTitle)`
@@ -126,7 +126,7 @@ const NeedsTag = styled.div`
   border-radius: 3px;
   color: ${NEUTRALS[1]};
   font-size: 14px;
-  line-height: 19px;
+  line-height: 1.35;
   margin-right: 20px;
   padding: 12px 20px;
   text-align: center;
@@ -135,7 +135,7 @@ const NeedsTag = styled.div`
 const Notes = styled.div`
   color: ${COLORS.GRAY_01};
   font-size: 14px;
-  line-height: 19px;
+  line-height: 1.35;
 `;
 
 const EventsCard = styled(Card)`
@@ -150,7 +150,7 @@ const GrayBar = styled(CardSegment)`
   color: ${NEUTRALS[0]};
   justify-content: space-between;
   font-size: 14px;
-  line-height: 19px;
+  line-height: 1.35;
 `;
 
 type Props = {
@@ -307,7 +307,7 @@ class ParticipantProfile extends Component<Props, State> {
           </EventsCard>
         </ProfileCardStack>
         <RecordEventModal
-            isOpen={eventModalIsOpen}
+            isVisible={eventModalIsOpen}
             onClose={this.closeEventModal}
             personEKID={personEKID} />
       </>

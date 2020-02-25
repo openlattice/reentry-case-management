@@ -84,7 +84,7 @@ type Props = {
     recordEnrollmentEvent :RequestSequence;
   };
   entitySetIdsByFqn :Map;
-  isOpen :boolean;
+  isVisible :boolean;
   onClose :() => void;
   personEKID :UUID;
   propertyTypeIdsByFqn :Map;
@@ -108,24 +108,26 @@ class RecordEventModal extends Component<Props, State> {
     };
   }
 
-  componentDidMount() {
-    const { actions } = this.props;
-    this.setState({ formData: {} });
-    actions.getProviders();
-  }
-
   componentDidUpdate(prevProps :Props) {
-    const { requestStates, onClose } = this.props;
+    const { actions, isVisible, requestStates } = this.props;
     const { requestStates: prevRequestStates } = prevProps;
+    if (!prevProps.isVisible && isVisible) {
+      actions.getProviders();
+    }
     if (requestIsSuccess(requestStates[RECORD_ENROLLMENT_EVENT])
       && requestIsPending(prevRequestStates[RECORD_ENROLLMENT_EVENT])) {
-      this.resetFormData();
-      onClose();
+      this.closeModal();
     }
   }
 
   resetFormData = () => {
     this.setState({ formData: {} });
+  }
+
+  closeModal = () => {
+    const { onClose } = this.props;
+    this.resetFormData();
+    onClose();
   }
 
   onChange = ({ formData } :Object) => {
@@ -152,10 +154,7 @@ class RecordEventModal extends Component<Props, State> {
     }
   }
 
-  renderHeader = () => {
-    const { onClose } = this.props;
-    return <Header onClose={onClose} />;
-  }
+  renderHeader = () => (<Header onClose={this.closeModal} />);
 
   renderFooter = () => {
     const { requestStates } = this.props;
@@ -169,14 +168,14 @@ class RecordEventModal extends Component<Props, State> {
   }
 
   render() {
-    const { isOpen, onClose, providers } = this.props;
+    const { isVisible, providers } = this.props;
     const { formData } = this.state;
     const hydratedSchema :Object = hydrateEventSchema(schema, providers);
     return (
       <Modal
-          isVisible={isOpen}
+          isVisible={isVisible}
           onClickPrimary={this.onSubmit}
-          onClose={onClose}
+          onClose={this.closeModal}
           textPrimary="Save"
           viewportScrolling
           withFooter={this.renderFooter}
