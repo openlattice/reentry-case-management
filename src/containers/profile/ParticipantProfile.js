@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
+  Breadcrumbs,
   Button,
   Card,
   CardHeader,
@@ -17,9 +18,11 @@ import { faUser } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { NavLink } from 'react-router-dom';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import * as Routes from '../../core/router/Routes';
 import RecordEventModal from './events/RecordEventModal';
 import Event from './events/Event';
 import COLORS from '../../core/style/Colors';
@@ -59,7 +62,6 @@ const {
   SOURCE,
   TYPE
 } = PROPERTY_TYPE_FQNS;
-const carrot = '>';
 const participantGridLabels = Map({
   lastName: 'Last name',
   firstName: 'First name',
@@ -88,21 +90,18 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 20px;
 `;
 
-const Header = styled.div`
+const Header = styled(NavLink)`
   color: ${PURPLES[1]};
   font-size: 12px;
   font-weight: bold;
   line-height: 1.35;
+  text-decoration: none;
   text-transform: uppercase;
 `;
 
 const NameHeader = styled(Header)`
   color: ${NEUTRALS[1]};
   font-weight: 500;
-`;
-
-const Carrot = styled(NameHeader)`
-  margin: 0 10px;
 `;
 
 const CardHeaderTitle = styled.div`
@@ -231,9 +230,13 @@ class ParticipantProfile extends Component<Props, State> {
       <>
         <HeaderWrapper>
           <CardInnerWrapper>
-            <Header>PARTICIPANTS</Header>
-            <Carrot>{carrot}</Carrot>
-            <NameHeader>{ participantName }</NameHeader>
+            <Breadcrumbs>
+              <Header to={Routes.PARTICIPANTS}>PARTICIPANTS</Header>
+              <NameHeader
+                  to={Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)}>
+                { participantName }
+              </NameHeader>
+            </Breadcrumbs>
           </CardInnerWrapper>
           <ButtonsWrapper>
             <Button mode="primary" onClick={this.openEventModal}>Record Event</Button>
