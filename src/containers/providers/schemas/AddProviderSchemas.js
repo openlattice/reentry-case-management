@@ -5,8 +5,13 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { PROVIDER_TYPES } from '../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { PROVIDER } = APP_TYPE_FQNS;
-const { DESCRIPTION, NAME, TYPE } = PROPERTY_TYPE_FQNS;
+const { PROVIDER, PROVIDER_ADDRESS } = APP_TYPE_FQNS;
+const {
+  DESCRIPTION,
+  NAME,
+  STREET,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 
 const schema :Object = {
   type: 'object',
@@ -35,6 +40,17 @@ const schema :Object = {
         },
       }
     },
+    [getPageSectionKey(1, 2)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: {
+          type: 'string',
+          title: 'Street',
+          default: ''
+        },
+      }
+    }
   }
 };
 
@@ -54,6 +70,12 @@ const uiSchema :Object = {
       classNames: 'column-span-12',
       'ui:widget': 'TextareaWidget',
     }
+  },
+  [getPageSectionKey(1, 2)]: {
+    classNames: 'column-span-12',
+    [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: {
+      'ui:widget': 'hidden'
+    },
   }
 };
 
