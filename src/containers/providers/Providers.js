@@ -13,7 +13,7 @@ import COLORS from '../../core/style/Colors';
 import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getEKID } from '../../utils/DataUtils';
-import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -37,6 +37,7 @@ type Props = {
     getProviders :RequestSequence;
   };
   contactInfoByContactPersonEKID :Map;
+  entitySetIdsByFqn :Map;
   providerNeighborMap :Map;
   providersList :List;
   requestStates :{
@@ -47,6 +48,7 @@ type Props = {
 const Providers = ({
   actions,
   contactInfoByContactPersonEKID,
+  entitySetIdsByFqn,
   providerNeighborMap,
   providersList,
   requestStates,
@@ -55,8 +57,10 @@ const Providers = ({
   const [addModalVisible, setAddModalVisibility] = useState(false);
 
   useEffect(() => {
-    actions.getProviders({ fetchNeighbors: true });
-  }, [actions]);
+    if (!entitySetIdsByFqn.isEmpty()) {
+      actions.getProviders({ fetchNeighbors: true });
+    }
+  }, [actions, entitySetIdsByFqn]);
 
   return (
     <>
@@ -89,11 +93,13 @@ const Providers = ({
 };
 
 const mapStateToProps = (state :Map) => {
+  const selectedOrgId :string = state.getIn([APP.APP, APP.SELECTED_ORG_ID]);
   const providers :Map = state.get(PROVIDERS.PROVIDERS);
   return {
     [CONTACT_INFO_BY_CONTACT_PERSON_EKID]: providers.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID),
     [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
     [PROVIDER_NEIGHBOR_MAP]: providers.get(PROVIDER_NEIGHBOR_MAP),
+    entitySetIdsByFqn: state.getIn([APP.APP, APP.ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     requestStates: {
       [GET_PROVIDERS]: providers.getIn([ACTIONS, GET_PROVIDERS, REQUEST_STATE]),
     }
