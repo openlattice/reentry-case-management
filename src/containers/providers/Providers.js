@@ -14,9 +14,11 @@ import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getEKID } from '../../utils/DataUtils';
 import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { PROVIDER } = APP_TYPE_FQNS;
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -55,12 +57,10 @@ const Providers = ({
 } :Props) => {
 
   const [addModalVisible, setAddModalVisibility] = useState(false);
-
+  const providerESIDLoaded :boolean = entitySetIdsByFqn.has(PROVIDER);
   useEffect(() => {
-    if (!entitySetIdsByFqn.isEmpty()) {
-      actions.getProviders({ fetchNeighbors: true });
-    }
-  }, [actions, entitySetIdsByFqn]);
+    if (providerESIDLoaded) actions.getProviders({ fetchNeighbors: true });
+  }, [actions, providerESIDLoaded]);
 
   return (
     <>
