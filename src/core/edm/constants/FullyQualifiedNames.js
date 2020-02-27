@@ -10,6 +10,7 @@ const APP_TYPE_FQNS :Object = {
   APPEARS_IN: new FullyQualifiedName('app.appearsin_new'),
   ASSIGNED_TO: new FullyQualifiedName('app.assignedto'),
   ATTORNEYS: new FullyQualifiedName('app.attorneys'), // general.person
+  ATTORNEY_CONTACT_INFO: new FullyQualifiedName('app.attorneycontactinformation'),
   CONTACTED_VIA: new FullyQualifiedName('app.contactedvia'),
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
   COURT_CASES: new FullyQualifiedName('app.courtcases'),
@@ -39,6 +40,7 @@ const APP_TYPE_FQNS :Object = {
   MEETINGS: new FullyQualifiedName('app.meetings'),
   NEEDS_ASSESSMENT: new FullyQualifiedName('app.needsassessment'), // ol.referralrequest
   OFFICERS: new FullyQualifiedName('app.officer'), // general.person
+  OFFICER_CONTACT_INFO: new FullyQualifiedName('app.officercontactinformation'),
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),
   PART_OF: new FullyQualifiedName('app.partof'),
@@ -50,6 +52,8 @@ const APP_TYPE_FQNS :Object = {
   PROVIDED: new FullyQualifiedName('app.provided'),
   PROVIDED_TO: new FullyQualifiedName('app.providedto'),
   PROVIDER: new FullyQualifiedName('app.organization'),
+  PROVIDER_ADDRESS: new FullyQualifiedName('app.provideraddress'),
+  PROVIDER_CONTACT_INFO: new FullyQualifiedName('app.providercontactinformation'),
   PROVIDER_EMPLOYEES: new FullyQualifiedName('app.serviceprovideremployees'), // ol.employee
   PROVIDER_STAFF: new FullyQualifiedName('app.serviceproviderstaff'), // general.person
   REENTRY_EMPLOYEES: new FullyQualifiedName('app.staff_employee'), // ol.employee
