@@ -1,7 +1,7 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -19,11 +19,13 @@ import {
   PROVIDERS,
   SHARED
 } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { processEntityData } = DataProcessingUtils;
+const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
+const { LOCATED_AT, PROVIDER, PROVIDER_ADDRESS } = APP_TYPE_FQNS;
 
 const FixedWidthModal = styled.div`
   width: 400px;
@@ -71,7 +73,15 @@ const AddProviderModal = ({
   const onSubmit = () => {
     if (Object.keys(formData).length) {
       const entityData :Object = processEntityData(formData, entitySetIdsByFqn, propertyTypeIdsByFqn);
-      actions.createNewProvider({ associationEntityData: {}, entityData });
+      const associations :Array<Array<*>> = [
+        [LOCATED_AT, 0, PROVIDER, 0, PROVIDER_ADDRESS, {}]
+      ];
+      const associationEntityData :Object = processAssociationEntityData(
+        fromJS(associations),
+        entitySetIdsByFqn,
+        propertyTypeIdsByFqn
+      );
+      actions.createNewProvider({ associationEntityData, entityData });
     }
   };
 
