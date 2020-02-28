@@ -25,9 +25,12 @@ const getAddress = (address :Map) :string => {
     [ZIP]: zipCode,
   } = getEntityProperties(address, [CITY, STREET, US_STATE, ZIP]);
 
-  if (!city || !streetAddress || !state || !zipCode) return EMPTY_FIELD;
-  // $FlowFixMe
-  return `${streetAddress} ${city}, ${state} ${zipCode}`;
+  if (!city && !streetAddress && !state && !zipCode) return EMPTY_FIELD;
+  let formattedAddress :string = typeof streetAddress === 'string' ? streetAddress : streetAddress[0];
+  if (typeof city === 'string' && city.length) formattedAddress = `${formattedAddress} ${city}`;
+  if (typeof state === 'string' && state.length) formattedAddress = `${formattedAddress}, ${state}`;
+  if (typeof zipCode === 'string' && zipCode.length) formattedAddress = `${formattedAddress} ${zipCode}`;
+  return formattedAddress;
 };
 
 const getPersonFullName = (personEntity :Map) :string => {
