@@ -22,6 +22,7 @@ const { PROVIDER_ADDRESS, PROVIDER_STAFF } = APP_TYPE_FQNS;
 const {
   DESCRIPTION,
   NAME,
+  STREET,
   TYPE
 } = PROPERTY_TYPE_FQNS;
 const labels = Map({
@@ -103,6 +104,7 @@ const ProviderCard = ({
     [DESCRIPTION, NAME, TYPE]
   );
   const address :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_ADDRESS, 0], Map());
+  const addressIsEmpty :boolean = address.count() === 2 && address.getIn([STREET, 0]) === '';
   const formattedAddress = getAddress(address);
   const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
   const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
@@ -125,7 +127,7 @@ const ProviderCard = ({
           </ProviderHeaderRow>
           <EditButton onClick={() => setEditModalVisibility(true)} />
         </RowWrapper>
-        { !address.isEmpty() && (<Description>{ formattedAddress }</Description>) }
+        { !addressIsEmpty && (<Description>{ formattedAddress }</Description>) }
         { description && (<Description>{ description }</Description>) }
         {
           !pointsOfContact.isEmpty() && (
