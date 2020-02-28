@@ -1,5 +1,5 @@
 // @flow
-import { List, Map, get } from 'immutable';
+import { List, Map, get, getIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { EMPTY_FIELD, getPersonFullName } from '../../../utils/FormattingUtils';
@@ -7,8 +7,16 @@ import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { getEntityAddressKey } = DataProcessingUtils;
-const { CONTACT_INFO, PROVIDER_STAFF } = APP_TYPE_FQNS;
+const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const {
+  CONTACTED_VIA,
+  EMPLOYED_BY,
+  IS,
+  PROVIDER,
+  PROVIDER_CONTACT_INFO,
+  PROVIDER_EMPLOYEES,
+  PROVIDER_STAFF,
+} = APP_TYPE_FQNS;
 const {
   CITY,
   DESCRIPTION,
@@ -37,9 +45,9 @@ const getListOfContacts = (staffEntities :List, contactInfoByContactPersonEKID :
     const staffEKID :UUID = getEKID(staff);
     const contacts :List = contactInfoByContactPersonEKID.get(staffEKID, List());
     const phoneEntity :any = contacts.find((contact :Map) => isDefined(get(contact, PHONE_NUMBER)));
-    if (isDefined(phoneEntity)) dataObj = dataObj.set('phone', get(phoneEntity, PHONE_NUMBER));
+    if (isDefined(phoneEntity)) dataObj = dataObj.set('phone', getIn(phoneEntity, [PHONE_NUMBER, 0]));
     const emailEntity :any = contacts.find((contact :Map) => isDefined(get(contact, EMAIL)));
-    if (isDefined(emailEntity)) dataObj = dataObj.set('email', get(emailEntity, PHONE_NUMBER));
+    if (isDefined(emailEntity)) dataObj = dataObj.set('email', getIn(emailEntity, [EMAIL, 0]));
     dataObj = dataObj.set('id', staffEKID);
     data = data.push(dataObj);
   });
@@ -75,11 +83,14 @@ const getDataForFormPrepopulation = (
     const contacts :List = contactInfoByContactPersonEKID.get(staffEKID, List());
     const phoneEntity :any = contacts.find((contact :Map) => isDefined(get(contact, PHONE_NUMBER)));
     if (isDefined(phoneEntity)) {
-      pointOfContact[getEntityAddressKey(-1, CONTACT_INFO, PHONE_NUMBER)] = get(phoneEntity, PHONE_NUMBER);
+      pointOfContact[getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER)] = getIn(
+        phoneEntity,
+        [PHONE_NUMBER, 0]
+      );
     }
     const emailEntity :any = contacts.find((contact :Map) => isDefined(get(contact, EMAIL)));
     if (isDefined(emailEntity)) {
-      pointOfContact[getEntityAddressKey(-2, CONTACT_INFO, EMAIL)] = get(emailEntity, EMAIL);
+      pointOfContact[getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL)] = getIn(emailEntity, [EMAIL, 0]);
     }
     pointsOfContact.push(pointOfContact);
   });
@@ -96,7 +107,38 @@ const getDataForFormPrepopulation = (
   };
 };
 
+const getContactsAssociations = (
+  newContactsEntityData :Object[],
+  contactsFormData :Object,
+  providerEKID :UUID
+) :Array<*> => {
+
+  const associations :Array<Array<*>> = [];
+  if (!isDefined(newContactsEntityData) || !isDefined(contactsFormData)) return associations;
+  if (!newContactsEntityData.length) return associations;
+  newContactsEntityData.forEach((contact :Object, index :number) => {
+    associations.push([IS, index, PROVIDER_STAFF, index, PROVIDER_EMPLOYEES]);
+    associations.push([EMPLOYED_BY, index, PROVIDER_STAFF, providerEKID, PROVIDER]);
+    associations.push([EMPLOYED_BY, index, PROVIDER_EMPLOYEES, providerEKID, PROVIDER]);
+
+    const contactInFormData :Object = contactsFormData[getPageSectionKey(1, 1)][index];
+    const phoneNumber :any = contactInFormData[getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER)];
+    const phoneNumberPresent :boolean = isDefined(phoneNumber) && phoneNumber.length;
+    if (phoneNumberPresent) {
+      associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, index, PROVIDER_CONTACT_INFO]);
+    }
+    const email :any = contactInFormData[getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL)];
+    if (isDefined(email) && email.length) {
+      let emailIndex :number = index;
+      if (phoneNumberPresent) emailIndex += 1;
+      associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, emailIndex, PROVIDER_CONTACT_INFO]);
+    }
+  });
+  return associations;
+};
+
 export {
+  getContactsAssociations,
   getDataForFormPrepopulation,
   getListOfContacts,
 };
