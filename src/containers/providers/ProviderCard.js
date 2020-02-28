@@ -18,7 +18,7 @@ import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { NEUTRALS } = Colors;
-const { LOCATION, PROVIDER_STAFF } = APP_TYPE_FQNS;
+const { PROVIDER_ADDRESS, PROVIDER_STAFF } = APP_TYPE_FQNS;
 const {
   DESCRIPTION,
   NAME,
@@ -102,7 +102,7 @@ const ProviderCard = ({
     provider,
     [DESCRIPTION, NAME, TYPE]
   );
-  const address :Map = providerNeighborMap.getIn([providerEKID, LOCATION, 0], Map());
+  const address :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_ADDRESS, 0], Map());
   const formattedAddress = getAddress(address);
   const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
   const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
