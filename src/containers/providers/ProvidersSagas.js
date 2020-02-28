@@ -25,13 +25,16 @@ import {
   getNeighborESID,
   getPropertyFqnFromEDM,
 } from '../../utils/DataUtils';
+import { constructNewEntityFromSubmittedData } from '../../utils/FormUtils';
 import { submitDataGraph } from '../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../core/data/DataSagas';
 import {
+  ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
+  addNewProviderContacts,
   createNewProvider,
   getContactInfo,
   getProviders,
@@ -43,11 +46,13 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 
 const LOG = new Logger('EventSagas');
 const { FullyQualifiedName } = Models;
-const { getEntityData, getEntitySetData } = DataApiActions;
-const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  CONTACTED_VIA,
+  EMPLOYED_BY,
   PROVIDER,
   PROVIDER_ADDRESS,
   PROVIDER_CONTACT_INFO,
@@ -280,7 +285,91 @@ function* createNewProviderWatcher() :Generator<*, *, *> {
   yield takeEvery(CREATE_NEW_PROVIDER, createNewProviderWorker);
 }
 
+/*
+ *
+ * ProvidersActions.addNewProviderContacts()
+ *
+ */
+
+function* addNewProviderContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(addNewProviderContacts.request(id, value));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const providerContactInfoESID :UUID = getESIDFromApp(app, PROVIDER_CONTACT_INFO);
+    const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
+    const contactedViaESID :UUID = getESIDFromApp(app, CONTACTED_VIA);
+    const employedByESID :UUID = getESIDFromApp(app, EMPLOYED_BY);
+
+    console.log('-------------------------');
+    const { entityKeyIds } = response.data;
+    console.log('entityKeyIds: ', entityKeyIds);
+    const newProviderContactInfoEKIDs :UUID[] = entityKeyIds[providerContactInfoESID];
+    console.log('newProviderContactInfoEKIDs: ', newProviderContactInfoEKIDs);
+    const newProviderStaffEKIDs :UUID[] = entityKeyIds[providerStaffESID];
+    console.log('newProviderStaffEKIDs: ', newProviderStaffEKIDs);
+
+    const { associationEntityData, entityData } = value;
+    const providerStaffData :Object[] = entityData[providerStaffESID];
+    const providerContactInfoData :Object[] = entityData[providerContactInfoESID];
+    const contactInfoAssociations :Object[] = associationEntityData[contactedViaESID];
+    const providerEKID :UUID = associationEntityData[employedByESID][0].dstEntityKeyId;
+
+    let newProviderStaffMembers :List = List();
+    let newProviderContactInfo :Map = Map();
+
+    newProviderStaffEKIDs.forEach((staffEKID :UUID, index :number) => {
+
+      const staffPerson :Object = providerStaffData[index];
+      const staffEntity :Map = constructNewEntityFromSubmittedData(fromJS(staffPerson), staffEKID, edm);
+      newProviderStaffMembers = newProviderStaffMembers.push(staffEntity);
+
+      const staffPersonContactAssociations :Object[] = contactInfoAssociations
+        .filter((association :Object) => (association.srcEntityIndex === index));
+      console.log('staffPersonContactAssociations: ', staffPersonContactAssociations);
+      if (staffPersonContactAssociations.length) {
+        let newPersonContacts :List = newProviderContactInfo.get(staffEKID, List());
+        console.log('association: ', association);
+        staffPersonContactAssociations.forEach((association :Object) => {
+          const contactEKID :UUID = newProviderContactInfoEKIDs[association.dstEntityIndex];
+          const contactData :Object = providerContactInfoData[association.dstEntityIndex];
+          const contactEntity :Map = constructNewEntityFromSubmittedData(fromJS(contactData), contactEKID, edm);
+          newPersonContacts = newPersonContacts.push(contactEntity);
+        });
+        newProviderContactInfo = newProviderContactInfo.set(staffEKID, newPersonContacts);
+      }
+    });
+    console.log('newProviderStaffMembers: ', newProviderStaffMembers.toJS());
+    console.log('newProviderContactInfo: ', newProviderContactInfo.toJS());
+
+    yield put(addNewProviderContacts.success(id, { newProviderContactInfo, newProviderStaffMembers, providerEKID }));
+  }
+  catch (error) {
+    LOG.error('caught exception in addNewProviderContactsWorker()', error);
+    yield put(addNewProviderContacts.failure(id, error));
+  }
+  finally {
+    yield put(addNewProviderContacts.finally(id));
+  }
+}
+
+function* addNewProviderContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_NEW_PROVIDER_CONTACTS, addNewProviderContactsWorker);
+}
+
 export {
+  addNewProviderContactsWatcher,
+  addNewProviderContactsWorker,
   createNewProviderWatcher,
   createNewProviderWorker,
   getContactInfoWatcher,

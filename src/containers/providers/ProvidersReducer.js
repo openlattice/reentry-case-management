@@ -4,10 +4,12 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
+  addNewProviderContacts,
   createNewProvider,
   getContactInfo,
   getProviders,
@@ -23,10 +25,16 @@ const {
   PROVIDERS_LIST,
   PROVIDER_NEIGHBOR_MAP
 } = PROVIDERS;
-const { PROVIDER_ADDRESS } = APP_TYPE_FQNS;
+const { PROVIDER_ADDRESS, PROVIDER_STAFF } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [ADD_NEW_PROVIDER_CONTACTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CREATE_NEW_PROVIDER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -46,6 +54,32 @@ const INITIAL_STATE :Map = fromJS({
 export default function providersReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case addNewProviderContacts.case(action.type): {
+
+      return addNewProviderContacts.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, action.id], action)
+          .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { newProviderContactInfo, newProviderStaffMembers, providerEKID } = value;
+          const providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP)
+            .mergeIn([providerEKID, PROVIDER_STAFF], newProviderStaffMembers);
+          console.log('providerNeighborMap: ', providerNeighborMap.toJS());
+          const contactInfoByContactPersonEKID :Map = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID)
+            .mergeIn([providerEKID], newProviderContactInfo);
+          console.log('contactInfoByContactPersonEKID: ', contactInfoByContactPersonEKID.toJS());
+          return state
+            .set(CONTACT_INFO_BY_CONTACT_PERSON_EKID, contactInfoByContactPersonEKID)
+            .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
+            .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, action.id]),
+      });
+    }
 
     case createNewProvider.case(action.type): {
 
