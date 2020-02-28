@@ -12,15 +12,19 @@ import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import type { Match } from 'react-router';
 
 import ModalHeader from '../../components/modal/ModalHeader';
-import { schema, uiSchema } from './schemas/EditProviderSchemas';
-import { getDataForFormPrepopulation } from './utils/ProvidersUtils';
+import {
+  contactsSchema,
+  contactsUiSchema,
+  providerSchema,
+  providerUiSchema,
+} from './schemas/EditProviderSchemas';
+import { getContactsAssociations, getDataForFormPrepopulation } from './utils/ProvidersUtils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
-import { GET_PROVIDER, getProvider } from './ProvidersActions';
+import { ADD_NEW_PROVIDER_CONTACTS, addNewProviderContacts } from './ProvidersActions';
 import {
   APP,
   EDM,
@@ -34,22 +38,31 @@ const FixedWidthModal = styled.div`
   width: 600px;
 `;
 
-const { getEntityAddressKey, getPageSectionKey, processEntityDataForPartialReplace } = DataProcessingUtils;
+const {
+  INDEX_MAPPERS,
+  getEntityAddressKey,
+  getPageSectionKey,
+  processAssociationEntityData,
+  processEntityData,
+  processEntityDataForPartialReplace,
+} = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const {
-  CONTACT_INFO,
-  LOCATION,
+  CONTACTED_VIA,
+  EMPLOYED_BY,
+  IS,
   PROVIDER,
+  PROVIDER_ADDRESS,
+  PROVIDER_CONTACT_INFO,
+  PROVIDER_EMPLOYEES,
   PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 const {
   CITY,
   DESCRIPTION,
   EMAIL,
-  FIRST_NAME,
-  LAST_NAME,
   NAME,
   PHONE_NUMBER,
   STREET,
@@ -60,27 +73,26 @@ const {
 
 let entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
   map.setIn([PROVIDER, 0], '');
-  map.setIn([LOCATION, 0], '');
+  map.setIn([PROVIDER_ADDRESS, 0], '');
   map.setIn([PROVIDER_STAFF, -1], []);
-  map.setIn([CONTACT_INFO, -1], []);
-  map.setIn([CONTACT_INFO, -2], []);
+  map.setIn([PROVIDER_CONTACT_INFO, -1], []);
+  map.setIn([PROVIDER_CONTACT_INFO, -2], []);
 });
 
 type Props = {
   actions :{
-    getProvider :RequestSequence;
+    addNewProviderContacts :RequestSequence;
   };
   address :Map;
   contactInfoByContactPersonEKID :Map;
   entitySetIdsByFqn :Map;
   isVisible :boolean;
-  match :Match;
   onClose :() => void;
   propertyTypeIdsByFqn :Map;
   provider :Map;
   providerStaff :List;
   requestStates :{
-    GET_PROVIDER :RequestState;
+    ADD_NEW_PROVIDER_CONTACTS :RequestState;
   };
 };
 
@@ -90,7 +102,6 @@ const EditProviderForm = ({
   contactInfoByContactPersonEKID,
   entitySetIdsByFqn,
   isVisible,
-  match,
   onClose,
   provider,
   providerStaff,
@@ -98,24 +109,25 @@ const EditProviderForm = ({
   requestStates
 } :Props) => {
 
-  const [formData, updateFormData] = useState({});
-  const [originalFormData, setOriginalFormData] = useState({});
-  // useEffect(() => {
-  //   const { params } = match;
-  //   const { providerId: providerEKID } = params;
-  //   actions.getProvider({ providerEKID });
-  // }, [actions, match]);
+  const providerEKID :UUID = getEKID(provider);
+  const [providerFormData, updateProviderFormData] = useState({});
+  const [contactsFormData, updateContactsFormData] = useState({});
+  const [originalProviderFormData, setOriginalProviderFormData] = useState({});
+  const [originalContactsFormData, setOriginalContactsFormData] = useState({});
 
-  const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
+  const onProviderChange = ({ formData: newFormData } :Object) => {
+    updateProviderFormData(newFormData);
+  };
+  const onContactsChange = ({ formData: newFormData } :Object) => {
+    updateContactsFormData(newFormData);
   };
 
-  // useEffect(() => {
-  //   if (requestIsSuccess(requestStates[CREATE_NEW_PROVIDER])) {
-  //     resetFormData();
-  //     onClose();
-  //   }
-  // }, [onClose, requestStates]);
+  useEffect(() => {
+    if (requestIsSuccess(requestStates[ADD_NEW_PROVIDER_CONTACTS])) {
+      // resetFormData();
+      onClose();
+    }
+  }, [onClose, requestStates]);
 
   useEffect(() => {
     const {
@@ -129,79 +141,123 @@ const EditProviderForm = ({
       zipCode,
     } = getDataForFormPrepopulation(provider, address, providerStaff, contactInfoByContactPersonEKID);
 
-    updateFormData({
-      [getPageSectionKey(1, 1)]: {
-        [getEntityAddressKey(0, PROVIDER, NAME)]: providerName,
-        [getEntityAddressKey(0, PROVIDER, TYPE)]: providerTypes,
-        [getEntityAddressKey(0, PROVIDER, DESCRIPTION)]: providerDescription,
-      },
-      [getPageSectionKey(1, 2)]: {
-        [getEntityAddressKey(0, LOCATION, STREET)]: city,
-        [getEntityAddressKey(0, LOCATION, CITY)]: streetAddress,
-        [getEntityAddressKey(0, LOCATION, US_STATE)]: state,
-        [getEntityAddressKey(0, LOCATION, ZIP)]: zipCode,
-      },
-      [getPageSectionKey(1, 3)]: pointsOfContact
+    entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER, 0], providerEKID);
+    if (!address.isEmpty()) entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_ADDRESS, 0], getEKID(address));
+    providerStaff.forEach((staffMember :Map, index :number) => {
+      const staffMemberEKID :UUID = getEKID(staffMember);
+      entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_STAFF, -1, index], staffMemberEKID);
+      const contactMethods :List = contactInfoByContactPersonEKID.get(staffMemberEKID, List());
+      contactMethods.forEach((method :Map) => {
+        if (method.has(PHONE_NUMBER)) {
+          entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_CONTACT_INFO, -1, index], getEKID(method));
+        }
+        if (method.has(EMAIL)) {
+          entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_CONTACT_INFO, -2, index], getEKID(method));
+        }
+      });
     });
-    setOriginalFormData({
-      [getPageSectionKey(1, 1)]: {
-        [getEntityAddressKey(0, PROVIDER, NAME)]: providerName,
-        [getEntityAddressKey(0, PROVIDER, TYPE)]: providerTypes,
-        [getEntityAddressKey(0, PROVIDER, DESCRIPTION)]: providerDescription,
-      },
-      [getPageSectionKey(1, 2)]: {
-        [getEntityAddressKey(0, LOCATION, STREET)]: city,
-        [getEntityAddressKey(0, LOCATION, CITY)]: streetAddress,
-        [getEntityAddressKey(0, LOCATION, US_STATE)]: state,
-        [getEntityAddressKey(0, LOCATION, ZIP)]: zipCode,
-      },
-      [getPageSectionKey(1, 3)]: pointsOfContact
-    });
-  }, [address, contactInfoByContactPersonEKID, provider, providerStaff]);
 
-  const onSubmit = (value) => {
-    console.log('value: ', value);
-    const newFormData = value.formData;
-    console.log('originalFormData: ', originalFormData);
-    const entityData :Object = processEntityDataForPartialReplace(
-      newFormData,
-      originalFormData,
+    const prepopulatedProviderFormData :Object = {
+      [getPageSectionKey(1, 1)]: {
+        [getEntityAddressKey(0, PROVIDER, NAME)]: providerName,
+        [getEntityAddressKey(0, PROVIDER, TYPE)]: providerTypes,
+        [getEntityAddressKey(0, PROVIDER, DESCRIPTION)]: providerDescription,
+      },
+      [getPageSectionKey(1, 2)]: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: city,
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, CITY)]: streetAddress,
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, US_STATE)]: state,
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, ZIP)]: zipCode,
+      },
+    };
+    updateProviderFormData(prepopulatedProviderFormData);
+    setOriginalProviderFormData(prepopulatedProviderFormData);
+
+    const prepopulatedContactsFormData :Object = {
+      [getPageSectionKey(1, 1)]: pointsOfContact
+    };
+    updateContactsFormData(prepopulatedContactsFormData);
+    setOriginalContactsFormData(prepopulatedContactsFormData);
+  }, [address, contactInfoByContactPersonEKID, provider, providerEKID, providerStaff]);
+
+  const onSubmit = () => {
+    const providerDataToEdit :Object = processEntityDataForPartialReplace(
+      providerFormData,
+      originalProviderFormData,
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
       {}
     );
-    console.log('entityIndexToIdMap: ', entityIndexToIdMap.toJS());
-    // if (Object.keys(formData).length) {
-    //   const entityData :Object = processEntityData(formData, entitySetIdsByFqn, propertyTypeIdsByFqn);
-    //   actions.createNewProvider({ associationEntityData: {}, entityData });
-    // }
+    console.log('providerDataToEdit: ', providerDataToEdit);
+    console.log('contactsFormData: ', contactsFormData);
+
+    const contactsMappers :Map = Map().withMutations((mappers :Map) => {
+      const indexMappers :Map = Map().withMutations((map :Map) => {
+        map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => i + 1);
+      });
+      mappers.set(INDEX_MAPPERS, indexMappers);
+    });
+    const contactsDataToSubmit :Object = processEntityData(
+      contactsFormData,
+      entitySetIdsByFqn,
+      propertyTypeIdsByFqn,
+      contactsMappers
+    );
+    console.log('contactsDataToSubmit: ', contactsDataToSubmit);
+    const providerStaffESID :UUID = entitySetIdsByFqn.get(PROVIDER_STAFF);
+    const newContacts :Object[] = contactsDataToSubmit[providerStaffESID];
+    const associations = getContactsAssociations(newContacts, contactsFormData, providerEKID);
+    console.log('associations: ', associations);
+    const contactsAssociations :Object = processAssociationEntityData(
+      fromJS(associations),
+      entitySetIdsByFqn,
+      propertyTypeIdsByFqn,
+    );
+    console.log('contactsAssociations: ', contactsAssociations);
+    actions.addNewProviderContacts({ associationEntityData: contactsAssociations, entityData: contactsDataToSubmit });
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Provider" />);
+  const renderFooter = () => {
+    const isSubmitting :boolean = false;
+    return (
+      <ModalFooter
+          isPendingPrimary={isSubmitting}
+          onClickPrimary={onSubmit}
+          textPrimary="Save" />
+    );
+  };
   const formContext = {
     editAction: onSubmit,
     entityIndexToIdMap,
     entitySetIds: entitySetIdsByFqn,
     propertyTypeIds: propertyTypeIdsByFqn,
   };
-  if (requestIsPending(requestStates[GET_PROVIDER])) {
-    return <Spinner size="2x" />;
-  }
   return (
     <Modal
         isVisible={isVisible}
         onClose={onClose}
+        textPrimary="Save"
         viewportScrolling
-        withHeader={renderHeader}>
+        withHeader={renderHeader}
+        withFooter={renderFooter}>
       <FixedWidthModal>
         <Form
-            disabled
             formContext={formContext}
-            formData={formData}
+            formData={providerFormData}
             hideSubmit
-            onChange={onChange}
-            schema={schema}
-            uiSchema={uiSchema} />
+            onChange={onProviderChange}
+            onSubmit={onSubmit}
+            schema={providerSchema}
+            uiSchema={providerUiSchema} />
+        <Form
+            formContext={formContext}
+            formData={contactsFormData}
+            hideSubmit
+            onChange={onContactsChange}
+            onSubmit={onSubmit}
+            schema={contactsSchema}
+            uiSchema={contactsUiSchema} />
       </FixedWidthModal>
     </Modal>
   );
@@ -214,14 +270,14 @@ const mapStateToProps = (state :Map) => {
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
-      [GET_PROVIDER]: providers.getIn([ACTIONS, GET_PROVIDER, REQUEST_STATE]),
+      [ADD_NEW_PROVIDER_CONTACTS]: providers.getIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE]),
     }
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    getProvider,
+    addNewProviderContacts,
   }, dispatch)
 });
 
