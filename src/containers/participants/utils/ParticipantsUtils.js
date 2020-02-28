@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
+import { createDateTime } from '../../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { MANUAL_JAIL_STAYS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
@@ -24,7 +25,10 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
       FIRST_NAME,
       LAST_NAME
     ]);
-    const dateOfBirth :string = DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT);
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
+    const dateOfBirth :string = createDateTime(dob).toLocaleString(DateTime.DATE_SHORT);
 
     const personEKID :UUID = getEKID(person);
     const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS]);
@@ -34,10 +38,10 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
 
     const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT]).get(0);
     const { [DATETIME_COMPLETED]: enrollmentDateTime } = getEntityProperties(needsAssessment, [DATETIME_COMPLETED]);
-    const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const enrollmentDate :string = createDateTime(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
 
     const personDataObject :Map = fromJS({
-      name: `${firstName} ${lastName}`,
+      name: personName,
       dob: dateOfBirth,
       jail: jailName,
       enrollmentDate,

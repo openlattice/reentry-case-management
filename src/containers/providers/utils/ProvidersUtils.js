@@ -1,5 +1,10 @@
 // @flow
-import { List, Map, get, getIn } from 'immutable';
+import {
+  List,
+  Map,
+  get,
+  getIn
+} from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { EMPTY_FIELD, getPersonFullName } from '../../../utils/FormattingUtils';

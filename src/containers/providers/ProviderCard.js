@@ -1,6 +1,5 @@
 // @flow
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -13,8 +12,6 @@ import {
 
 import EditProviderModal from './EditProviderModal';
 import COLORS from '../../core/style/Colors';
-import * as Routes from '../../core/router/Routes';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { getAddress } from '../../utils/FormattingUtils';
 import { getListOfContacts } from './utils/ProvidersUtils';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
@@ -98,7 +95,6 @@ const ProviderCard = ({
   providerNeighborMap,
 } :Props) => {
 
-  const dispatch = useDispatch();
   const [editModalVisible, setEditModalVisibility] = useState(false);
 
   const providerEKID :UUID = getEKID(provider);
@@ -110,9 +106,6 @@ const ProviderCard = ({
   const formattedAddress = getAddress(address);
   const providerStaff :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
   const pointsOfContact :List = getListOfContacts(providerStaff, contactInfoByContactPersonEKID);
-  // const goToEditProvider = () => {
-  //   dispatch(goToRoute(Routes.EDIT_PROVIDER.replace(':providerId', providerEKID)));
-  // };
 
   return (
     <Card key={providerEKID}>
