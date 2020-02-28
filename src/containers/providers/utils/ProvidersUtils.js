@@ -18,6 +18,7 @@ const {
   EMPLOYED_BY,
   IS,
   PROVIDER,
+  PROVIDER_ADDRESS,
   PROVIDER_CONTACT_INFO,
   PROVIDER_EMPLOYEES,
   PROVIDER_STAFF,
@@ -112,6 +113,34 @@ const getDataForFormPrepopulation = (
   };
 };
 
+const formatEntityIndexToIdMap = (
+  originalEntityIndexToIdMap :Map,
+  providerEKID :UUID,
+  address :Map,
+  providerStaff :List,
+  contactInfoByContactPersonEKID :Map
+) :Map => {
+
+  let entityIndexToIdMap :Map = originalEntityIndexToIdMap;
+  entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER, 0], providerEKID);
+  if (!address.isEmpty()) entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_ADDRESS, 0], getEKID(address));
+
+  providerStaff.forEach((staffMember :Map, index :number) => {
+    const staffMemberEKID :UUID = getEKID(staffMember);
+    entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_STAFF, -1, index], staffMemberEKID);
+    const contactMethods :List = contactInfoByContactPersonEKID.get(staffMemberEKID, List());
+    contactMethods.forEach((method :Map) => {
+      if (method.has(PHONE_NUMBER)) {
+        entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_CONTACT_INFO, -1, index], getEKID(method));
+      }
+      if (method.has(EMAIL)) {
+        entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_CONTACT_INFO, -2, index], getEKID(method));
+      }
+    });
+  });
+  return entityIndexToIdMap;
+};
+
 const getContactsAssociations = (
   newContactsEntityData :Object[],
   contactsFormData :Object,
@@ -143,6 +172,7 @@ const getContactsAssociations = (
 };
 
 export {
+  formatEntityIndexToIdMap,
   getContactsAssociations,
   getDataForFormPrepopulation,
   getListOfContacts,

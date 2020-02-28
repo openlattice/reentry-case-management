@@ -151,7 +151,6 @@ const providerUiSchema :Object = {
       classNames: 'column-span-6',
     },
   },
-  'ui:options': { editable: true },
 };
 
 const contactsUiSchema = {
@@ -181,7 +180,6 @@ const contactsUiSchema = {
       },
     }
   },
-  'ui:options': { editable: true },
 };
 
 export {

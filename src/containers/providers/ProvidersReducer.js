@@ -3,14 +3,17 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
+  EDIT_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
+  editProvider,
   getContactInfo,
   getProviders,
   getProviderNeighbors,
@@ -32,6 +35,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_NEW_PROVIDER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PROVIDER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CONTACT_INFO]: {
@@ -100,6 +106,42 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
         },
         FAILURE: () => state.setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_PROVIDER, action.id]),
+      });
+    }
+
+    case editProvider.case(action.type): {
+
+      return editProvider.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PROVIDER, action.id], action)
+          .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { newProvider, newProviderAddress, providerEKID } = value;
+          let providersList :List = state.get(PROVIDERS_LIST);
+          let index :number = -1;
+          let provider :Map = providersList.find((entity :Map, i :number) => {
+            if (providerEKID === getEKID(entity)) {
+              index = i;
+              return true;
+            }
+            return false;
+          });
+          provider = provider.mergeWith((oldVal, newVal) => newVal, newProvider);
+          providersList = providersList.set(index, provider);
+
+          let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
+          let providerAddress :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_ADDRESS, 0], Map());
+          providerAddress = providerAddress.mergeWith((oldVal, newVal) => newVal, newProviderAddress);
+          providerNeighborMap = providerNeighborMap.setIn([providerEKID, PROVIDER_ADDRESS, 0], providerAddress);
+          return state
+            .set(PROVIDERS_LIST, providersList)
+            .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
+            .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PROVIDER, action.id]),
       });
     }
 

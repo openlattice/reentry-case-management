@@ -6,7 +6,13 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { Models } from 'lattice';
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  has,
+} from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
@@ -26,16 +32,18 @@ import {
   getPropertyFqnFromEDM,
 } from '../../utils/DataUtils';
 import { constructNewEntityFromSubmittedData } from '../../utils/FormUtils';
-import { submitDataGraph } from '../../core/data/DataActions';
-import { submitDataGraphWorker } from '../../core/data/DataSagas';
+import { submitDataGraph, submitPartialReplace } from '../../core/data/DataActions';
+import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
+  EDIT_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
+  editProvider,
   getContactInfo,
   getProviders,
   getProviderNeighbors,
@@ -359,11 +367,64 @@ function* addNewProviderContactsWatcher() :Generator<*, *, *> {
   yield takeEvery(ADD_NEW_PROVIDER_CONTACTS, addNewProviderContactsWorker);
 }
 
+/*
+ *
+ * ProvidersActions.editProvider()
+ *
+ */
+
+function* editProviderWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(editProvider.request(id, value));
+    const response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const providerESID :UUID = getESIDFromApp(app, PROVIDER);
+    const providerAddressESID :UUID = getESIDFromApp(app, PROVIDER_ADDRESS);
+
+    let newProvider :Map = Map();
+    let newProviderAddress :Map = Map();
+    const { addressEKID, entityData, providerEKID } = value;
+    if (has(entityData, providerESID)) {
+      const newProviderData :Map = fromJS(getIn(entityData, [providerESID, providerEKID]));
+      newProvider = constructNewEntityFromSubmittedData(newProviderData, providerEKID, edm);
+    }
+    if (has(entityData, providerAddressESID)) {
+      const newAddressData :Map = fromJS(getIn(entityData, [providerAddressESID, addressEKID]));
+      newProviderAddress = constructNewEntityFromSubmittedData(newAddressData, providerEKID, edm);
+    }
+
+    yield put(editProvider.success(id, { newProvider, newProviderAddress, providerEKID }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editProviderWorker()', error);
+    yield put(editProvider.failure(id, error));
+  }
+  finally {
+    yield put(editProvider.finally(id));
+  }
+}
+
+function* editProviderWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PROVIDER, editProviderWorker);
+}
+
 export {
   addNewProviderContactsWatcher,
   addNewProviderContactsWorker,
   createNewProviderWatcher,
   createNewProviderWorker,
+  editProviderWatcher,
+  editProviderWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
   getProvidersWatcher,
