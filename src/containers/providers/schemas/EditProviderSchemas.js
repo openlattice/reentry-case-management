@@ -6,9 +6,10 @@ import { PROVIDER_TYPES, US_STATES } from '../../../utils/constants/DataConstant
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
-  CONTACT_INFO,
-  LOCATION,
   PROVIDER,
+  PROVIDER_ADDRESS,
+  PROVIDER_CONTACT_INFO,
+  PROVIDER_EMPLOYEES,
   PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 const {
@@ -20,12 +21,13 @@ const {
   NAME,
   PHONE_NUMBER,
   STREET,
+  TITLE,
   TYPE,
   US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
-const schema :Object = {
+const providerSchema :Object = {
   type: 'object',
   title: '',
   properties: {
@@ -56,27 +58,34 @@ const schema :Object = {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, LOCATION, STREET)]: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: {
           type: 'string',
           title: 'Street address',
         },
-        [getEntityAddressKey(0, LOCATION, CITY)]: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, CITY)]: {
           type: 'string',
           title: 'City',
         },
-        [getEntityAddressKey(0, LOCATION, US_STATE)]: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, US_STATE)]: {
           type: 'string',
           title: 'State',
           enum: US_STATES,
           enumNames: US_STATES
         },
-        [getEntityAddressKey(0, LOCATION, ZIP)]: {
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, ZIP)]: {
           type: 'string',
           title: 'Zip Code',
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
+  }
+};
+
+const contactsSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'array',
       title: 'Points of Contact',
       items: {
@@ -90,11 +99,16 @@ const schema :Object = {
             type: 'string',
             title: 'Contact last name'
           },
-          [getEntityAddressKey(-1, CONTACT_INFO, PHONE_NUMBER)]: {
+          [getEntityAddressKey(-1, PROVIDER_EMPLOYEES, TITLE)]: {
+            type: 'string',
+            title: 'Title/Role',
+            default: 'Point of Contact'
+          },
+          [getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER)]: {
             type: 'string',
             title: 'Contact phone'
           },
-          [getEntityAddressKey(-1, CONTACT_INFO, EMAIL)]: {
+          [getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL)]: {
             type: 'string',
             title: 'Contact email'
           },
@@ -105,7 +119,7 @@ const schema :Object = {
   }
 };
 
-const uiSchema :Object = {
+const providerUiSchema :Object = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12',
     [getEntityAddressKey(0, PROVIDER, NAME)]: {
@@ -124,20 +138,24 @@ const uiSchema :Object = {
   },
   [getPageSectionKey(1, 2)]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, LOCATION, STREET)]: {
+    [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: {
       classNames: 'column-span-6',
     },
-    [getEntityAddressKey(0, LOCATION, CITY)]: {
+    [getEntityAddressKey(0, PROVIDER_ADDRESS, CITY)]: {
       classNames: 'column-span-6',
     },
-    [getEntityAddressKey(0, LOCATION, US_STATE)]: {
+    [getEntityAddressKey(0, PROVIDER_ADDRESS, US_STATE)]: {
       classNames: 'column-span-6',
     },
-    [getEntityAddressKey(0, LOCATION, ZIP)]: {
+    [getEntityAddressKey(0, PROVIDER_ADDRESS, ZIP)]: {
       classNames: 'column-span-6',
     },
   },
-  [getPageSectionKey(1, 3)]: {
+  'ui:options': { editable: true },
+};
+
+const contactsUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12',
     'ui:options': {
       addButtonText: '+ Add Contact',
@@ -152,10 +170,13 @@ const uiSchema :Object = {
       [getEntityAddressKey(-1, PROVIDER_STAFF, LAST_NAME)]: {
         classNames: 'column-span-6',
       },
-      [getEntityAddressKey(-1, CONTACT_INFO, PHONE_NUMBER)]: {
+      [getEntityAddressKey(-1, PROVIDER_EMPLOYEES, TITLE)]: {
+        'ui:widget': 'hidden',
+      },
+      [getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-6',
       },
-      [getEntityAddressKey(-1, CONTACT_INFO, EMAIL)]: {
+      [getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL)]: {
         classNames: 'column-span-6',
       },
     }
@@ -164,6 +185,8 @@ const uiSchema :Object = {
 };
 
 export {
-  schema,
-  uiSchema,
+  contactsSchema,
+  contactsUiSchema,
+  providerSchema,
+  providerUiSchema,
 };

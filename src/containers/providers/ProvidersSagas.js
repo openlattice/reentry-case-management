@@ -43,15 +43,15 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 
 const LOG = new Logger('EventSagas');
 const { FullyQualifiedName } = Models;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
+const { getEntityData, getEntitySetData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
-  CONTACT_INFO,
-  LOCATION,
   PROVIDER,
-  PROVIDER_STAFF
+  PROVIDER_ADDRESS,
+  PROVIDER_CONTACT_INFO,
+  PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
@@ -73,7 +73,7 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     const { pointOfContactPersonEKIDs } = value;
     const app = yield select(getAppFromState);
     const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
-    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO); // should add app type for provider contacts
+    const contactInfoESID :UUID = getESIDFromApp(app, PROVIDER_CONTACT_INFO);
 
     const searchFilter = {
       entityKeyIds: pointOfContactPersonEKIDs,
@@ -123,11 +123,11 @@ function* getProviderNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getAppFromState);
     const providersESID :UUID = getESIDFromApp(app, PROVIDER);
     const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
-    const locationESID :UUID = getESIDFromApp(app, LOCATION); // should add app type for provider addresses
+    const providerAddressESID :UUID = getESIDFromApp(app, PROVIDER_ADDRESS);
 
     const searchFilter = {
       entityKeyIds: providerEKIDs,
-      destinationEntitySetIds: [locationESID],
+      destinationEntitySetIds: [providerAddressESID],
       sourceEntitySetIds: [providerStaffESID],
     };
     const response :Object = yield call(
@@ -204,7 +204,7 @@ function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
       providers.forEach((provider :Map) => {
         providerEKIDs.push(getEKID(provider));
       });
-      yield call(getProviderNeighborsWorker, getProviderNeighbors({ providerEKIDs }));
+      if (providerEKIDs.length) yield call(getProviderNeighborsWorker, getProviderNeighbors({ providerEKIDs }));
     }
 
     yield put(getProviders.success(id, providers));
@@ -244,10 +244,12 @@ function* createNewProviderWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
     const providerESID :UUID = getESIDFromApp(app, PROVIDER);
+    const providerAddressESID :UUID = getESIDFromApp(app, PROVIDER_ADDRESS);
 
     const { data } = response;
     const { entityKeyIds } = data;
     const newProviderEKID :UUID = entityKeyIds[providerESID][0];
+    const newProviderAddressEKID :UUID = entityKeyIds[providerAddressESID][0];
     const { entityData } = value;
     const providerData :Object = entityData[providerESID][0];
 
@@ -258,8 +260,11 @@ function* createNewProviderWorker(action :SequenceAction) :Generator<*, *, *> {
       const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
       newProvider = newProvider.set(propertyFqn, entityValue);
     });
+    const newProviderAddress :Map = fromJS({
+      [ENTITY_KEY_ID]: [newProviderAddressEKID]
+    });
 
-    yield put(createNewProvider.success(id, newProvider));
+    yield put(createNewProvider.success(id, { newProvider, newProviderAddress, newProviderEKID }));
   }
   catch (error) {
     LOG.error('caught exception in createNewProviderWorker()', error);
