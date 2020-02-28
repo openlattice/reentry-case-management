@@ -21,7 +21,6 @@ import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_INFO_BY_CONTACT_PERSON_EKID,
-  PROVIDER,
   PROVIDERS_LIST,
   PROVIDER_NEIGHBOR_MAP
 } = PROVIDERS;
@@ -46,7 +45,6 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [CONTACT_INFO_BY_CONTACT_PERSON_EKID]: Map(),
-  [PROVIDER]: Map(),
   [PROVIDERS_LIST]: List(),
   [PROVIDER_NEIGHBOR_MAP]: Map(),
 });
@@ -65,12 +63,12 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
           const { newProviderContactInfo, newProviderStaffMembers, providerEKID } = value;
-          const providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP)
-            .mergeIn([providerEKID, PROVIDER_STAFF], newProviderStaffMembers);
-          console.log('providerNeighborMap: ', providerNeighborMap.toJS());
+          let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
+          let staffMembers :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
+          staffMembers = staffMembers.concat(newProviderStaffMembers);
+          providerNeighborMap = providerNeighborMap.setIn([providerEKID, PROVIDER_STAFF], staffMembers);
           const contactInfoByContactPersonEKID :Map = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID)
-            .mergeIn([providerEKID], newProviderContactInfo);
-          console.log('contactInfoByContactPersonEKID: ', contactInfoByContactPersonEKID.toJS());
+            .merge(newProviderContactInfo);
           return state
             .set(CONTACT_INFO_BY_CONTACT_PERSON_EKID, contactInfoByContactPersonEKID)
             .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
@@ -94,7 +92,7 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
           const providersList :List = state.get(PROVIDERS_LIST)
             .push(newProvider);
           const providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP)
-            .setIn([newProviderEKID, PROVIDER_ADDRESS], newProviderAddress);
+            .setIn([newProviderEKID, PROVIDER_ADDRESS], List([newProviderAddress]));
           return state
             .set(PROVIDERS_LIST, providersList)
             .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)

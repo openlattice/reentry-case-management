@@ -310,13 +310,9 @@ function* addNewProviderContactsWorker(action :SequenceAction) :Generator<*, *, 
     const contactedViaESID :UUID = getESIDFromApp(app, CONTACTED_VIA);
     const employedByESID :UUID = getESIDFromApp(app, EMPLOYED_BY);
 
-    console.log('-------------------------');
     const { entityKeyIds } = response.data;
-    console.log('entityKeyIds: ', entityKeyIds);
     const newProviderContactInfoEKIDs :UUID[] = entityKeyIds[providerContactInfoESID];
-    console.log('newProviderContactInfoEKIDs: ', newProviderContactInfoEKIDs);
     const newProviderStaffEKIDs :UUID[] = entityKeyIds[providerStaffESID];
-    console.log('newProviderStaffEKIDs: ', newProviderStaffEKIDs);
 
     const { associationEntityData, entityData } = value;
     const providerStaffData :Object[] = entityData[providerStaffESID];
@@ -335,10 +331,8 @@ function* addNewProviderContactsWorker(action :SequenceAction) :Generator<*, *, 
 
       const staffPersonContactAssociations :Object[] = contactInfoAssociations
         .filter((association :Object) => (association.srcEntityIndex === index));
-      console.log('staffPersonContactAssociations: ', staffPersonContactAssociations);
       if (staffPersonContactAssociations.length) {
         let newPersonContacts :List = newProviderContactInfo.get(staffEKID, List());
-        console.log('association: ', association);
         staffPersonContactAssociations.forEach((association :Object) => {
           const contactEKID :UUID = newProviderContactInfoEKIDs[association.dstEntityIndex];
           const contactData :Object = providerContactInfoData[association.dstEntityIndex];
@@ -348,8 +342,6 @@ function* addNewProviderContactsWorker(action :SequenceAction) :Generator<*, *, 
         newProviderContactInfo = newProviderContactInfo.set(staffEKID, newPersonContacts);
       }
     });
-    console.log('newProviderStaffMembers: ', newProviderStaffMembers.toJS());
-    console.log('newProviderContactInfo: ', newProviderContactInfo.toJS());
 
     yield put(addNewProviderContacts.success(id, { newProviderContactInfo, newProviderStaffMembers, providerEKID }));
   }

@@ -5,9 +5,9 @@ import {
   List,
   Map,
   fromJS,
-  get
+  has
 } from 'immutable';
-import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -21,9 +21,8 @@ import {
   providerUiSchema,
 } from './schemas/EditProviderSchemas';
 import { getContactsAssociations, getDataForFormPrepopulation } from './utils/ProvidersUtils';
-import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
-import { getEKID, getEntityProperties } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
+import { requestIsSuccess } from '../../utils/RequestStateUtils';
+import { getEKID } from '../../utils/DataUtils';
 import { ADD_NEW_PROVIDER_CONTACTS, addNewProviderContacts } from './ProvidersActions';
 import {
   APP,
@@ -44,19 +43,14 @@ const {
   getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
-  processEntityDataForPartialReplace,
 } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const {
-  CONTACTED_VIA,
-  EMPLOYED_BY,
-  IS,
   PROVIDER,
   PROVIDER_ADDRESS,
   PROVIDER_CONTACT_INFO,
-  PROVIDER_EMPLOYEES,
   PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 const {
@@ -112,8 +106,6 @@ const EditProviderForm = ({
   const providerEKID :UUID = getEKID(provider);
   const [providerFormData, updateProviderFormData] = useState({});
   const [contactsFormData, updateContactsFormData] = useState({});
-  const [originalProviderFormData, setOriginalProviderFormData] = useState({});
-  const [originalContactsFormData, setOriginalContactsFormData] = useState({});
 
   const onProviderChange = ({ formData: newFormData } :Object) => {
     updateProviderFormData(newFormData);
@@ -171,29 +163,21 @@ const EditProviderForm = ({
       },
     };
     updateProviderFormData(prepopulatedProviderFormData);
-    setOriginalProviderFormData(prepopulatedProviderFormData);
 
     const prepopulatedContactsFormData :Object = {
       [getPageSectionKey(1, 1)]: pointsOfContact
     };
     updateContactsFormData(prepopulatedContactsFormData);
-    setOriginalContactsFormData(prepopulatedContactsFormData);
   }, [address, contactInfoByContactPersonEKID, provider, providerEKID, providerStaff]);
 
   const onSubmit = () => {
-    const providerDataToEdit :Object = processEntityDataForPartialReplace(
-      providerFormData,
-      originalProviderFormData,
-      entitySetIdsByFqn,
-      propertyTypeIdsByFqn,
-      {}
-    );
-    console.log('providerDataToEdit: ', providerDataToEdit);
-    console.log('contactsFormData: ', contactsFormData);
-
     const contactsMappers :Map = Map().withMutations((mappers :Map) => {
       const indexMappers :Map = Map().withMutations((map :Map) => {
-        map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => i + 1);
+        map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => {
+          const contactObject :Object = contactsFormData[getPageSectionKey(1, 1)][i];
+          if (has(contactObject, getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER))) return i + 1;
+          return i;
+        });
       });
       mappers.set(INDEX_MAPPERS, indexMappers);
     });
@@ -203,17 +187,14 @@ const EditProviderForm = ({
       propertyTypeIdsByFqn,
       contactsMappers
     );
-    console.log('contactsDataToSubmit: ', contactsDataToSubmit);
     const providerStaffESID :UUID = entitySetIdsByFqn.get(PROVIDER_STAFF);
     const newContacts :Object[] = contactsDataToSubmit[providerStaffESID];
     const associations = getContactsAssociations(newContacts, contactsFormData, providerEKID);
-    console.log('associations: ', associations);
     const contactsAssociations :Object = processAssociationEntityData(
       fromJS(associations),
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
     );
-    console.log('contactsAssociations: ', contactsAssociations);
     actions.addNewProviderContacts({ associationEntityData: contactsAssociations, entityData: contactsDataToSubmit });
   };
 
