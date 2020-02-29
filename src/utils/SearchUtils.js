@@ -1,8 +1,6 @@
 // @flow
 import { DateTime } from 'luxon';
 
-import { isDefined } from './LangUtils';
-
 const SEARCH_PREFIX = 'entity';
 
 const getSearchTerm = (
@@ -15,10 +13,18 @@ const getSearchTermNotExact = (
   searchString :string
 ) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
 
-const getUTCDateRangeSearchString = (propertyTypeId :UUID, timeUnits :any, startDate :DateTime, endDate :?DateTime) => {
-  const start :string = startDate.startOf(timeUnits).toUTC().toISO();
+const getUTCDateRangeSearchString = (
+  propertyTypeId :UUID,
+  timeUnits :any,
+  startDate ? :DateTime,
+  endDate ? :DateTime
+) => {
+
+  let start :string = '*';
+  if (startDate && startDate.isValid) start = startDate.startOf(timeUnits).toUTC().toISO();
   let end :string = '*';
-  if (isDefined(endDate)) end = endDate.endOf(timeUnits).toUTC().toISO();
+  if (endDate && endDate.isValid) end = endDate.endOf(timeUnits).toUTC().toISO();
+
   const dateRangeString = `[${start} TO ${end}]`;
   return getSearchTermNotExact(propertyTypeId, dateRangeString);
 };
