@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
   CardSegment,
@@ -8,8 +8,17 @@ import {
   Modal,
   ModalFooter
 } from 'lattice-ui-kit';
+import { Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../components/modal/ModalHeader';
+import { requestIsSuccess } from '../../utils/RequestStateUtils';
+import { DOWNLOAD_PARTICIPANTS, downloadParticipants } from './ReportsActions';
+import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
+
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const FixedWidthModal = styled.div`
   width: 575px;
@@ -24,11 +33,38 @@ const TextWithMoreMargin = styled(Text)`
 `;
 
 type Props = {
+  actions :{
+    downloadParticipants :RequestSequence;
+  };
   isVisible :boolean;
   onClose :() => void;
+  requestStates :{
+    DOWNLOAD_PARTICIPANTS :RequestState;
+  };
 };
 
-const DownloadPeopleModal = ({ isVisible, onClose } :Props) => {
+const DownloadPeopleModal = ({
+  actions,
+  isVisible,
+  onClose,
+  requestStates,
+} :Props) => {
+
+  const [dateSelected, onChangeDate] = useState('');
+  const [newIntakesChecked, onChangeNewIntakes] = useState(false);
+  const [activeEnrollmentsChecked, onChangeActiveEnrollments] = useState(false);
+
+  useEffect(() => {
+    if (requestIsSuccess(requestStates[DOWNLOAD_PARTICIPANTS])) {
+      onClose();
+    }
+  }, [onClose, requestStates]);
+
+  const onDownloadClick = () => {
+    if (newIntakesChecked || activeEnrollmentsChecked) {
+      actions.downloadParticipants({ activeEnrollmentsChecked, dateSelected, newIntakesChecked });
+    }
+  };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Download" />);
   const renderFooter = () => {
@@ -36,7 +72,7 @@ const DownloadPeopleModal = ({ isVisible, onClose } :Props) => {
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}
-          onClickPrimary={() => {}}
+          onClickPrimary={onDownloadClick}
           textPrimary="Download" />
     );
   };
@@ -51,18 +87,31 @@ const DownloadPeopleModal = ({ isVisible, onClose } :Props) => {
         <CardSegment padding="0" vertical>
           <Text>Select the month and type of report you wish to download.</Text>
           <Text>Month</Text>
-          <DatePicker />
+          <DatePicker onChange={onChangeDate} />
           <TextWithMoreMargin>List Type</TextWithMoreMargin>
           <Checkbox
               label="New Intakes"
-              onChange={() => {}} />
+              onChange={onChangeNewIntakes} />
           <Checkbox
               label="Active Enrollments"
-              onChange={() => {}} />
+              onChange={onChangeActiveEnrollments} />
         </CardSegment>
       </FixedWidthModal>
     </Modal>
   );
 };
 
-export default DownloadPeopleModal;
+const mapStateToProps = (state :Map) => ({
+  requestStates: {
+    [DOWNLOAD_PARTICIPANTS]: state.getIn([REPORTS.REPORTS, ACTIONS, DOWNLOAD_PARTICIPANTS, REQUEST_STATE]),
+  },
+});
+
+const mapDispatchToProps = (dispatch :Function) => ({
+  actions: bindActionCreators({
+    downloadParticipants,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(DownloadPeopleModal);
