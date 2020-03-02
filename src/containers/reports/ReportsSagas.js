@@ -18,6 +18,7 @@ import { isDefined } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
+  getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString } from '../../utils/SearchUtils';
@@ -150,7 +151,9 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       if (response.error) {
         throw response.error;
       }
-      // const peopleByNeedsAssessmentEKID :Map = fromJS(response.data);
+      const peopleByNeedsAssessmentEKID :Map = fromJS(response.data)
+        .map((neighborList :List) => neighborList.get(0))
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
       //
       // let jsonResults :List = List().withMutations((list :List) => {
       //
