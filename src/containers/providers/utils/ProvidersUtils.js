@@ -114,14 +114,13 @@ const getDataForFormPrepopulation = (
 };
 
 const formatEntityIndexToIdMap = (
-  originalEntityIndexToIdMap :Map,
   providerEKID :UUID,
   address :Map,
   providerStaff :List,
   contactInfoByContactPersonEKID :Map
 ) :Map => {
 
-  let entityIndexToIdMap :Map = originalEntityIndexToIdMap;
+  let entityIndexToIdMap :Map = Map();
   entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER, 0], providerEKID);
   if (!address.isEmpty()) entityIndexToIdMap = entityIndexToIdMap.setIn([PROVIDER_ADDRESS, 0], getEKID(address));
 

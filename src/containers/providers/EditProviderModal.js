@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import {
   List,
@@ -73,14 +73,6 @@ const {
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
-let entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
-  map.setIn([PROVIDER, 0], '');
-  map.setIn([PROVIDER_ADDRESS, 0], '');
-  map.setIn([PROVIDER_STAFF, -1], []);
-  map.setIn([PROVIDER_CONTACT_INFO, -1], []);
-  map.setIn([PROVIDER_CONTACT_INFO, -2], []);
-});
-
 type Props = {
   actions :{
     addNewProviderContacts :RequestSequence;
@@ -114,6 +106,7 @@ const EditProviderForm = ({
 } :Props) => {
 
   const providerEKID :UUID = getEKID(provider);
+  console.log('providerEKID: ', providerEKID);
   const [providerFormData, updateProviderFormData] = useState({});
   const [contactsFormData, updateContactsFormData] = useState({});
   const [originalProviderFormData, setOriginalProviderFormData] = useState({});
@@ -136,7 +129,7 @@ const EditProviderForm = ({
       onClose();
     }
   }, [onClose, requestStates]);
-
+  const entityIndexToIdMap :Map = useRef();
   useEffect(() => {
     const {
       city,
@@ -149,8 +142,7 @@ const EditProviderForm = ({
       zipCode,
     } = getDataForFormPrepopulation(provider, address, providerStaff, contactInfoByContactPersonEKID);
 
-    entityIndexToIdMap = formatEntityIndexToIdMap(
-      entityIndexToIdMap,
+    entityIndexToIdMap.current = formatEntityIndexToIdMap(
       providerEKID,
       address,
       providerStaff,
@@ -183,17 +175,17 @@ const EditProviderForm = ({
   const onSubmit = () => {
     const draftWithKeys :Object = replaceEntityAddressKeys(
       providerFormData,
-      findEntityAddressKeyFromMap(entityIndexToIdMap)
+      findEntityAddressKeyFromMap(entityIndexToIdMap.current)
     );
     const providerDataToEdit :Object = processEntityDataForPartialReplace(
       draftWithKeys,
-      replaceEntityAddressKeys(originalProviderFormData, findEntityAddressKeyFromMap(entityIndexToIdMap)),
+      replaceEntityAddressKeys(originalProviderFormData, findEntityAddressKeyFromMap(entityIndexToIdMap.current)),
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
       {}
     );
     if (Object.keys(providerDataToEdit).length) {
-      const addressEKID :UUID = entityIndexToIdMap.getIn([PROVIDER_ADDRESS, 0], '');
+      const addressEKID :UUID = entityIndexToIdMap.current.getIn([PROVIDER_ADDRESS, 0], '');
       actions.editProvider({ addressEKID, entityData: providerDataToEdit, providerEKID });
     }
 
