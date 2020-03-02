@@ -6,6 +6,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
+  CLEAR_EDIT_REQUEST_STATES,
   CREATE_NEW_PROVIDER,
   EDIT_PROVIDER,
   GET_CONTACT_INFO,
@@ -58,6 +59,12 @@ const INITIAL_STATE :Map = fromJS({
 export default function providersReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_EDIT_REQUEST_STATES: {
+      return state
+        .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case addNewProviderContacts.case(action.type): {
 

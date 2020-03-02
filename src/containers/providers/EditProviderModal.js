@@ -27,6 +27,7 @@ import {
   ADD_NEW_PROVIDER_CONTACTS,
   EDIT_PROVIDER,
   addNewProviderContacts,
+  clearEditRequestStates,
   editProvider,
 } from './ProvidersActions';
 import {
@@ -76,6 +77,7 @@ const {
 type Props = {
   actions :{
     addNewProviderContacts :RequestSequence;
+    clearEditRequestStates :() => { type :string };
     editProvider :RequestSequence;
   };
   address :Map;
@@ -125,9 +127,10 @@ const EditProviderForm = ({
     ]);
     // $FlowFixMe
     if (requestIsSuccess(reducedState)) {
+      actions.clearEditRequestStates();
       onClose();
     }
-  }, [onClose, requestStates]);
+  }, [actions, onClose, requestStates]);
   const entityIndexToIdMap :Map = useRef();
   useEffect(() => {
     const {
@@ -281,6 +284,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addNewProviderContacts,
+    clearEditRequestStates,
     editProvider,
   }, dispatch)
 });

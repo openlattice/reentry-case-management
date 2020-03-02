@@ -2,6 +2,11 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const CLEAR_EDIT_REQUEST_STATES :'CLEAR_EDIT_REQUEST_STATES' = 'CLEAR_EDIT_REQUEST_STATES';
+const clearEditRequestStates = () => ({
+  type: CLEAR_EDIT_REQUEST_STATES
+});
+
 const ADD_NEW_PROVIDER_CONTACTS :'ADD_NEW_PROVIDER_CONTACTS' = 'ADD_NEW_PROVIDER_CONTACTS';
 const addNewProviderContacts :RequestSequence = newRequestSequence(ADD_NEW_PROVIDER_CONTACTS);
 
@@ -22,15 +27,17 @@ const getProviderNeighbors :RequestSequence = newRequestSequence(GET_PROVIDER_NE
 
 export {
   ADD_NEW_PROVIDER_CONTACTS,
+  CLEAR_EDIT_REQUEST_STATES,
   CREATE_NEW_PROVIDER,
   EDIT_PROVIDER,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
+  clearEditRequestStates,
   createNewProvider,
   editProvider,
   getContactInfo,
-  getProviders,
   getProviderNeighbors,
+  getProviders,
 };
