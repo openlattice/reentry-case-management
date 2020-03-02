@@ -12,7 +12,6 @@ import {
   EventText,
   EventWrapper,
 } from '../styled/EventStyles';
-import { createDateTime } from '../../../utils/DateTimeUtils';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
@@ -39,7 +38,7 @@ const Event = ({
     enrollmentStatus,
     [EFFECTIVE_DATE, STATUS]
   );
-  const date :string = createDateTime(datetime).toLocaleString(DateTime.DATE_SHORT);
+  const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
   const { [NAME]: name } = getEntityProperties(provider, [NAME]);

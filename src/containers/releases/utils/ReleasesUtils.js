@@ -3,7 +3,6 @@ import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { createDateTime } from '../../../utils/DateTimeUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -27,7 +26,7 @@ const formatDataForReleasesByDateList = (
       jailStay,
       [PROJECTED_RELEASE_DATETIME]
     );
-    const releaseDate :string = createDateTime(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const releaseDate :string = DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
     release = release.set('releaseDate', releaseDate);
 
     const jailStayEKID :UUID = getEKID(jailStay);
@@ -69,7 +68,7 @@ const formatDataForReleasesByPersonList = (
       jailStay,
       [PROJECTED_RELEASE_DATETIME]
     );
-    const releaseDate :string = createDateTime(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const releaseDate :string = DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
     release = release.set('releaseDate', releaseDate);
 
     const jailStayEKID :UUID = getEKID(jailStay);

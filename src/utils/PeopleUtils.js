@@ -4,7 +4,6 @@ import { DateTime } from 'luxon';
 
 import { isDefined } from './LangUtils';
 import { getEntityProperties } from './DataUtils';
-import { createDateTime } from './DateTimeUtils';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { DOB, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
@@ -18,7 +17,7 @@ const getPersonFullName = (personEntity :Map) :string => {
 
 const getPersonAge = (personEntity :Map) => {
   const { [DOB]: dob } = getEntityProperties(personEntity, [DOB]);
-  const dobAsDateTime :DateTime = createDateTime(dob);
+  const dobAsDateTime :DateTime = DateTime.fromISO(dob);
   if (!dobAsDateTime.isValid) return '';
   const age = dobAsDateTime
     .until(DateTime.local())

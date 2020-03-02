@@ -48,7 +48,7 @@ const getFirstEntityValue = (
 const getEntityProperties = (
   entityObj :Map,
   propertyList :FullyQualifiedName[]
-) :{ [FullyQualifiedName]:string | Array<*> } => {
+) :{ [FullyQualifiedName]:any } => {
 
   let returnPropertyFields = {};
   if (propertyList.length && isImmutable(entityObj) && !entityObj.isEmpty()) {

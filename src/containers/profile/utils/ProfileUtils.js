@@ -5,7 +5,6 @@ import { DateTime } from 'luxon';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
-import { createDateTime } from '../../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { CONTACT_INFO, NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
@@ -33,7 +32,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [LAST_NAME]: lastName,
     [RACE]: race
   } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE]);
-  const dobAsDateTime :DateTime = createDateTime(dobISO);
+  const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
   const dob :string = dobAsDateTime.toLocaleString(DateTime.DATE_SHORT);
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
   let gender :string = '';
@@ -67,7 +66,7 @@ const getMostRecentReleaseDate = (jailStays :List) :string => {
   const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
     sortedJailStays.last(), [PROJECTED_RELEASE_DATETIME]
   );
-  return createDateTime(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+  return DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
