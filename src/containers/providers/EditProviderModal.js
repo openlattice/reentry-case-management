@@ -106,7 +106,6 @@ const EditProviderForm = ({
 } :Props) => {
 
   const providerEKID :UUID = getEKID(provider);
-  console.log('providerEKID: ', providerEKID);
   const [providerFormData, updateProviderFormData] = useState({});
   const [contactsFormData, updateContactsFormData] = useState({});
   const [originalProviderFormData, setOriginalProviderFormData] = useState({});
@@ -169,7 +168,7 @@ const EditProviderForm = ({
       [getPageSectionKey(1, 1)]: pointsOfContact
     };
     updateContactsFormData(prepopulatedContactsFormData);
-    setOriginalContactsFormData(prepopulatedProviderFormData);
+    setOriginalContactsFormData(prepopulatedContactsFormData);
   }, [address, contactInfoByContactPersonEKID, provider, providerEKID, providerStaff]);
 
   const onSubmit = () => {
@@ -188,8 +187,7 @@ const EditProviderForm = ({
       const addressEKID :UUID = entityIndexToIdMap.current.getIn([PROVIDER_ADDRESS, 0], '');
       actions.editProvider({ addressEKID, entityData: providerDataToEdit, providerEKID });
     }
-
-    if (!originalContactsFormData[getPageSectionKey(1, 1)].length) {
+    if (!originalContactsFormData[getPageSectionKey(1, 1)].length && providerFormData[getPageSectionKey(1, 1)].length) {
       const contactsMappers :Map = Map().withMutations((mappers :Map) => {
         const indexMappers :Map = Map().withMutations((map :Map) => {
           map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => {
