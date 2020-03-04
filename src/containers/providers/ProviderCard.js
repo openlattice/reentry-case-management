@@ -6,8 +6,8 @@ import {
   Card,
   CardSegment,
   Colors,
-  DataGrid,
   EditButton,
+  Label,
 } from 'lattice-ui-kit';
 
 import EditProviderModal from './EditProviderModal';
@@ -25,11 +25,11 @@ const {
   STREET,
   TYPE
 } = PROPERTY_TYPE_FQNS;
-const labels = Map({
-  name: 'Name',
-  phone: 'Phone',
-  email: 'Email'
-});
+const labels :string[] = [
+  'Name',
+  'Phone',
+  'Email'
+];
 
 const Header = styled.div`
   color: ${COLORS.GRAY_01};
@@ -52,6 +52,14 @@ const ProviderHeaderRow = styled.div`
 const ProviderHeader = styled(Header)`
   font-size: 20px;
   line-height: 27px;
+`;
+
+const ContactLabelsRow = styled.div`
+  display: grid;
+  flex: 1;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-gap: 20px 30px;
 `;
 
 const TypeTag = styled.div`
@@ -82,6 +90,10 @@ const Description = styled.div`
   font-size: 16px;
   line-height: 22px;
   margin-top: 20px;
+`;
+
+const ListText = styled(Description)`
+  margin: 0;
 `;
 
 type Props = {
@@ -133,13 +145,20 @@ const ProviderCard = ({
           !pointsOfContact.isEmpty() && (
             <>
               <PointOfContactTitle>Point of Contact</PointOfContactTitle>
+              <ContactLabelsRow>
+                {
+                  labels.map((label :string) => (
+                    <Label key={label} subtle>{ label }</Label>
+                  ))
+                }
+              </ContactLabelsRow>
               {
                 pointsOfContact.map((contact :Map) => (
-                  <DataGrid
-                      key={contact.get('id')}
-                      data={contact}
-                      emptyString="----"
-                      labelMap={labels} />
+                  <ContactLabelsRow key={contact.get('id')}>
+                    <ListText>{ contact.get('name') }</ListText>
+                    <ListText>{ contact.get('phone') }</ListText>
+                    <ListText>{ contact.get('email') }</ListText>
+                  </ContactLabelsRow>
                 ))
               }
             </>

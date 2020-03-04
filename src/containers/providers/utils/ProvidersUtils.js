@@ -54,9 +54,15 @@ const getListOfContacts = (staffEntities :List, contactInfoByContactPersonEKID :
     const staffEKID :UUID = getEKID(staff);
     const contacts :List = contactInfoByContactPersonEKID.get(staffEKID, List());
     const phoneEntity :any = contacts.find((contact :Map) => isDefined(get(contact, PHONE_NUMBER)));
-    if (isDefined(phoneEntity)) dataObj = dataObj.set('phone', getIn(phoneEntity, [PHONE_NUMBER, 0]));
+    if (isDefined(phoneEntity)) {
+      const phoneNumber :string = getIn(phoneEntity, [PHONE_NUMBER, 0]);
+      dataObj = dataObj.set('phone', phoneNumber || EMPTY_FIELD);
+    }
     const emailEntity :any = contacts.find((contact :Map) => isDefined(get(contact, EMAIL)));
-    if (isDefined(emailEntity)) dataObj = dataObj.set('email', getIn(emailEntity, [EMAIL, 0]));
+    if (isDefined(emailEntity)) {
+      const emailAddress :string = getIn(emailEntity, [EMAIL, 0]);
+      dataObj = dataObj.set('email', emailAddress || EMPTY_FIELD);
+    }
     dataObj = dataObj.set('id', staffEKID);
     data = data.push(dataObj);
   });
