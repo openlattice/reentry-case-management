@@ -20,7 +20,12 @@ import {
   providerSchema,
   providerUiSchema,
 } from './schemas/EditProviderSchemas';
-import { formatEntityIndexToIdMap, getContactsAssociations, getDataForFormPrepopulation } from './utils/ProvidersUtils';
+import {
+  formatEntityIndexToIdMap,
+  getContactsAssociations,
+  getDataForFormPrepopulation,
+  preprocessContactsData,
+} from './utils/ProvidersUtils';
 import { requestIsPending, requestIsSuccess, reduceRequestStates } from '../../utils/RequestStateUtils';
 import { getEKID } from '../../utils/DataUtils';
 import {
@@ -131,6 +136,7 @@ const EditProviderForm = ({
       onClose();
     }
   }, [actions, onClose, requestStates]);
+
   const entityIndexToIdMap :Map = useRef();
   useEffect(() => {
     const {
@@ -190,23 +196,26 @@ const EditProviderForm = ({
       const addressEKID :UUID = entityIndexToIdMap.current.getIn([PROVIDER_ADDRESS, 0], '');
       actions.editProvider({ addressEKID, entityData: providerDataToEdit, providerEKID });
     }
-    if (!originalContactsFormData[getPageSectionKey(1, 1)].length && providerFormData[getPageSectionKey(1, 1)].length) {
+
+    if (originalContactsFormData.get(getPageSectionKey(1, 1)).isEmpty()
+      && contactsFormData[getPageSectionKey(1, 1)].length) {
+
       const contactsMappers :Map = Map().withMutations((mappers :Map) => {
         const indexMappers :Map = Map().withMutations((map :Map) => {
-          map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => {
-            const contactObject :Object = contactsFormData[getPageSectionKey(1, 1)][i];
-            if (has(contactObject, getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER))) return i + 1;
-            return i;
-          });
+          map.set(getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER), (i) => i * 2);
+          map.set(getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL), (i) => i * 2 + 1);
         });
         mappers.set(INDEX_MAPPERS, indexMappers);
       });
+      const preprocessedContactsFormData :Object = preprocessContactsData(contactsFormData);
+      console.log('preprocessedContactsFormData: ', preprocessedContactsFormData);
       const contactsDataToSubmit :Object = processEntityData(
-        contactsFormData,
+        preprocessedContactsFormData,
         entitySetIdsByFqn,
         propertyTypeIdsByFqn,
         contactsMappers
       );
+      console.log('contactsDataToSubmit: ', contactsDataToSubmit);
       const providerStaffESID :UUID = entitySetIdsByFqn.get(PROVIDER_STAFF);
       const newContacts :Object[] = contactsDataToSubmit[providerStaffESID];
       const associations = getContactsAssociations(newContacts, contactsFormData, providerEKID);
@@ -233,11 +242,6 @@ const EditProviderForm = ({
           textPrimary="Save" />
     );
   };
-  const formContext = {
-    entityIndexToIdMap,
-    entitySetIds: entitySetIdsByFqn,
-    propertyTypeIds: propertyTypeIdsByFqn,
-  };
   return (
     <Modal
         isVisible={isVisible}
@@ -248,7 +252,6 @@ const EditProviderForm = ({
         withFooter={renderFooter}>
       <FixedWidthModal>
         <Form
-            formContext={formContext}
             formData={providerFormData}
             hideSubmit
             onChange={onProviderChange}
@@ -256,7 +259,6 @@ const EditProviderForm = ({
             schema={providerSchema}
             uiSchema={providerUiSchema} />
         <Form
-            formContext={formContext}
             formData={contactsFormData}
             hideSubmit
             onChange={onContactsChange}

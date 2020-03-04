@@ -138,6 +138,7 @@ const ProviderCard = ({
                   <DataGrid
                       key={contact.get('id')}
                       data={contact}
+                      emptyString="----"
                       labelMap={labels} />
                 ))
               }

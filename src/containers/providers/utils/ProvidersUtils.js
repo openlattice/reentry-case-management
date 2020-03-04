@@ -1,9 +1,12 @@
 // @flow
+import isInteger from 'lodash/isInteger';
 import {
   List,
   Map,
+  fromJS,
   get,
-  getIn
+  getIn,
+  has,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
@@ -140,6 +143,28 @@ const formatEntityIndexToIdMap = (
   return entityIndexToIdMap;
 };
 
+// create all entities for each object in array
+const preprocessContactsData = (contactsFormData :Object) :Object => {
+  const newContactsFormData :Object = contactsFormData;
+  contactsFormData[getPageSectionKey(1, 1)].forEach((contact :Object, index :number) => {
+    if (!has(contact, getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER))) {
+      newContactsFormData[getPageSectionKey(1, 1)][index][getEntityAddressKey(
+        -1,
+        PROVIDER_CONTACT_INFO,
+        PHONE_NUMBER
+      )] = '';
+    }
+    if (!has(contact, getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL))) {
+      newContactsFormData[getPageSectionKey(1, 1)][index][getEntityAddressKey(
+        -2,
+        PROVIDER_CONTACT_INFO,
+        EMAIL
+      )] = '';
+    }
+  });
+  return newContactsFormData;
+};
+
 const getContactsAssociations = (
   newContactsEntityData :Object[],
   contactsFormData :Object,
@@ -149,24 +174,16 @@ const getContactsAssociations = (
   const associations :Array<Array<*>> = [];
   if (!isDefined(newContactsEntityData) || !isDefined(contactsFormData)) return associations;
   if (!newContactsEntityData.length) return associations;
+
   newContactsEntityData.forEach((contact :Object, index :number) => {
     associations.push([IS, index, PROVIDER_STAFF, index, PROVIDER_EMPLOYEES]);
     associations.push([EMPLOYED_BY, index, PROVIDER_STAFF, providerEKID, PROVIDER]);
     associations.push([EMPLOYED_BY, index, PROVIDER_EMPLOYEES, providerEKID, PROVIDER]);
-
-    const contactInFormData :Object = contactsFormData[getPageSectionKey(1, 1)][index];
-    const phoneNumber :any = contactInFormData[getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER)];
-    const phoneNumberPresent :boolean = isDefined(phoneNumber) && phoneNumber.length;
-    if (phoneNumberPresent) {
-      associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, index, PROVIDER_CONTACT_INFO]);
-    }
-    const email :any = contactInFormData[getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL)];
-    if (isDefined(email) && email.length) {
-      let emailIndex :number = index;
-      if (phoneNumberPresent) emailIndex += 1;
-      associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, emailIndex, PROVIDER_CONTACT_INFO]);
-    }
   });
+  for (let index = 0; index < newContactsEntityData.length; index += 1) {
+    associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, index * 2, PROVIDER_CONTACT_INFO]);
+    associations.push([CONTACTED_VIA, index, PROVIDER_STAFF, index * 2 + 1, PROVIDER_CONTACT_INFO]);
+  }
   return associations;
 };
 
@@ -175,4 +192,5 @@ export {
   getContactsAssociations,
   getDataForFormPrepopulation,
   getListOfContacts,
+  preprocessContactsData,
 };
