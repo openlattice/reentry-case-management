@@ -250,7 +250,6 @@ const EditProviderForm = ({
           contact,
           findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
         );
-        // console.log('contactDraftWithKeys.toJS(): ', contactDraftWithKeys.toJS());
         const originalContactWithKeys :Map = replaceEntityAddressKeys(
           originalContacts.get(index),
           findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
