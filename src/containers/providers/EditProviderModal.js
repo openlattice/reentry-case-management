@@ -5,7 +5,9 @@ import {
   List,
   Map,
   fromJS,
-  has
+  has,
+  get,
+  mergeDeep,
 } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
@@ -31,9 +33,11 @@ import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   EDIT_PROVIDER,
+  EDIT_PROVIDER_CONTACTS,
   addNewProviderContacts,
   clearEditRequestStates,
   editProvider,
+  editProviderContacts,
 } from './ProvidersActions';
 import {
   APP,
@@ -57,6 +61,7 @@ const {
   processEntityData,
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
+  wrapFormDataInPageSection,
 } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
@@ -84,6 +89,7 @@ type Props = {
     addNewProviderContacts :RequestSequence;
     clearEditRequestStates :() => { type :string };
     editProvider :RequestSequence;
+    editProviderContacts :RequestSequence;
   };
   address :Map;
   contactInfoByContactPersonEKID :Map;
@@ -96,6 +102,7 @@ type Props = {
   requestStates :{
     ADD_NEW_PROVIDER_CONTACTS :RequestState;
     EDIT_PROVIDER :RequestState;
+    EDIT_PROVIDER_CONTACTS :RequestState;
   };
 };
 
@@ -128,7 +135,8 @@ const EditProviderForm = ({
   useEffect(() => {
     const reducedState = reduceRequestStates([
       requestStates[ADD_NEW_PROVIDER_CONTACTS],
-      requestStates[EDIT_PROVIDER]
+      requestStates[EDIT_PROVIDER],
+      requestStates[EDIT_PROVIDER_CONTACTS],
     ]);
     // $FlowFixMe
     if (requestIsSuccess(reducedState)) {
@@ -177,16 +185,16 @@ const EditProviderForm = ({
       [getPageSectionKey(1, 1)]: pointsOfContact
     };
     updateContactsFormData(prepopulatedContactsFormData);
-    setOriginalContactsFormData(prepopulatedContactsFormData);
+    setOriginalContactsFormData(fromJS(prepopulatedContactsFormData));
   }, [address, contactInfoByContactPersonEKID, provider, providerEKID, providerStaff]);
 
   const onSubmit = () => {
-    const draftWithKeys :Object = replaceEntityAddressKeys(
+    const providerDraftWithKeys :Object = replaceEntityAddressKeys(
       providerFormData,
       findEntityAddressKeyFromMap(entityIndexToIdMap.current)
     );
     const providerDataToEdit :Object = processEntityDataForPartialReplace(
-      draftWithKeys,
+      providerDraftWithKeys,
       replaceEntityAddressKeys(originalProviderFormData, findEntityAddressKeyFromMap(entityIndexToIdMap.current)),
       entitySetIdsByFqn,
       propertyTypeIdsByFqn,
@@ -224,7 +232,54 @@ const EditProviderForm = ({
         entitySetIdsByFqn,
         propertyTypeIdsByFqn,
       );
+      console.log('contactsAssociations: ', contactsAssociations);
       actions.addNewProviderContacts({ associationEntityData: contactsAssociations, entityData: contactsDataToSubmit });
+    }
+
+    const newContactsAsImm :List = fromJS(contactsFormData[getPageSectionKey(1, 1)]);
+    const originalContacts :List = originalContactsFormData.get(getPageSectionKey(1, 1));
+    const contactsHaveChanged :boolean = !originalContacts.equals(newContactsAsImm);
+    // console.log('entityIndexToIdMap.current.toJS(): ', entityIndexToIdMap.current.toJS());
+    if (!originalContacts.isEmpty() && !newContactsAsImm.isEmpty() && contactsHaveChanged) {
+      let contactDataToEdit :Object = {};
+      newContactsAsImm.forEach((contact :Map, index :number) => {
+        const contactDraftWithKeys :Map = replaceEntityAddressKeys(
+          contact,
+          findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
+        );
+        // console.log('contactDraftWithKeys.toJS(): ', contactDraftWithKeys.toJS());
+        const originalContactWithKeys :Map = replaceEntityAddressKeys(
+          originalContacts.get(index),
+          findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
+        );
+        // console.log('originalContactWithKeys.toJS(): ', originalContactWithKeys.toJS());
+        const contactsDataDiff = processEntityDataForPartialReplace(
+          wrapFormDataInPageSection(contactDraftWithKeys),
+          wrapFormDataInPageSection(originalContactWithKeys),
+          entitySetIdsByFqn,
+          propertyTypeIdsByFqn,
+          {}
+        );
+        // console.log('contactsDataDiff: ', contactsDataDiff);
+        contactDataToEdit = mergeDeep(contactDataToEdit, contactsDataDiff);
+      });
+      // console.log('contactDataToEdit: ', contactDataToEdit);
+      let contactEKIDToPersonEKID :Map = Map();
+      const providerContactInfoESID :UUID = entitySetIdsByFqn.get(PROVIDER_CONTACT_INFO);
+      if (has(contactDataToEdit, providerContactInfoESID)) {
+        const contactEKIDs :UUID[] = Object.keys(get(contactDataToEdit, providerContactInfoESID));
+        contactEKIDs.forEach((contactEKID :UUID) => {
+          const personEKID :UUID = contactInfoByContactPersonEKID
+            .findKey((contactList :List, contactPersonEKID :UUID) => {
+              if (contactList.find((contact :Map) => getEKID(contact) === contactEKID)) {
+                return contactPersonEKID;
+              }
+              return undefined;
+            });
+          contactEKIDToPersonEKID = contactEKIDToPersonEKID.set(contactEKID, personEKID);
+        });
+      }
+      actions.editProviderContacts({ contactEKIDToPersonEKID, entityData: contactDataToEdit, providerEKID });
     }
   };
 
@@ -232,7 +287,8 @@ const EditProviderForm = ({
   const renderFooter = () => {
     const reducedState = reduceRequestStates([
       requestStates[ADD_NEW_PROVIDER_CONTACTS],
-      requestStates[EDIT_PROVIDER]
+      requestStates[EDIT_PROVIDER],
+      requestStates[EDIT_PROVIDER_CONTACTS]
     ]);
     const isSubmitting :boolean = reducedState ? requestIsPending(reducedState) : false;
     return (
@@ -279,6 +335,7 @@ const mapStateToProps = (state :Map) => {
     requestStates: {
       [ADD_NEW_PROVIDER_CONTACTS]: providers.getIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE]),
       [EDIT_PROVIDER]: providers.getIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE]),
+      [EDIT_PROVIDER_CONTACTS]: providers.getIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE]),
     }
   };
 };
@@ -288,6 +345,7 @@ const mapDispatchToProps = (dispatch) => ({
     addNewProviderContacts,
     clearEditRequestStates,
     editProvider,
+    editProviderContacts,
   }, dispatch)
 });
 
