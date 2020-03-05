@@ -19,12 +19,14 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
 
   let data :List = List();
   people.forEach((person :Map) => {
-    // $FlowFixMe
     const { [DOB]: dob, [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [
       DOB,
       FIRST_NAME,
       LAST_NAME
     ]);
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
     const dateOfBirth :string = DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT);
 
     const personEKID :UUID = getEKID(person);
@@ -34,12 +36,11 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const jailName :string = jailNamesByJailStayEKID.get(jailStayEKID);
 
     const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT]).get(0);
-    // $FlowFixMe
     const { [DATETIME_COMPLETED]: enrollmentDateTime } = getEntityProperties(needsAssessment, [DATETIME_COMPLETED]);
     const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
 
     const personDataObject :Map = fromJS({
-      name: `${firstName} ${lastName}`,
+      name: personName,
       dob: dateOfBirth,
       jail: jailName,
       enrollmentDate,
