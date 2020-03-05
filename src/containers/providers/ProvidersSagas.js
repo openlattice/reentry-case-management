@@ -10,6 +10,7 @@ import {
   List,
   Map,
   fromJS,
+  get,
   getIn,
   has,
 } from 'immutable';
@@ -38,15 +39,17 @@ import {
   ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
   EDIT_PROVIDER,
+  EDIT_PROVIDER_CONTACTS,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
   editProvider,
+  editProviderContacts,
   getContactInfo,
-  getProviders,
   getProviderNeighbors,
+  getProviders,
 } from './ProvidersActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
@@ -418,11 +421,73 @@ function* editProviderWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_PROVIDER, editProviderWorker);
 }
 
+/*
+ *
+ * ProvidersActions.editProviderContacts()
+ *
+ */
+
+function* editProviderContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(editProviderContacts.request(id, value));
+    const response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const providerContactInfoESID :UUID = getESIDFromApp(app, PROVIDER_CONTACT_INFO);
+    const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
+
+    let newProviderContactPeople :List = List();
+    const { contactEKIDToPersonEKID, entityData, providerEKID } = value;
+    if (has(entityData, providerStaffESID)) {
+      const newContactPeopleData :Map = fromJS(get(entityData, providerStaffESID));
+      newContactPeopleData.forEach((propertyMap :Map, personEKID :UUID) => {
+        const updatedPerson :Map = constructNewEntityFromSubmittedData(propertyMap, personEKID, edm);
+        newProviderContactPeople = newProviderContactPeople.push(updatedPerson);
+      });
+    }
+
+    let newProviderContactInfo :Map = Map();
+    if (has(entityData, providerContactInfoESID)) {
+      const newContactInfoData :Map = fromJS(get(entityData, providerContactInfoESID));
+      newContactInfoData.forEach((propertyMap :Map, contactEKID :UUID) => {
+        const updatedContactInfo :Map = constructNewEntityFromSubmittedData(propertyMap, contactEKID, edm);
+        const personEKID :UUID = contactEKIDToPersonEKID.get(contactEKID);
+        const personContacts :List = newProviderContactInfo.get(personEKID, List()).push(updatedContactInfo);
+        newProviderContactInfo = newProviderContactInfo.set(personEKID, personContacts);
+      });
+    }
+
+    yield put(editProviderContacts.success(id, { newProviderContactInfo, newProviderContactPeople, providerEKID }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editProviderContactsWorker()', error);
+    yield put(editProviderContacts.failure(id, error));
+  }
+  finally {
+    yield put(editProviderContacts.finally(id));
+  }
+}
+
+function* editProviderContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PROVIDER_CONTACTS, editProviderContactsWorker);
+}
+
 export {
   addNewProviderContactsWatcher,
   addNewProviderContactsWorker,
   createNewProviderWatcher,
   createNewProviderWorker,
+  editProviderContactsWatcher,
+  editProviderContactsWorker,
   editProviderWatcher,
   editProviderWorker,
   getContactInfoWatcher,

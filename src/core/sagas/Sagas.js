@@ -47,6 +47,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProvidersSagas.addNewProviderContactsWatcher),
     fork(ProvidersSagas.createNewProviderWatcher),
     fork(ProvidersSagas.editProviderWatcher),
+    fork(ProvidersSagas.editProviderContactsWatcher),
     fork(ProvidersSagas.getContactInfoWatcher),
     fork(ProvidersSagas.getProvidersWatcher),
     fork(ProvidersSagas.getProviderNeighborsWatcher),

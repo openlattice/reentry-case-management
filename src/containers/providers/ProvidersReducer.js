@@ -9,15 +9,17 @@ import {
   CLEAR_EDIT_REQUEST_STATES,
   CREATE_NEW_PROVIDER,
   EDIT_PROVIDER,
+  EDIT_PROVIDER_CONTACTS,
   GET_CONTACT_INFO,
   GET_PROVIDERS,
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
   editProvider,
+  editProviderContacts,
   getContactInfo,
-  getProviders,
   getProviderNeighbors,
+  getProviders,
 } from './ProvidersActions';
 import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -39,6 +41,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PROVIDER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PROVIDER_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CONTACT_INFO]: {
@@ -63,7 +68,8 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
     case CLEAR_EDIT_REQUEST_STATES: {
       return state
         .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case addNewProviderContacts.case(action.type): {
@@ -149,6 +155,56 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
         },
         FAILURE: () => state.setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PROVIDER, action.id]),
+      });
+    }
+
+    case editProviderContacts.case(action.type): {
+
+      return editProviderContacts.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, action.id], action)
+          .setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { newProviderContactInfo, newProviderContactPeople, providerEKID } = value;
+
+          let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
+          let providerStaff :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
+          newProviderContactPeople.forEach((updatedPerson :Map) => {
+            const personEKID :UUID = getEKID(updatedPerson);
+            let personArrayIndex :number = -1;
+            let person :Map = providerStaff.find((staff :Map, index :number) => {
+              personArrayIndex = index;
+              return getEKID(staff) === personEKID;
+            });
+            person = person.mergeWith((oldVal, newVal) => newVal, updatedPerson);
+            providerStaff = providerStaff.set(personArrayIndex, person);
+          });
+          providerNeighborMap = providerNeighborMap.setIn([providerEKID, PROVIDER_STAFF], providerStaff);
+
+          let contactInfoByContactPersonEKID = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID);
+          newProviderContactInfo.forEach((contactsList :List, personEKID :UUID) => {
+            let personContacts :Map = contactInfoByContactPersonEKID.get(personEKID);
+            contactsList.forEach((updatedContact :Map) => {
+              let contactEntityIndex :number = -1;
+              let existingContact :Map = personContacts
+                .find((contact :Map, index :number) => {
+                  contactEntityIndex = index;
+                  return getEKID(contact) === getEKID(updatedContact);
+                });
+              existingContact = existingContact.mergeWith((oldVal, newVal) => newVal, updatedContact);
+              personContacts = personContacts.set(contactEntityIndex, existingContact);
+            });
+            contactInfoByContactPersonEKID = contactInfoByContactPersonEKID.set(personEKID, personContacts);
+          });
+          return state
+            .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
+            .set(CONTACT_INFO_BY_CONTACT_PERSON_EKID, contactInfoByContactPersonEKID)
+            .setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PROVIDER_CONTACTS, action.id]),
       });
     }
 
