@@ -205,9 +205,10 @@ const EditProviderForm = ({
       actions.editProvider({ addressEKID, entityData: providerDataToEdit, providerEKID });
     }
 
-    if (originalContactsFormData.get(getPageSectionKey(1, 1)).isEmpty()
-      && contactsFormData[getPageSectionKey(1, 1)].length) {
-
+    const originalContactsFormDataLength :number = originalContactsFormData.get(getPageSectionKey(1, 1)).count();
+    const contactsWereAdded :boolean = contactsFormData[getPageSectionKey(1, 1)].length
+      > originalContactsFormDataLength;
+    if (contactsWereAdded) {
       const contactsMappers :Map = Map().withMutations((mappers :Map) => {
         const indexMappers :Map = Map().withMutations((map :Map) => {
           map.set(getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER), (i) => i * 2);
@@ -215,34 +216,34 @@ const EditProviderForm = ({
         });
         mappers.set(INDEX_MAPPERS, indexMappers);
       });
-      const preprocessedContactsFormData :Object = preprocessContactsData(contactsFormData);
-      console.log('preprocessedContactsFormData: ', preprocessedContactsFormData);
+      const updatedContactsInFormData = contactsFormData[getPageSectionKey(1, 1)].slice(originalContactsFormDataLength);
+      const updatedFormData = {
+        [getPageSectionKey(1, 1)]: updatedContactsInFormData,
+      };
+      const preprocessedContactsFormData :Object = preprocessContactsData(updatedFormData);
       const contactsDataToSubmit :Object = processEntityData(
         preprocessedContactsFormData,
         entitySetIdsByFqn,
         propertyTypeIdsByFqn,
         contactsMappers
       );
-      console.log('contactsDataToSubmit: ', contactsDataToSubmit);
       const providerStaffESID :UUID = entitySetIdsByFqn.get(PROVIDER_STAFF);
       const newContacts :Object[] = contactsDataToSubmit[providerStaffESID];
-      const associations = getContactsAssociations(newContacts, contactsFormData, providerEKID);
+      const associations = getContactsAssociations(newContacts, updatedFormData, providerEKID);
       const contactsAssociations :Object = processAssociationEntityData(
         fromJS(associations),
         entitySetIdsByFqn,
         propertyTypeIdsByFqn,
       );
-      console.log('contactsAssociations: ', contactsAssociations);
       actions.addNewProviderContacts({ associationEntityData: contactsAssociations, entityData: contactsDataToSubmit });
     }
 
     const newContactsAsImm :List = fromJS(contactsFormData[getPageSectionKey(1, 1)]);
     const originalContacts :List = originalContactsFormData.get(getPageSectionKey(1, 1));
     const contactsHaveChanged :boolean = !originalContacts.equals(newContactsAsImm);
-    // console.log('entityIndexToIdMap.current.toJS(): ', entityIndexToIdMap.current.toJS());
     if (!originalContacts.isEmpty() && !newContactsAsImm.isEmpty() && contactsHaveChanged) {
       let contactDataToEdit :Object = {};
-      newContactsAsImm.forEach((contact :Map, index :number) => {
+      newContactsAsImm.slice(0, originalContacts.count()).forEach((contact :Map, index :number) => {
         const contactDraftWithKeys :Map = replaceEntityAddressKeys(
           contact,
           findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
@@ -252,7 +253,6 @@ const EditProviderForm = ({
           originalContacts.get(index),
           findEntityAddressKeyFromMap(entityIndexToIdMap.current, index)
         );
-        // console.log('originalContactWithKeys.toJS(): ', originalContactWithKeys.toJS());
         const contactsDataDiff = processEntityDataForPartialReplace(
           wrapFormDataInPageSection(contactDraftWithKeys),
           wrapFormDataInPageSection(originalContactWithKeys),
@@ -260,10 +260,8 @@ const EditProviderForm = ({
           propertyTypeIdsByFqn,
           {}
         );
-        // console.log('contactsDataDiff: ', contactsDataDiff);
         contactDataToEdit = mergeDeep(contactDataToEdit, contactsDataDiff);
       });
-      // console.log('contactDataToEdit: ', contactDataToEdit);
       let contactEKIDToPersonEKID :Map = Map();
       const providerContactInfoESID :UUID = entitySetIdsByFqn.get(PROVIDER_CONTACT_INFO);
       if (has(contactDataToEdit, providerContactInfoESID)) {
