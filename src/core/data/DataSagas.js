@@ -13,8 +13,10 @@ import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DELETE_ENTITIES,
   SUBMIT_DATA_GRAPH,
   SUBMIT_PARTIAL_REPLACE,
+  deleteEntities,
   submitDataGraph,
   submitPartialReplace,
 } from './DataActions';
@@ -26,10 +28,12 @@ const { DataGraphBuilder } = Models;
 const { UpdateTypes } = Types;
 const {
   createEntityAndAssociationData,
+  deleteEntityData,
   updateEntityData,
 } = DataApiActions;
 const {
   createEntityAndAssociationDataWorker,
+  deleteEntityDataWorker,
   updateEntityDataWorker,
 } = DataApiSagas;
 
@@ -133,7 +137,59 @@ function* submitPartialReplaceWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_PARTIAL_REPLACE, submitPartialReplaceWorker);
 }
 
+/*
+ *
+ * DataActions.deleteEntities()
+ *
+ */
+
+function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const sagaResponse :Object = {};
+
+  try {
+    yield put(deleteEntities.request(action.id, action.value));
+    const dataForDelete :Object[] = action.value;
+
+    const calls = [];
+    dataForDelete.forEach((data :Object) => {
+      const { entitySetId, entityKeyIds } = data;
+      calls.push(call(deleteEntityDataWorker, deleteEntityData({ entitySetId, entityKeyIds })));
+    });
+    const deleteResponses = yield all(calls);
+    const responseErrors = deleteResponses.reduce((acc, response) => {
+      if (response.error) {
+        acc.push(response.error);
+      }
+      return acc;
+    }, []);
+    const errors = {
+      errors: responseErrors
+    };
+    if (responseErrors.length) throw errors;
+
+    yield put(deleteEntities.success(action.id));
+  }
+  catch (error) {
+    sagaResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(deleteEntities.failure(action.id, error));
+  }
+  finally {
+    yield put(deleteEntities.finally(action.id));
+  }
+
+  return sagaResponse;
+}
+
+function* deleteEntitiesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_ENTITIES, deleteEntitiesWorker);
+}
+
 export {
+  deleteEntitiesWatcher,
+  deleteEntitiesWorker,
   submitDataGraphWatcher,
   submitDataGraphWorker,
   submitPartialReplaceWatcher,
