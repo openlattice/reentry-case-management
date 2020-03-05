@@ -32,7 +32,6 @@ import { requestIsPending, requestIsSuccess, reduceRequestStates } from '../../u
 import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
-  DELETE_PROVIDER_STAFF_AND_CONTACTS,
   EDIT_PROVIDER,
   EDIT_PROVIDER_CONTACTS,
   addNewProviderContacts,
