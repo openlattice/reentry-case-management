@@ -33,11 +33,12 @@ import {
   getPropertyFqnFromEDM,
 } from '../../utils/DataUtils';
 import { constructNewEntityFromSubmittedData } from '../../utils/FormUtils';
-import { submitDataGraph, submitPartialReplace } from '../../core/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
+  DELETE_PROVIDER_STAFF_AND_CONTACTS,
   EDIT_PROVIDER,
   EDIT_PROVIDER_CONTACTS,
   GET_CONTACT_INFO,
@@ -45,6 +46,7 @@ import {
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
+  deleteProviderStaffAndContacts,
   editProvider,
   editProviderContacts,
   getContactInfo,
@@ -67,6 +69,7 @@ const {
   PROVIDER,
   PROVIDER_ADDRESS,
   PROVIDER_CONTACT_INFO,
+  PROVIDER_EMPLOYEES,
   PROVIDER_STAFF,
 } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
@@ -481,11 +484,79 @@ function* editProviderContactsWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_PROVIDER_CONTACTS, editProviderContactsWorker);
 }
 
+/*
+ *
+ * ProvidersActions.deleteProviderStaffAndContacts()
+ *
+ */
+
+function* deleteProviderStaffAndContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(deleteProviderStaffAndContacts.request(id, value));
+    const { deleteValue, providerEKID } = value;
+    const { entityData, path } = deleteValue;
+
+    const app = yield select(getAppFromState);
+    const providerStaffESID :UUID = getESIDFromApp(app, PROVIDER_STAFF);
+    const providerContactInfoESID :UUID = getESIDFromApp(app, PROVIDER_CONTACT_INFO);
+    const providerEmployeeESID :UUID = getESIDFromApp(app, PROVIDER_EMPLOYEES);
+    const staffEKIDs :UUID[] = Array.from(entityData[providerStaffESID]);
+    const contactsEKIDs :UUID[] = Array.from(entityData[providerContactInfoESID]);
+
+    // also delete employee neighbors of staff
+    let response :Object = yield call(searchEntityNeighborsWithFilterWorker, searchEntityNeighborsWithFilter({
+      entitySetId: providerStaffESID,
+      filter: {
+        entityKeyIds: staffEKIDs,
+        destinationEntitySetIds: [providerEmployeeESID],
+        sourceEntitySetIds: [],
+      }
+    }));
+    if (response.error) throw response.error;
+    const employeeEKIDs :UUID[] = [];
+    fromJS(response.data).map((employeeNeighborList :List) => employeeNeighborList.get(0))
+      .forEach((employeeNeighbor :Map) => {
+        const employeeEntity :Map = getNeighborDetails(employeeNeighbor);
+        employeeEKIDs.push(getEKID(employeeEntity));
+      });
+    const deleteCalls :Object[] = [
+      { entitySetId: providerStaffESID, entityKeyIds: staffEKIDs },
+      { entitySetId: providerEmployeeESID, entityKeyIds: employeeEKIDs },
+      { entitySetId: providerContactInfoESID, entityKeyIds: contactsEKIDs }
+    ];
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(deleteCalls));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteProviderStaffAndContacts.success(id, { path, providerEKID }));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteProviderStaffAndContactsWorker()', error);
+    yield put(deleteProviderStaffAndContacts.failure(id, error));
+  }
+  finally {
+    yield put(deleteProviderStaffAndContacts.finally(id));
+  }
+}
+
+function* deleteProviderStaffAndContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_PROVIDER_STAFF_AND_CONTACTS, deleteProviderStaffAndContactsWorker);
+}
+
 export {
   addNewProviderContactsWatcher,
   addNewProviderContactsWorker,
   createNewProviderWatcher,
   createNewProviderWorker,
+  deleteProviderStaffAndContactsWatcher,
+  deleteProviderStaffAndContactsWorker,
   editProviderContactsWatcher,
   editProviderContactsWorker,
   editProviderWatcher,

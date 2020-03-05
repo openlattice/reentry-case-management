@@ -13,6 +13,9 @@ const addNewProviderContacts :RequestSequence = newRequestSequence(ADD_NEW_PROVI
 const CREATE_NEW_PROVIDER :'CREATE_NEW_PROVIDER' = 'CREATE_NEW_PROVIDER';
 const createNewProvider :RequestSequence = newRequestSequence(CREATE_NEW_PROVIDER);
 
+const DELETE_PROVIDER_STAFF_AND_CONTACTS :'DELETE_PROVIDER_STAFF_AND_CONTACTS' = 'DELETE_PROVIDER_STAFF_AND_CONTACTS';
+const deleteProviderStaffAndContacts :RequestSequence = newRequestSequence(DELETE_PROVIDER_STAFF_AND_CONTACTS);
+
 const EDIT_PROVIDER :'EDIT_PROVIDER' = 'EDIT_PROVIDER';
 const editProvider :RequestSequence = newRequestSequence(EDIT_PROVIDER);
 
@@ -32,6 +35,7 @@ export {
   ADD_NEW_PROVIDER_CONTACTS,
   CLEAR_EDIT_REQUEST_STATES,
   CREATE_NEW_PROVIDER,
+  DELETE_PROVIDER_STAFF_AND_CONTACTS,
   EDIT_PROVIDER,
   EDIT_PROVIDER_CONTACTS,
   GET_CONTACT_INFO,
@@ -40,6 +44,7 @@ export {
   addNewProviderContacts,
   clearEditRequestStates,
   createNewProvider,
+  deleteProviderStaffAndContacts,
   editProvider,
   editProviderContacts,
   getContactInfo,

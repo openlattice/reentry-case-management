@@ -8,6 +8,7 @@ import {
   ADD_NEW_PROVIDER_CONTACTS,
   CLEAR_EDIT_REQUEST_STATES,
   CREATE_NEW_PROVIDER,
+  DELETE_PROVIDER_STAFF_AND_CONTACTS,
   EDIT_PROVIDER,
   EDIT_PROVIDER_CONTACTS,
   GET_CONTACT_INFO,
@@ -15,6 +16,7 @@ import {
   GET_PROVIDER_NEIGHBORS,
   addNewProviderContacts,
   createNewProvider,
+  deleteProviderStaffAndContacts,
   editProvider,
   editProviderContacts,
   getContactInfo,
@@ -38,6 +40,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_NEW_PROVIDER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_PROVIDER_STAFF_AND_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PROVIDER]: {
@@ -119,6 +124,34 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
         },
         FAILURE: () => state.setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_PROVIDER, action.id]),
+      });
+    }
+
+    case deleteProviderStaffAndContacts.case(action.type): {
+
+      return deleteProviderStaffAndContacts.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_PROVIDER_STAFF_AND_CONTACTS, action.id], action)
+          .setIn([ACTIONS, DELETE_PROVIDER_STAFF_AND_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { path, providerEKID } = value;
+
+          let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
+          const staffToDelete :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF, path[1]]);
+          const staffEKID :UUID = getEKID(staffToDelete);
+          providerNeighborMap = providerNeighborMap.deleteIn([providerEKID, PROVIDER_STAFF, path[1]]);
+
+          const contactInfoByContactPersonEKID :Map = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID)
+            .delete(staffEKID);
+          return state
+            .set(CONTACT_INFO_BY_CONTACT_PERSON_EKID, contactInfoByContactPersonEKID)
+            .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
+            .setIn([ACTIONS, DELETE_PROVIDER_STAFF_AND_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, DELETE_PROVIDER_STAFF_AND_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_PROVIDER_STAFF_AND_CONTACTS, action.id]),
       });
     }
 
