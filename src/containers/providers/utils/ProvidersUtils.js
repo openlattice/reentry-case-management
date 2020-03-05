@@ -1,9 +1,7 @@
 // @flow
-import isInteger from 'lodash/isInteger';
 import {
   List,
   Map,
-  fromJS,
   get,
   getIn,
   has,
