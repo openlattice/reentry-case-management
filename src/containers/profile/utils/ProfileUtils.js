@@ -6,6 +6,7 @@ import { getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const { CONTACT_INFO, NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
 const {
@@ -70,10 +71,12 @@ const getMostRecentReleaseDate = (jailStays :List) :string => {
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
-  let enrollmentDate :string = '----';
-  const enrollmentDateTime :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '');
-  const enrollmentDateTimeObj :DateTime = DateTime.fromISO(enrollmentDateTime);
-  if (enrollmentDateTimeObj.isValid) enrollmentDate = enrollmentDateTimeObj.toLocaleString(DateTime.DATE_SHORT);
+  const enrollmentDateTimeObj :DateTime = DateTime.fromISO(
+    participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, DATETIME_COMPLETED, 0], '')
+  );
+  const enrollmentDate = enrollmentDateTimeObj.isValid
+    ? enrollmentDateTimeObj.toLocaleString(DateTime.DATE_SHORT)
+    : EMPTY_FIELD;
   return enrollmentDate;
 };
 

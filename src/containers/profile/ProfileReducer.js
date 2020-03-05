@@ -124,12 +124,12 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => {
           const { value } = action;
           const { newEnrollmentStatus } = value;
-          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
-          let enrollmentStatuses :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
-          enrollmentStatuses = enrollmentStatuses.concat(fromJS([newEnrollmentStatus]));
-          participantNeighbors = participantNeighbors.set(ENROLLMENT_STATUS, enrollmentStatuses);
           return state
-            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .updateIn(
+              [PARTICIPANT_NEIGHBORS, ENROLLMENT_STATUS],
+              List(),
+              ((enrollmentStatuses) => enrollmentStatuses.concat(fromJS([newEnrollmentStatus])))
+            )
             .setIn([ACTIONS, RECORD_ENROLLMENT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
       });

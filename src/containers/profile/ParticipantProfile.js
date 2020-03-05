@@ -13,7 +13,6 @@ import {
   DataGrid,
   Spinner,
 } from 'lattice-ui-kit';
-// $FlowFixMe
 import { faUser } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
@@ -41,6 +40,7 @@ import { sortEntitiesByDateProperty } from '../../utils/Utils';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -221,7 +221,7 @@ class ParticipantProfile extends Component<Props, State> {
     const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
     const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
     const referralSource :string = `Referred from: ${participantNeighbors
-      .getIn([REFERRAL_REQUEST, 0, SOURCE, 0], '----')}`;
+      .getIn([REFERRAL_REQUEST, 0, SOURCE, 0], EMPTY_FIELD)}`;
     let enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
     enrollmentEvents = sortEntitiesByDateProperty(enrollmentEvents, [EFFECTIVE_DATE]).reverse();
     const releaseDate :string = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
@@ -254,7 +254,7 @@ class ParticipantProfile extends Component<Props, State> {
                 </PictureWrapper>
                 <DataGrid
                     data={participantData}
-                    emptyString="----"
+                    emptyString={EMPTY_FIELD}
                     labelMap={participantGridLabels}
                     truncate />
               </CardInnerWrapper>

@@ -13,10 +13,13 @@ const DATA_URL_PREFIX_REGEX :RegExp = /^data:image\/[a-z]+;base64,/;
 const DST :string = 'dst';
 const SRC :string = 'src';
 
+const EMPTY_FIELD :string = '----';
+
 export {
   APP_NAME,
   DATA_URL_IMG_PNG_PREFIX,
   DATA_URL_PREFIX_REGEX,
   DST,
+  EMPTY_FIELD,
   SRC,
 };

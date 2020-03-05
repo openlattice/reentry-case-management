@@ -14,6 +14,7 @@ import {
 } from '../styled/EventStyles';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const { NEUTRALS } = Colors;
 const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
@@ -43,9 +44,9 @@ const Event = ({
   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
   const { [NAME]: name } = getEntityProperties(provider, [NAME]);
   const providerName :string = typeof name === 'string' ? name : name[0];
-  const relatedOrganization :string = `Related Organization: ${providerName || '----'}`;
+  const relatedOrganization :string = `Related Organization: ${providerName || EMPTY_FIELD}`;
   const providerEKID :UUID = getEKID(provider);
-  const contactName :string = contactNameByProviderEKID.get(providerEKID, '----');
+  const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
     <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px">

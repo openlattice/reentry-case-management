@@ -92,13 +92,11 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
     );
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
     let providerByStatusEKID :Map = Map();
     const providerEKIDs :UUID[] = [];
     fromJS(response.data).forEach((neighborList :List, enrollmentStatusEKID :UUID) => {
-      const entity :Map = getNeighborDetails(neighborList.get(0));
+      const entity :Map = getNeighborDetails(neighborList.first());
       providerByStatusEKID = providerByStatusEKID.set(enrollmentStatusEKID, entity);
       providerEKIDs.push(getEKID(entity));
     });
@@ -119,7 +117,7 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
         throw response.error;
       }
       fromJS(response.data).forEach((neighborList :List, providerEKID :UUID) => {
-        const firstContactPerson :Map = getNeighborDetails(neighborList.get(0));
+        const firstContactPerson :Map = getNeighborDetails(neighborList.first());
         const contactName :string = getPersonFullName(firstContactPerson);
         contactNameByProviderEKID = contactNameByProviderEKID.set(providerEKID, contactName);
       });
