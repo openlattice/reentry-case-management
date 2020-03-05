@@ -32,10 +32,12 @@ import { requestIsPending, requestIsSuccess, reduceRequestStates } from '../../u
 import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
+  DELETE_PROVIDER_STAFF_AND_CONTACTS,
   EDIT_PROVIDER,
   EDIT_PROVIDER_CONTACTS,
   addNewProviderContacts,
   clearEditRequestStates,
+  deleteProviderStaffAndContacts,
   editProvider,
   editProviderContacts,
 } from './ProvidersActions';
@@ -88,6 +90,7 @@ type Props = {
   actions :{
     addNewProviderContacts :RequestSequence;
     clearEditRequestStates :() => { type :string };
+    deleteProviderStaffAndContacts :RequestSequence;
     editProvider :RequestSequence;
     editProviderContacts :RequestSequence;
   };
@@ -281,6 +284,10 @@ const EditProviderForm = ({
     }
   };
 
+  const onDelete = (deleteValue) => {
+    actions.deleteProviderStaffAndContacts({ deleteValue, providerEKID });
+  };
+
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Provider" />);
   const renderFooter = () => {
     const reducedState = reduceRequestStates([
@@ -295,6 +302,12 @@ const EditProviderForm = ({
           onClickPrimary={onSubmit}
           textPrimary="Save" />
     );
+  };
+  const formContext :Object = {
+    deleteAction: onDelete,
+    entityIndexToIdMap: entityIndexToIdMap.current,
+    entitySetIds: entitySetIdsByFqn,
+    propertyTypeIds: propertyTypeIdsByFqn,
   };
   return (
     <Modal
@@ -313,6 +326,7 @@ const EditProviderForm = ({
             schema={providerSchema}
             uiSchema={providerUiSchema} />
         <Form
+            formContext={formContext}
             formData={contactsFormData}
             hideSubmit
             onChange={onContactsChange}
@@ -342,6 +356,7 @@ const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addNewProviderContacts,
     clearEditRequestStates,
+    deleteProviderStaffAndContacts,
     editProvider,
     editProviderContacts,
   }, dispatch)
