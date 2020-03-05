@@ -175,8 +175,8 @@ const EditProviderForm = ({
         [getEntityAddressKey(0, PROVIDER, DESCRIPTION)]: providerDescription,
       },
       [getPageSectionKey(1, 2)]: {
-        [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: city,
-        [getEntityAddressKey(0, PROVIDER_ADDRESS, CITY)]: streetAddress,
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, STREET)]: streetAddress,
+        [getEntityAddressKey(0, PROVIDER_ADDRESS, CITY)]: city,
         [getEntityAddressKey(0, PROVIDER_ADDRESS, US_STATE)]: state,
         [getEntityAddressKey(0, PROVIDER_ADDRESS, ZIP)]: zipCode,
       },
