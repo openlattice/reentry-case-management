@@ -15,7 +15,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../components/modal/ModalHeader';
 import { requestIsSuccess } from '../../utils/RequestStateUtils';
-import { DOWNLOAD_PARTICIPANTS, downloadParticipants } from './ReportsActions';
+import { DOWNLOAD_PARTICIPANTS, clearDownloadRequestState, downloadParticipants } from './ReportsActions';
 import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -34,6 +34,7 @@ const TextWithMoreMargin = styled(Text)`
 
 type Props = {
   actions :{
+    clearDownloadRequestState :RequestSequence;
     downloadParticipants :RequestSequence;
   };
   isVisible :boolean;
@@ -56,9 +57,10 @@ const DownloadPeopleModal = ({
 
   useEffect(() => {
     if (requestIsSuccess(requestStates[DOWNLOAD_PARTICIPANTS])) {
+      actions.clearDownloadRequestState();
       onClose();
     }
-  }, [onClose, requestStates]);
+  }, [actions, onClose, requestStates]);
 
   const onDownloadClick = () => {
     if (newIntakesChecked || activeEnrollmentsChecked) {
@@ -79,6 +81,7 @@ const DownloadPeopleModal = ({
   return (
     <Modal
         isVisible={isVisible}
+        onClickPrimary={onDownloadClick}
         onClose={onClose}
         textPrimary="Download"
         withHeader={renderHeader}
@@ -109,6 +112,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = (dispatch :Function) => ({
   actions: bindActionCreators({
+    clearDownloadRequestState,
     downloadParticipants,
   }, dispatch)
 });
