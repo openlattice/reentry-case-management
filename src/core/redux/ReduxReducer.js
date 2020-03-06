@@ -13,6 +13,7 @@ import intakeReducer from '../../containers/intake/IntakeReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
 import profileReducer from '../../containers/profile/ProfileReducer';
 import releasesReducer from '../../containers/releases/ReleasesReducer';
+import reportsReducer from '../../containers/reports/ReportsReducer';
 
 export default function reduxReducer(routerHistory :any) {
 
@@ -25,6 +26,7 @@ export default function reduxReducer(routerHistory :any) {
     participants: participantsReducer,
     profile: profileReducer,
     releases: releasesReducer,
+    reports: reportsReducer,
     router: connectRouter(routerHistory),
   });
 }

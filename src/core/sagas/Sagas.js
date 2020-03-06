@@ -13,6 +13,7 @@ import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as ProfileSagas from '../../containers/profile/ProfileSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
+import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -60,6 +61,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReleasesSagas.searchPeopleByJailStayWatcher),
     fork(ReleasesSagas.searchReleasesByDateWatcher),
     fork(ReleasesSagas.searchReleasesByPersonNameWatcher),
+
+    // ReportsSagas
+    fork(ReportsSagas.downloadParticipantsWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
