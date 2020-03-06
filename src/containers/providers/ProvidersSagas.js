@@ -156,22 +156,21 @@ function* getProviderNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (response.error) {
       throw response.error;
     }
-    let providerNeighborMap :Map = Map();
     const pointOfContactPersonEKIDs :UUID[] = [];
     const providerNeighbors :List = fromJS(response.data);
-    providerNeighbors.forEach((neighborList :Map, providerEKID :UUID) => {
-      neighborList.forEach((neighbor :Map) => {
-        const neighborESID :UUID = getNeighborESID(neighbor);
-        const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
-        const entity :Map = getNeighborDetails(neighbor);
-        if (neighborEntityFqn.toString() === PROVIDER_STAFF.toString()) {
-          pointOfContactPersonEKIDs.push(getEKID(entity));
-        }
-        let neighborsByProviderEKID :Map = providerNeighborMap.get(providerEKID, Map());
-        let entityList :List = neighborsByProviderEKID.get(neighborEntityFqn, List());
-        entityList = entityList.push(entity);
-        neighborsByProviderEKID = neighborsByProviderEKID.set(neighborEntityFqn, entityList);
-        providerNeighborMap = providerNeighborMap.set(providerEKID, neighborsByProviderEKID);
+
+    const providerNeighborMap :Map = Map().withMutations((map :Map) => {
+      providerNeighbors.forEach((neighborList :List, providerEKID :UUID) => {
+        neighborList.forEach((neighbor :Map) => {
+
+          const neighborESID :UUID = getNeighborESID(neighbor);
+          const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
+          const entity :Map = getNeighborDetails(neighbor);
+          if (neighborESID === providerStaffESID) {
+            pointOfContactPersonEKIDs.push(getEKID(entity));
+          }
+          map.updateIn([providerEKID, neighborEntityFqn], List(), (entityList) => entityList.push(entity));
+        });
       });
     });
 
