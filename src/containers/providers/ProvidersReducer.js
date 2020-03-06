@@ -87,15 +87,15 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
           const { newProviderContactInfo, newProviderStaffMembers, providerEKID } = value;
-          let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
-          let staffMembers :List = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF], List());
-          staffMembers = staffMembers.concat(newProviderStaffMembers);
-          providerNeighborMap = providerNeighborMap.setIn([providerEKID, PROVIDER_STAFF], staffMembers);
           const contactInfoByContactPersonEKID :Map = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID)
             .merge(newProviderContactInfo);
           return state
+            .updateIn(
+              [PROVIDER_NEIGHBOR_MAP, providerEKID, PROVIDER_STAFF],
+              List(),
+              (staffMembers) => staffMembers.concat(newProviderStaffMembers)
+            )
             .set(CONTACT_INFO_BY_CONTACT_PERSON_EKID, contactInfoByContactPersonEKID)
-            .set(PROVIDER_NEIGHBOR_MAP, providerNeighborMap)
             .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state.setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
@@ -136,12 +136,12 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
-          const { path, providerEKID } = value;
+          const { arrayItemIndex, providerEKID } = value;
 
           let providerNeighborMap :Map = state.get(PROVIDER_NEIGHBOR_MAP);
-          const staffToDelete :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF, path[1]]);
+          const staffToDelete :Map = providerNeighborMap.getIn([providerEKID, PROVIDER_STAFF, arrayItemIndex]);
           const staffEKID :UUID = getEKID(staffToDelete);
-          providerNeighborMap = providerNeighborMap.deleteIn([providerEKID, PROVIDER_STAFF, path[1]]);
+          providerNeighborMap = providerNeighborMap.deleteIn([providerEKID, PROVIDER_STAFF, arrayItemIndex]);
 
           const contactInfoByContactPersonEKID :Map = state.get(CONTACT_INFO_BY_CONTACT_PERSON_EKID)
             .delete(staffEKID);

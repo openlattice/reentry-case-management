@@ -157,16 +157,9 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
       calls.push(call(deleteEntityDataWorker, deleteEntityData({ entitySetId, entityKeyIds })));
     });
     const deleteResponses = yield all(calls);
-    const responseErrors = deleteResponses.reduce((acc, response) => {
-      if (response.error) {
-        acc.push(response.error);
-      }
-      return acc;
-    }, []);
-    const errors = {
-      errors: responseErrors
-    };
-    if (responseErrors.length) throw errors;
+    deleteResponses.forEach((response) => {
+      if (response.error) throw response.error;
+    });
 
     yield put(deleteEntities.success(action.id));
   }

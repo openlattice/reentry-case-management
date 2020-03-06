@@ -506,6 +506,7 @@ function* deleteProviderStaffAndContactsWorker(action :SequenceAction) :Generato
     const providerEmployeeESID :UUID = getESIDFromApp(app, PROVIDER_EMPLOYEES);
     const staffEKIDs :UUID[] = Array.from(entityData[providerStaffESID]);
     const contactsEKIDs :UUID[] = Array.from(entityData[providerContactInfoESID]);
+    const arrayItemIndex :number = path[1];
 
     // also delete employee neighbors of staff
     let response :Object = yield call(searchEntityNeighborsWithFilterWorker, searchEntityNeighborsWithFilter({
@@ -534,7 +535,7 @@ function* deleteProviderStaffAndContactsWorker(action :SequenceAction) :Generato
       throw response.error;
     }
 
-    yield put(deleteProviderStaffAndContacts.success(id, { path, providerEKID }));
+    yield put(deleteProviderStaffAndContacts.success(id, { arrayItemIndex, providerEKID }));
   }
   catch (error) {
     LOG.error('caught exception in deleteProviderStaffAndContactsWorker()', error);
