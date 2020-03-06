@@ -22,7 +22,6 @@ const formatDataForReleasesByDateList = (
 
   searchedJailStays.forEach((jailStay :Map) => {
     let release :Map = Map();
-    // $FlowFixMe
     const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
       jailStay,
       [PROJECTED_RELEASE_DATETIME]
@@ -32,13 +31,13 @@ const formatDataForReleasesByDateList = (
 
     const jailStayEKID :UUID = getEKID(jailStay);
     const person :Map = peopleByJailStayEKID.get(jailStayEKID, Map());
-    // $FlowFixMe
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
-    const personName :string = `${firstName} ${lastName}`;
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
     release = release.set('name', personName);
 
     const facility :Map = jailsByJailStayEKID.get(jailStayEKID, Map());
-    // $FlowFixMe
     const { [NAME]: facilityName } = getEntityProperties(facility, [NAME]);
     release = release.set('releasedFrom', facilityName);
     releasesData = releasesData.push(release);
@@ -57,14 +56,14 @@ const formatDataForReleasesByPersonList = (
 
   searchedPeople.forEach((person :Map) => {
     let release :Map = Map();
-    // $FlowFixMe
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
-    const personName :string = `${firstName} ${lastName}`;
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
     release = release.set('name', personName);
 
     const personEKID :UUID = getEKID(person);
     const jailStay :Map = jailStaysByPersonEKID.get(personEKID, '');
-    // $FlowFixMe
     const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
       jailStay,
       [PROJECTED_RELEASE_DATETIME]
@@ -74,7 +73,6 @@ const formatDataForReleasesByPersonList = (
 
     const jailStayEKID :UUID = getEKID(jailStay);
     const facility :Map = jailsByJailStayEKID.get(jailStayEKID, Map());
-    // $FlowFixMe
     const { [NAME]: facilityName } = getEntityProperties(facility, [NAME]);
     release = release.set('releasedFrom', facilityName);
     releasesData = releasesData.push(release);

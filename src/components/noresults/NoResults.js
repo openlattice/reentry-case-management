@@ -2,7 +2,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CardSegment, Colors } from 'lattice-ui-kit';
-// $FlowFixMe
 import { faFolderOpen } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 

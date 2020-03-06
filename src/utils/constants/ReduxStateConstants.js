@@ -24,6 +24,11 @@ const EDM :Object = {
   TYPE_IDS_BY_FQN: 'typeIdsByFqn',
 };
 
+const EVENT :Object = {
+  EVENT: 'event',
+  PROVIDERS: 'providers',
+};
+
 const INTAKE :Object = {
   INCARCERATION_FACILITIES: 'incarcerationFacilities',
   INTAKE: 'intake',
@@ -37,8 +42,12 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
-const REPORTS :Object = {
-  REPORTS: 'reports',
+const PROFILE :Object = {
+  CONTACT_NAME_BY_PROVIDER_EKID: 'contactNameByProviderEKID',
+  PARTICIPANT: 'participant',
+  PARTICIPANT_NEIGHBORS: 'participantNeighbors',
+  PROFILE: 'profile',
+  PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
 };
 
 const RELEASES :Object = {
@@ -50,11 +59,17 @@ const RELEASES :Object = {
   SEARCHED_PEOPLE: 'searchedPeople',
 };
 
+const REPORTS :Object = {
+  REPORTS: 'reports',
+};
+
 export {
   APP,
   EDM,
+  EVENT,
   INTAKE,
   PARTICIPANTS,
+  PROFILE,
   RELEASES,
   REPORTS,
   SHARED,

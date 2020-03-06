@@ -8,8 +8,10 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import edmReducer from '../edm/EDMReducer';
+import eventReducer from '../../containers/profile/events/EventReducer';
 import intakeReducer from '../../containers/intake/IntakeReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
+import profileReducer from '../../containers/profile/ProfileReducer';
 import releasesReducer from '../../containers/releases/ReleasesReducer';
 
 export default function reduxReducer(routerHistory :any) {
@@ -18,8 +20,10 @@ export default function reduxReducer(routerHistory :any) {
     app: appReducer,
     auth: AuthReducer,
     edm: edmReducer,
+    event: eventReducer,
     intake: intakeReducer,
     participants: participantsReducer,
+    profile: profileReducer,
     releases: releasesReducer,
     router: connectRouter(routerHistory),
   });
