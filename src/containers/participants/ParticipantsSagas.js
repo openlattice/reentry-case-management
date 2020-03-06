@@ -34,6 +34,7 @@ import {
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DST, SRC } from '../../utils/constants/GeneralConstants';
 
 const LOG = new Logger('ParticipantsSagas');
 const { FullyQualifiedName } = Models;
@@ -51,9 +52,6 @@ const {
   LAST_NAME,
   NAME,
 } = PROPERTY_TYPE_FQNS;
-
-const DST :string = 'dst';
-const SRC :string = 'src';
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());

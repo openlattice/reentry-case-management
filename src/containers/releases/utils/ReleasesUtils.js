@@ -32,7 +32,9 @@ const formatDataForReleasesByDateList = (
     const jailStayEKID :UUID = getEKID(jailStay);
     const person :Map = peopleByJailStayEKID.get(jailStayEKID, Map());
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
-    const personName :string = `${firstName} ${lastName}`;
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
     release = release.set('name', personName);
 
     const facility :Map = jailsByJailStayEKID.get(jailStayEKID, Map());
@@ -55,7 +57,9 @@ const formatDataForReleasesByPersonList = (
   searchedPeople.forEach((person :Map) => {
     let release :Map = Map();
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
-    const personName :string = `${firstName} ${lastName}`;
+    const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
+      ? `${firstName} ${lastName}`
+      : '';
     release = release.set('name', personName);
 
     const personEKID :UUID = getEKID(person);
