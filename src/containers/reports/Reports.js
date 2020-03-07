@@ -1,10 +1,16 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Button } from 'lattice-ui-kit';
+import { Button, Table } from 'lattice-ui-kit';
 
 import DownloadPeopleModal from './DownloadPeopleModal';
 import COLORS from '../../core/style/Colors';
+
+const TABLE_HEADERS :string[] = [
+  'NAME',
+  'TYPE',
+  'USE COUNT',
+];
 
 const HeaderRow = styled.div`
   align-items: center;
