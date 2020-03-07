@@ -1,5 +1,5 @@
 // @flow
-import { List, Map, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -8,7 +8,7 @@ import {
   DOWNLOAD_PARTICIPANTS,
   downloadParticipants,
 } from './ReportsActions';
-import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 

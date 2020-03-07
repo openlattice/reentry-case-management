@@ -14,7 +14,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../components/modal/ModalHeader';
-import { requestIsSuccess } from '../../utils/RequestStateUtils';
+import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { DOWNLOAD_PARTICIPANTS, clearDownloadRequestState, downloadParticipants } from './ReportsActions';
 import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
@@ -70,7 +70,7 @@ const DownloadPeopleModal = ({
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Download" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = false;
+    const isSubmitting :boolean = requestIsPending(requestStates[DOWNLOAD_PARTICIPANTS]);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}

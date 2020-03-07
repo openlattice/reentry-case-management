@@ -1,11 +1,18 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
 import {
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  OrderedMap,
+  fromJS
+} from 'immutable';
 import { DateTime } from 'luxon';
 import {
   SearchApiActions,
@@ -18,11 +25,11 @@ import { isDefined } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
+  getEntityProperties,
   getNeighborDetails,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString } from '../../utils/SearchUtils';
-import { createDateTime } from '../../utils/DateTimeUtils';
 import {
   DOWNLOAD_PARTICIPANTS,
   downloadParticipants,
@@ -32,8 +39,21 @@ import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { NEEDS_ASSESSMENT, PEOPLE } = APP_TYPE_FQNS;
-const { DATETIME_COMPLETED } = PROPERTY_TYPE_FQNS;
+const {
+  DATETIME_COMPLETED,
+  DOB,
+  FIRST_NAME,
+  LAST_NAME,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 
+const headersByPropertyFqn :Map = Map().withMutations((map :Map) => {
+  map.set(LAST_NAME, 'Last Name');
+  map.set(FIRST_NAME, 'First Name');
+  map.set(DOB, 'Date of Birth');
+  map.set(DATETIME_COMPLETED, 'Enrollment Date');
+  map.set(TYPE, 'Needs');
+});
 
 const LOG = new Logger('ReportsSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -62,13 +82,6 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
     const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
     const dateTimeCompletedPTID :UUID = getPTIDFromEDM(edm, DATETIME_COMPLETED);
 
-    // if newIntakes && !activeEnrollmentsChecked:
-    // create search date range for finding needs assessments submitted from month start to month end
-    // if newIntakes && activeEnrollmentsChecked:
-    // create search date range for finding needs assessments submitted from anytime to month end
-    // if !newIntakes && activeEnrollmentsChecked:
-    // get everyone
-
     let response :Object = {};
     let needsAssessments :List = List();
     const searchOptions = {
@@ -77,57 +90,28 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       maxHits: 10000,
       constraints: []
     };
-    let searchTerm :string = '';
-    const dateTimeSelected :DateTime = createDateTime(dateSelected);
-    if (activeEnrollmentsChecked) {
-      // get all actively enrolled people (complete needs assessments) from * to the end of month selected
-      searchTerm = getUTCDateRangeSearchString(
-        dateTimeCompletedPTID,
-        'month',
-        undefined,
-        dateTimeSelected
-      );
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    else if (!activeEnrollmentsChecked && newIntakesChecked && dateTimeSelected.isValid) {
-      // get people who completed needs assessment within month selected
-      searchTerm = getUTCDateRangeSearchString(
-        dateTimeCompletedPTID,
-        'month',
-        dateTimeSelected,
-        dateTimeSelected
-      );
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    else if (!activeEnrollmentsChecked && newIntakesChecked && !dateTimeSelected.isValid) {
-      // get people who completed needs assessment within current month
-      const now = DateTime.local();
-      searchTerm = getUTCDateRangeSearchString(
-        dateTimeCompletedPTID,
-        'month',
-        now,
-        now
-      );
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
+
+    // if activeEnrollmentsChecked: get actively enrolled people from * to end of month selected (or current)
+    // if newIntakesChecked: get people who completed needs assessment in month selected (or current)
+    const now = DateTime.local();
+    const dateTimeSelected :DateTime = DateTime.fromISO(dateSelected);
+    const endDateToSearch :DateTime = dateTimeSelected.isValid ? dateTimeSelected : now;
+    const startDateToSearch :any = activeEnrollmentsChecked ? undefined : endDateToSearch;
+
+    const searchTerm :string = getUTCDateRangeSearchString(
+      dateTimeCompletedPTID,
+      'month',
+      startDateToSearch,
+      endDateToSearch
+    );
+    searchOptions.constraints.push({
+      min: 1,
+      constraints: [{
+        searchTerm,
+        fuzzy: false
+      }]
+    });
+
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) {
       throw response.error;
@@ -154,10 +138,43 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       const peopleByNeedsAssessmentEKID :Map = fromJS(response.data)
         .map((neighborList :List) => neighborList.get(0))
         .map((neighbor :Map) => getNeighborDetails(neighbor));
-      //
-      // let jsonResults :List = List().withMutations((list :List) => {
-      //
-      // });
+
+      const jsonResults :List = List().withMutations((list :List) => {
+        needsAssessments.forEach((needsAssessment :Map) => {
+          const { [DATETIME_COMPLETED]: datetime, [TYPE]: types } = getEntityProperties(
+            needsAssessment,
+            [DATETIME_COMPLETED, TYPE]
+          );
+          const person :Map = peopleByNeedsAssessmentEKID.get(getEKID(needsAssessment), Map());
+          const { [DOB]: dob, [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
+            person,
+            [DOB, FIRST_NAME, LAST_NAME]
+          );
+
+          const csvRow :OrderedMap = OrderedMap().withMutations((map :OrderedMap) => {
+            map.set(headersByPropertyFqn.get(LAST_NAME), lastName);
+            map.set(headersByPropertyFqn.get(FIRST_NAME), firstName);
+            map.set(headersByPropertyFqn.get(DOB), DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT));
+            map.set(headersByPropertyFqn.get(TYPE), types.join(', '));
+            map.set(
+              headersByPropertyFqn.get(DATETIME_COMPLETED),
+              DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT)
+            );
+          });
+          list.push(csvRow);
+        });
+      });
+
+      const csv = Papa.unparse(jsonResults.toJS());
+      const blob = new Blob([csv], {
+        type: 'application/json'
+      });
+      let name :string = 'participants';
+      if (newIntakesChecked) name += '_new-intakes';
+      if (activeEnrollmentsChecked) name += '_active-enrollments';
+      if (dateTimeSelected.isValid) name += `_${dateSelected}`;
+      if (!dateTimeSelected.isValid) name += `_${now.toISODate()}`;
+      FS.saveAs(blob, name.concat('.csv'));
     }
 
     yield put(downloadParticipants.success(id));
