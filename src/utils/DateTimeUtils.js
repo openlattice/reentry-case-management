@@ -18,11 +18,7 @@ const checkIfDatesAreEqual = (isoDate1 :string, isoDate2 :string) => {
   return dateObj1.hasSame(dateObj2, 'millisecond');
 };
 
-// created for getting rid of flow errors elsewhere
-const createDateTime = (date :any) :DateTime => (DateTime.fromISO(date));
-
 export {
   checkIfDatesAreEqual,
-  createDateTime,
   formatAsDate,
 };
