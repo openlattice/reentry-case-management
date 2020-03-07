@@ -1,16 +1,14 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Table } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import DownloadPeopleModal from './DownloadPeopleModal';
 import COLORS from '../../core/style/Colors';
-
-const TABLE_HEADERS :string[] = [
-  'NAME',
-  'TYPE',
-  'USE COUNT',
-];
+import { getReportsData } from './ReportsActions';
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -26,8 +24,17 @@ const Header = styled.div`
   line-height: 35px;
 `;
 
-const Reports = () => {
+type Props = {
+  actions :{
+    getReportsData :RequestSequence;
+  };
+};
+
+const Reports = ({ actions } :Props) => {
   const [downloadModalVisible, setModalVisibility] = useState(false);
+  useEffect(() => {
+    actions.getReportsData();
+  }, [actions]);
   return (
     <>
       <HeaderRow>
@@ -41,4 +48,11 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+const mapDispatchToProps = (dispatch :Function) => ({
+  actions: bindActionCreators({
+    getReportsData,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(Reports);
