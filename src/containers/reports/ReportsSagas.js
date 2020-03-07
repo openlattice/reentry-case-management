@@ -21,7 +21,7 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
+import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
@@ -30,20 +30,33 @@ import {
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { getProviders } from '../providers/ProvidersActions';
+import { getProvidersWorker } from '../providers/ProvidersSagas';
 import {
   DOWNLOAD_PARTICIPANTS,
+  GET_REPORTS_DATA,
   downloadParticipants,
+  getReportsData,
 } from './ReportsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUSES } from '../profile/events/EventConstants';
+import { TABLE_HEADERS } from './ReportsConstants';
 
-const { NEEDS_ASSESSMENT, PEOPLE } = APP_TYPE_FQNS;
+const {
+  ENROLLMENT_STATUS,
+  NEEDS_ASSESSMENT,
+  PEOPLE,
+  PROVIDER,
+} = APP_TYPE_FQNS;
 const {
   DATETIME_COMPLETED,
   DOB,
   FIRST_NAME,
   LAST_NAME,
+  NAME,
+  STATUS,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
@@ -132,9 +145,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({ entitySetId: needsAssessmentESID, filter: searchFilter })
       );
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
       const peopleByNeedsAssessmentEKID :Map = fromJS(response.data)
         .map((neighborList :List) => neighborList.get(0))
         .map((neighbor :Map) => getNeighborDetails(neighbor));
@@ -180,7 +191,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
     yield put(downloadParticipants.success(id));
   }
   catch (error) {
-    LOG.error('caught exception in downloadParticipantsWorker()', error);
+    LOG.error(action.type, error);
     yield put(downloadParticipants.failure(id, error));
   }
   finally {
@@ -193,7 +204,78 @@ function* downloadParticipantsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PARTICIPANTS, downloadParticipantsWorker);
 }
 
+function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(getReportsData.request(id));
+
+    let response :Object = yield call(getProvidersWorker, getProviders({ fetchNeighbors: false }));
+    if (response.error) throw response.error;
+    const providers :List = fromJS(response.data);
+    const providerEKIDs :UUID[] = [];
+    providers.forEach((provider :Map) => {
+      providerEKIDs.push(getEKID(provider));
+    });
+
+    const app = yield select(getAppFromState);
+    const providersESID :UUID = getESIDFromApp(app, PROVIDER);
+    const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const searchFilter :Object = {
+      entityKeyIds: providerEKIDs,
+      destinationEntitySetIds: [enrollmentStatusESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: providersESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+    const enrollmentStatusesByProviderEKID :Map = fromJS(response.data)
+      .map((statusList :List) => statusList.map((neighbor :Map) => getNeighborDetails(neighbor)))
+      .map((statusList :List) => statusList
+        .filter((status :Map) => status.getIn([STATUS, 0]) === ENROLLMENT_STATUSES[1])) // 'Enrolled'
+      .sort((statusListA :List, statusListB :List) => {
+        if (statusListA.count() > statusListB.count()) return -1;
+        if (statusListA.count() < statusListB.count()) return 1;
+        return 0;
+      })
+      .map((statusList :List) => statusList.count());
+
+    const servicesTableData :Object[] = [];
+    providers.forEach((provider :Map) => {
+      const { [NAME]: name, [TYPE]: types } = getEntityProperties(provider, [NAME]);
+      let providerTypes = types;
+      if (isNonEmptyArray(types)) providerTypes = types.join(', ');
+      const providerEKID :UUID = getEKID(provider);
+      servicesTableData.push({
+        [TABLE_HEADERS[0]]: name,
+        [TABLE_HEADERS[1]]: providerTypes,
+        [TABLE_HEADERS[2]]: enrollmentStatusesByProviderEKID.get(providerEKID, 0),
+        id: providerEKID,
+      });
+    });
+
+    yield put(getReportsData.success(id, { servicesTableData }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getReportsData.failure(id, error));
+  }
+  finally {
+    yield put(getReportsData.finally(id));
+  }
+}
+
+function* getReportsDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_REPORTS_DATA, getReportsDataWorker);
+}
+
 export {
   downloadParticipantsWatcher,
   downloadParticipantsWorker,
+  getReportsDataWatcher,
+  getReportsDataWorker,
 };
