@@ -7,6 +7,7 @@ import {
   Card,
   CardHeader,
   CardSegment,
+  Colors,
   Table
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -21,6 +22,7 @@ import { GET_REPORTS_DATA, getReportsData } from './ReportsActions';
 import { TABLE_HEADERS } from './ReportsConstants';
 import { APP, REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
+const { NEUTRALS, WHITE } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { SERVICES_TABLE_DATA } = REPORTS;
@@ -37,6 +39,39 @@ const Header = styled.div`
   font-size: 26px;
   font-weight: 600;
   line-height: 35px;
+`;
+
+const StatsWrapper = styled.div`
+  display: flex;
+`;
+
+const StatBox = styled.div`
+  align-items: center;
+  background-color: ${WHITE};
+  border-radius: 5px;
+  border: 1px solid ${COLORS.GRAY_03};
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 20px 20px 0;
+  padding: 17px 0;
+  width: 225px;
+
+  :last-of-type {
+    margin-right: 0;
+  }
+`;
+
+const Number = styled.div`
+  color: ${COLORS.GRAY_01};
+  font-size: 24px;
+`;
+
+const Category = styled.div`
+  color: ${NEUTRALS[1]};
+  font-size: 14px;
+  font-weight: 600;
 `;
 
 const TableCard = styled(Card)`
@@ -81,6 +116,16 @@ const Reports = ({
         <Header>Reports</Header>
         <Button mode="primary" onClick={() => setModalVisibility(true)}>Download</Button>
       </HeaderRow>
+      <StatsWrapper>
+        <StatBox>
+          <Number>96</Number>
+          <Category>New Intakes This Week</Category>
+        </StatBox>
+        <StatBox>
+          <Number>173</Number>
+          <Category>People Released This Week</Category>
+        </StatBox>
+      </StatsWrapper>
       <TableCard>
         <TableHeader>Most Utilized Services</TableHeader>
         <CardSegment padding="0">
