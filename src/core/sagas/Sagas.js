@@ -12,6 +12,7 @@ import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as ProfileSagas from '../../containers/profile/ProfileSagas';
+import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
@@ -36,7 +37,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EDMSagas.getEntityDataModelTypesWatcher),
 
     // EventSagas
-    fork(EventSagas.getProvidersWatcher),
     fork(EventSagas.recordEnrollmentEventWatcher),
 
     // IntakeSagas
@@ -53,6 +53,16 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),
     fork(ProfileSagas.loadProfileWatcher),
+
+    // ProvidersSagas
+    fork(ProvidersSagas.addNewProviderContactsWatcher),
+    fork(ProvidersSagas.createNewProviderWatcher),
+    fork(ProvidersSagas.deleteProviderStaffAndContactsWatcher),
+    fork(ProvidersSagas.editProviderWatcher),
+    fork(ProvidersSagas.editProviderContactsWatcher),
+    fork(ProvidersSagas.getContactInfoWatcher),
+    fork(ProvidersSagas.getProvidersWatcher),
+    fork(ProvidersSagas.getProviderNeighborsWatcher),
 
     // ReleasesSagas
     fork(ReleasesSagas.getJailsByJailStayEKIDWatcher),

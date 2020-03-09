@@ -42,6 +42,13 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
+const PROVIDERS :Object = {
+  CONTACT_INFO_BY_CONTACT_PERSON_EKID: 'contactInfoByContactPersonEKID',
+  PROVIDERS: 'providers',
+  PROVIDERS_LIST: 'providersList',
+  PROVIDER_NEIGHBOR_MAP: 'providerNeighborMap',
+};
+
 const PROFILE :Object = {
   CONTACT_NAME_BY_PROVIDER_EKID: 'contactNameByProviderEKID',
   PARTICIPANT: 'participant',
@@ -66,6 +73,7 @@ export {
   INTAKE,
   PARTICIPANTS,
   PROFILE,
+  PROVIDERS,
   RELEASES,
   SHARED,
 };

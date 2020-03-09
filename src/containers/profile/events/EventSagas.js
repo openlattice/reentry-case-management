@@ -7,19 +7,13 @@ import {
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
 import { Models } from 'lattice';
-import {
-  DataApiActions,
-  DataApiSagas,
-} from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
 import { isDefined } from '../../../utils/LangUtils';
 import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import {
-  GET_PROVIDERS,
   RECORD_ENROLLMENT_EVENT,
-  getProviders,
   recordEnrollmentEvent,
 } from './EventActions';
 import { submitDataGraph } from '../../../core/data/DataActions';
@@ -32,53 +26,13 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 
 const LOG = new Logger('EventSagas');
 const { FullyQualifiedName } = Models;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
-const { ENROLLMENT_STATUS, PROVIDER } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const { PARTICIPANT_NEIGHBORS } = PROFILE;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getProfileFromState = (state) => state.get(PROFILE.PROFILE, Map());
-
-/*
- *
- * EventSagas.getProviders()
- *
- */
-
-function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-
-  try {
-    yield put(getProviders.request(id));
-
-    const app = yield select(getAppFromState);
-    const providersESID :UUID = getESIDFromApp(app, PROVIDER);
-
-    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: providersESID }));
-    if (response.error) {
-      throw response.error;
-    }
-    const participant :Map = fromJS(response.data);
-
-    yield put(getProviders.success(id, participant));
-  }
-  catch (error) {
-    LOG.error(action.type, error);
-    yield put(getProviders.failure(id, error));
-  }
-  finally {
-    yield put(getProviders.finally(id));
-  }
-}
-
-function* getProvidersWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_PROVIDERS, getProvidersWorker);
-}
 
 /*
  *
@@ -143,8 +97,6 @@ function* recordEnrollmentEventWatcher() :Generator<*, *, *> {
 }
 
 export {
-  getProvidersWatcher,
-  getProvidersWorker,
   recordEnrollmentEventWatcher,
   recordEnrollmentEventWorker,
 };

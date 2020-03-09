@@ -18,9 +18,9 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import COLORS from '../../../core/style/Colors';
 import {
   RECORD_ENROLLMENT_EVENT,
-  getProviders,
   recordEnrollmentEvent,
 } from './EventActions';
+import { getProviders } from '../../providers/ProvidersActions';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { schema, uiSchema } from './schemas/RecordEventSchemas';
 import { hydrateEventSchema, prepareFormDataForProcessing } from './utils/EventUtils';
@@ -28,6 +28,7 @@ import {
   APP,
   EDM,
   EVENT,
+  PROVIDERS,
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
 
@@ -35,7 +36,7 @@ const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { NEUTRALS } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
-const { PROVIDERS } = EVENT;
+const { PROVIDERS_LIST } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const ModalCardSegment = styled(CardSegment)`
@@ -88,7 +89,7 @@ type Props = {
   onClose :() => void;
   personEKID :UUID;
   propertyTypeIdsByFqn :Map;
-  providers :List;
+  providersList :List;
   requestStates :{
     RECORD_ENROLLMENT_EVENT :RequestState;
   };
@@ -168,9 +169,9 @@ class RecordEventModal extends Component<Props, State> {
   }
 
   render() {
-    const { isVisible, providers } = this.props;
+    const { isVisible, providersList } = this.props;
     const { formData } = this.state;
-    const hydratedSchema :Object = hydrateEventSchema(schema, providers);
+    const hydratedSchema :Object = hydrateEventSchema(schema, providersList);
     return (
       <Modal
           isVisible={isVisible}
@@ -198,9 +199,10 @@ class RecordEventModal extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const event = state.get(EVENT.EVENT);
+  const providers = state.get(PROVIDERS.PROVIDERS);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
-    [PROVIDERS]: event.get(PROVIDERS),
+    [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
