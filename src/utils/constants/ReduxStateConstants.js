@@ -68,6 +68,7 @@ const RELEASES :Object = {
 
 const REPORTS :Object = {
   REPORTS: 'reports',
+  SERVICES_TABLE_DATA: 'servicesTableData',
 };
 
 export {

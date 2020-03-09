@@ -213,7 +213,7 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let response :Object = yield call(getProvidersWorker, getProviders({ fetchNeighbors: false }));
     if (response.error) throw response.error;
-    const providers :List = fromJS(response.data);
+    let providers :List = fromJS(response.data);
     const providerEKIDs :UUID[] = [];
     providers.forEach((provider :Map) => {
       providerEKIDs.push(getEKID(provider));
@@ -236,16 +236,18 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((statusList :List) => statusList.map((neighbor :Map) => getNeighborDetails(neighbor)))
       .map((statusList :List) => statusList
         .filter((status :Map) => status.getIn([STATUS, 0]) === ENROLLMENT_STATUSES[1])) // 'Enrolled'
-      .sort((statusListA :List, statusListB :List) => {
-        if (statusListA.count() > statusListB.count()) return -1;
-        if (statusListA.count() < statusListB.count()) return 1;
-        return 0;
-      })
       .map((statusList :List) => statusList.count());
+    providers = providers.sort((providerA :Map, providerB :Map) => {
+      const countA :number = enrollmentStatusesByProviderEKID.get(getEKID(providerA), 0);
+      const countB :number = enrollmentStatusesByProviderEKID.get(getEKID(providerB), 0);
+      if (countA > countB) return -1;
+      if (countA < countB) return 1;
+      return 0;
+    });
 
     const servicesTableData :Object[] = [];
     providers.forEach((provider :Map) => {
-      const { [NAME]: name, [TYPE]: types } = getEntityProperties(provider, [NAME]);
+      const { [NAME]: name, [TYPE]: types } = getEntityProperties(provider, [NAME, TYPE]);
       let providerTypes = types;
       if (isNonEmptyArray(types)) providerTypes = types.join(', ');
       const providerEKID :UUID = getEKID(provider);
