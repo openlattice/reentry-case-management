@@ -73,7 +73,7 @@ const headersByPropertyFqn :Map = Map().withMutations((map :Map) => {
   map.set(DOB, 'Date of Birth');
   map.set(DATETIME_COMPLETED, 'Enrollment Date');
   map.set(TYPE, 'Needs');
-});
+}).toImmutable();
 
 const LOG = new Logger('ReportsSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;

@@ -16,31 +16,3 @@
 declare module 'file-saver' {
   declare module.exports: any;
 }
-
-/**
- * We include stubs for each file inside this npm package in case you need to
- * require those files directly. Feel free to delete any files that aren't
- * needed.
- */
-declare module 'file-saver/dist/FileSaver' {
-  declare module.exports: any;
-}
-
-declare module 'file-saver/dist/FileSaver.min' {
-  declare module.exports: any;
-}
-
-declare module 'file-saver/src/FileSaver' {
-  declare module.exports: any;
-}
-
-// Filename aliases
-declare module 'file-saver/dist/FileSaver.js' {
-  declare module.exports: $Exports<'file-saver/dist/FileSaver'>;
-}
-declare module 'file-saver/dist/FileSaver.min.js' {
-  declare module.exports: $Exports<'file-saver/dist/FileSaver.min'>;
-}
-declare module 'file-saver/src/FileSaver.js' {
-  declare module.exports: $Exports<'file-saver/src/FileSaver'>;
-}
