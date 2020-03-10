@@ -52,12 +52,21 @@ const DownloadPeopleModal = ({
 } :Props) => {
 
   const [dateSelected, onChangeDate] = useState('');
-  const [newIntakesChecked, onChangeNewIntakes] = useState(false);
-  const [activeEnrollmentsChecked, onChangeActiveEnrollments] = useState(false);
+  const [newIntakesChecked, changeNewIntakesCheckbox] = useState(false);
+  const [activeEnrollmentsChecked, changeActiveEnrollmentsCheckbox] = useState(false);
+  const onChangeNewIntakes = () => {
+    changeNewIntakesCheckbox(!newIntakesChecked);
+  };
+  const onChangeActiveEnrollments = () => {
+    changeActiveEnrollmentsCheckbox(!activeEnrollmentsChecked);
+  };
 
   useEffect(() => {
     if (requestIsSuccess(requestStates[DOWNLOAD_PARTICIPANTS])) {
       actions.clearDownloadRequestState();
+      onChangeDate('');
+      changeNewIntakesCheckbox(false);
+      changeActiveEnrollmentsCheckbox(false);
       onClose();
     }
   }, [actions, onClose, requestStates]);
