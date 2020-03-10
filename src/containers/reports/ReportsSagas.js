@@ -168,12 +168,13 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
             person,
             [DOB, FIRST_NAME, LAST_NAME]
           );
-
+          let providerTypes = types;
+          if (isNonEmptyArray(types)) providerTypes = types.join(', ');
           const csvRow :OrderedMap = OrderedMap().withMutations((map :OrderedMap) => {
             map.set(headersByPropertyFqn.get(LAST_NAME), lastName);
             map.set(headersByPropertyFqn.get(FIRST_NAME), firstName);
             map.set(headersByPropertyFqn.get(DOB), DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT));
-            map.set(headersByPropertyFqn.get(TYPE), types.join(', '));
+            map.set(headersByPropertyFqn.get(TYPE), providerTypes);
             map.set(
               headersByPropertyFqn.get(DATETIME_COMPLETED),
               DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT)
