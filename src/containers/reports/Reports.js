@@ -1,7 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -101,7 +101,7 @@ type Props = {
     getReportsData :RequestSequence;
   };
   entitySetIdsByFqn :Map;
-  numberOfIntakesPerMonth :Object[];
+  numberOfIntakesPerMonth :List;
   numberOfIntakesThisMonth :number;
   numberOfReleasesThisWeek :number;
   requestStates :{

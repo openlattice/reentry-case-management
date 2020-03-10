@@ -250,7 +250,7 @@ function* getIntakesPerYearWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) throw response.error;
-    let numberOfIntakesPerMonth :Object[] = [
+    let numberOfIntakesPerMonth :List = fromJS([
       { y: 0, x: 'Jan' },
       { y: 0, x: 'Feb' },
       { y: 0, x: 'Mar' },
@@ -263,7 +263,7 @@ function* getIntakesPerYearWorker(action :SequenceAction) :Generator<*, *, *> {
       { y: 0, x: 'Oct' },
       { y: 0, x: 'Nov' },
       { y: 0, x: 'Dec' }
-    ];
+    ]);
     response.data.hits.forEach((assessment :Object) => {
       const dateTimeCompleted :string = getIn(assessment, [DATETIME_COMPLETED, 0]);
       const { month } = DateTime.fromISO(dateTimeCompleted); // indexed 1-12
@@ -337,7 +337,7 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     if (jailStaysResponse.error) throw jailStaysResponse.error;
 
     const currentMonthIndexedFrom1 :number = now.month;
-    const numberOfIntakesThisMonth :number = intakesPerYear.data[currentMonthIndexedFrom1 - 1].y;
+    const numberOfIntakesThisMonth :number = getIn(intakesPerYear.data, [currentMonthIndexedFrom1 - 1, 'y'], 0);
     const numberOfReleasesThisWeek :number = jailStaysResponse.data.numHits;
     let providers :List = fromJS(providersResponse.data);
     const providerEKIDs :UUID[] = [];

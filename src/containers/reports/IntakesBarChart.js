@@ -1,7 +1,7 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Card,
@@ -51,7 +51,7 @@ type Props = {
   actions :{
     getIntakesPerYear :RequestSequence;
   };
-  numberOfIntakesPerMonth :Object[];
+  numberOfIntakesPerMonth :List;
   requestStates :{
     GET_INTAKES_PER_YEAR :RequestState;
   };
@@ -107,7 +107,7 @@ const IntakesBarChart = ({ actions, numberOfIntakesPerMonth, requestStates } :Pr
                   width={854}>
                 <XAxis />
                 <YAxis />
-                <VerticalBarSeries barWidth={0.55} color={COLORS.BLUE_01} data={numberOfIntakesPerMonth} />
+                <VerticalBarSeries barWidth={0.55} color={COLORS.BLUE_01} data={numberOfIntakesPerMonth.toJS()} />
               </XYPlot>
             )
         }
