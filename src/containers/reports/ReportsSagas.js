@@ -12,7 +12,9 @@ import {
   List,
   Map,
   OrderedMap,
-  fromJS
+  fromJS,
+  getIn,
+  setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -35,8 +37,10 @@ import { getProviders } from '../providers/ProvidersActions';
 import { getProvidersWorker } from '../providers/ProvidersSagas';
 import {
   DOWNLOAD_PARTICIPANTS,
+  GET_INTAKES_PER_YEAR,
   GET_REPORTS_DATA,
   downloadParticipants,
+  getIntakesPerYear,
   getReportsData,
 } from './ReportsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
@@ -207,6 +211,91 @@ function* downloadParticipantsWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_PARTICIPANTS, downloadParticipantsWorker);
 }
 
+/*
+ *
+ * ReportsActions.getIntakesPerYear()
+ *
+ */
+
+function* getIntakesPerYearWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const sagaResponse = {};
+
+  try {
+    yield put(getIntakesPerYear.request(id));
+    const { dateTimeObj } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const dateTimeCompletedPTID :UUID = getPTIDFromEDM(edm, DATETIME_COMPLETED);
+    const searchOptions = {
+      entitySetIds: [needsAssessmentESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: [{
+        min: 1,
+        constraints: [{
+          searchTerm: getUTCDateRangeSearchString(
+            dateTimeCompletedPTID,
+            'year',
+            dateTimeObj,
+            dateTimeObj
+          ),
+          fuzzy: false
+        }]
+      }]
+    };
+
+    const response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    if (response.error) throw response.error;
+    let numberOfIntakesPerMonth :Object[] = [
+      { y: 0, x: 'Jan' },
+      { y: 0, x: 'Feb' },
+      { y: 0, x: 'Mar' },
+      { y: 0, x: 'Apr' },
+      { y: 0, x: 'May' },
+      { y: 0, x: 'Jun' },
+      { y: 0, x: 'July' },
+      { y: 0, x: 'Aug' },
+      { y: 0, x: 'Sept' },
+      { y: 0, x: 'Oct' },
+      { y: 0, x: 'Nov' },
+      { y: 0, x: 'Dec' }
+    ];
+    response.data.hits.forEach((assessment :Object) => {
+      const dateTimeCompleted :string = getIn(assessment, [DATETIME_COMPLETED, 0]);
+      const { month } = DateTime.fromISO(dateTimeCompleted); // indexed 1-12
+      const currentCount :number = getIn(numberOfIntakesPerMonth, [month - 1, 'y']);
+      numberOfIntakesPerMonth = setIn(numberOfIntakesPerMonth, [month - 1, 'y'], currentCount + 1);
+    });
+
+    sagaResponse.data = numberOfIntakesPerMonth;
+    yield put(getIntakesPerYear.success(id, numberOfIntakesPerMonth));
+  }
+  catch (error) {
+    sagaResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(getIntakesPerYear.failure(id, error));
+  }
+  finally {
+    yield put(getIntakesPerYear.finally(id));
+  }
+  return sagaResponse;
+}
+
+function* getIntakesPerYearWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INTAKES_PER_YEAR, getIntakesPerYearWorker);
+}
+
+/*
+ *
+ * ReportsActions.getReportsData()
+ *
+ */
+
 function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
@@ -216,28 +305,10 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
-    const dateTimeCompletedPTID :UUID = getPTIDFromEDM(edm, DATETIME_COMPLETED);
-    const now = DateTime.local();
-    const needsSearchOptions = {
-      entitySetIds: [needsAssessmentESID],
-      start: 0,
-      maxHits: 10000,
-      constraints: [{
-        min: 1,
-        constraints: [{
-          searchTerm: getUTCDateRangeSearchString(
-            dateTimeCompletedPTID,
-            'month',
-            now,
-            now
-          ),
-          fuzzy: false
-        }]
-      }]
-    };
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
     const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const now = DateTime.local();
+
     const releasesSearchOptions = {
       entitySetIds: [jailStaysESID],
       start: 0,
@@ -256,16 +327,17 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       }]
     };
 
-    const [providersResponse, needsAssessmentResponse, jailStaysResponse] = yield all([
+    const [providersResponse, intakesPerYear, jailStaysResponse] = yield all([
       call(getProvidersWorker, getProviders({ fetchNeighbors: false })),
-      call(executeSearchWorker, executeSearch({ searchOptions: needsSearchOptions })),
-      call(executeSearchWorker, executeSearch({ searchOptions: releasesSearchOptions }))
+      call(getIntakesPerYearWorker, getIntakesPerYear({ dateTimeObj: now })),
+      call(executeSearchWorker, executeSearch({ searchOptions: releasesSearchOptions })),
     ]);
     if (providersResponse.error) throw providersResponse.error;
-    if (needsAssessmentResponse.error) throw needsAssessmentResponse.error;
+    if (intakesPerYear.error) throw intakesPerYear.error;
     if (jailStaysResponse.error) throw jailStaysResponse.error;
 
-    const numberOfIntakesThisMonth :number = needsAssessmentResponse.data.numHits;
+    const currentMonthIndexedFrom1 :number = now.month;
+    const numberOfIntakesThisMonth :number = intakesPerYear.data[currentMonthIndexedFrom1 - 1].y;
     const numberOfReleasesThisWeek :number = jailStaysResponse.data.numHits;
     let providers :List = fromJS(providersResponse.data);
     const providerEKIDs :UUID[] = [];
@@ -330,6 +402,8 @@ function* getReportsDataWatcher() :Generator<*, *, *> {
 export {
   downloadParticipantsWatcher,
   downloadParticipantsWorker,
+  getIntakesPerYearWatcher,
+  getIntakesPerYearWorker,
   getReportsDataWatcher,
   getReportsDataWorker,
 };

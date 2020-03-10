@@ -74,6 +74,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ReportsSagas
     fork(ReportsSagas.downloadParticipantsWatcher),
+    fork(ReportsSagas.getIntakesPerYearWatcher),
     fork(ReportsSagas.getReportsDataWatcher),
 
     // RoutingSagas

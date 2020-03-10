@@ -67,6 +67,7 @@ const RELEASES :Object = {
 };
 
 const REPORTS :Object = {
+  NUMBER_OF_INTAKES_PER_MONTH: 'numberOfIntakesPerMonth',
   NUMBER_OF_INTAKES_THIS_MONTH: 'numberOfIntakesThisMonth',
   NUMBER_OF_RELEASES_THIS_WEEK: 'numberOfReleasesThisWeek',
   REPORTS: 'reports',
