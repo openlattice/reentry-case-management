@@ -37,10 +37,12 @@ import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { getEKID } from '../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../utils/Utils';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS, PURPLES } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -86,8 +88,12 @@ const HeaderWrapper = styled(CardInnerWrapper)`
 
 const ButtonsWrapper = styled.div`
   display: grid;
-  grid-template-columns: 153px;
+  grid-template-columns: 153px 153px;
   grid-gap: 0 20px;
+`;
+
+const GrayButton = styled(Button)`
+  background-color: ${NEUTRALS[6]};
 `;
 
 const Header = styled(NavLink)`
@@ -154,6 +160,7 @@ const GrayBar = styled(CardSegment)`
 
 type Props = {
   actions :{
+    goToRoute :GoToRoute;
     loadProfile :RequestSequence;
   };
   contactNameByProviderEKID :Map;
@@ -198,6 +205,16 @@ class ParticipantProfile extends Component<Props, State> {
     this.setState({ eventModalIsOpen: false });
   }
 
+  goToTaskManager = () => {
+    const {
+      actions,
+      match: {
+        params: { participantId }
+      }
+    } = this.props;
+    if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', participantId));
+  }
+
   render() {
     const {
       contactNameByProviderEKID,
@@ -239,6 +256,7 @@ class ParticipantProfile extends Component<Props, State> {
             </Breadcrumbs>
           </CardInnerWrapper>
           <ButtonsWrapper>
+            <GrayButton onClick={this.goToTaskManager}>Manage Tasks</GrayButton>
             <Button mode="primary" onClick={this.openEventModal}>Record Event</Button>
           </ButtonsWrapper>
         </HeaderWrapper>
@@ -333,6 +351,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    goToRoute,
     loadProfile,
   }, dispatch)
 });
