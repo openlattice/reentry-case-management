@@ -7,10 +7,17 @@ import {
   Card,
   CardHeader,
   CardSegment,
+  CardStack,
   Colors,
   Skeleton,
   Table
 } from 'lattice-ui-kit';
+import {
+  VerticalBarSeries,
+  XYPlot,
+  XAxis,
+  YAxis,
+} from 'react-vis';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -122,6 +129,20 @@ const Reports = ({
   }, [actions, entitySetIdsByFqn]);
   const tableHeaders :Object[] = generateTableHeaders(TABLE_HEADERS);
   const tableIsLoading :boolean = requestIsPending(requestStates[GET_REPORTS_DATA]);
+  const data = [
+    { y: 100, x: 'Jan' },
+    { y: 112, x: 'Feb' },
+    { y: 230, x: 'Mar' },
+    { y: 268, x: 'Apr' },
+    { y: 300, x: 'May' },
+    { y: 310, x: 'Jun' },
+    { y: 315, x: 'July' },
+    { y: 340, x: 'Aug' },
+    { y: 388, x: 'Sept' },
+    { y: 100, x: 'Oct' },
+    { y: 142, x: 'Nov' },
+    { y: 147, x: 'Dec' }
+  ];
   return (
     <>
       <HeaderRow>
@@ -158,15 +179,37 @@ const Reports = ({
           }
         </StatBox>
       </StatsWrapper>
-      <TableCard>
-        <TableHeader>Most Utilized Services</TableHeader>
-        <CardSegment padding="0">
-          <Table
-              data={servicesTableData}
-              headers={tableHeaders}
-              isLoading={tableIsLoading} />
-        </CardSegment>
-      </TableCard>
+      <CardStack>
+        <Card>
+          <TableHeader>Number of Intakes per Month</TableHeader>
+          <CardSegment padding="30px" vertical>
+            <XYPlot
+                xType="ordinal"
+                height={190}
+                margin={{
+                  left: 100,
+                  right: 10,
+                  top: 10,
+                  bottom: 40
+                }}
+                style={{ fontFamily: 'Inter', fontSize: '11px' }}
+                width={854}>
+              <XAxis />
+              <YAxis />
+              <VerticalBarSeries barWidth={0.55} color={COLORS.BLUE_01} data={data} />
+            </XYPlot>
+          </CardSegment>
+        </Card>
+        <TableCard>
+          <TableHeader>Most Utilized Services</TableHeader>
+          <CardSegment padding="0">
+            <Table
+                data={servicesTableData}
+                headers={tableHeaders}
+                isLoading={tableIsLoading} />
+          </CardSegment>
+        </TableCard>
+      </CardStack>
       <DownloadPeopleModal
           isVisible={downloadModalVisible}
           onClose={() => setModalVisibility(false)} />
