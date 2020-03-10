@@ -13,7 +13,7 @@ import {
 import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { SERVICES_TABLE_DATA } = REPORTS;
+const { NUMBER_OF_INTAKES_THIS_MONTH, NUMBER_OF_RELEASES_THIS_WEEK, SERVICES_TABLE_DATA } = REPORTS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -21,6 +21,7 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [NUMBER_OF_INTAKES_THIS_MONTH]: 0,
   [SERVICES_TABLE_DATA]: [],
 });
 
@@ -52,8 +53,10 @@ export default function reportsReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
-          const { servicesTableData } = value;
+          const { numberOfIntakesThisMonth, numberOfReleasesThisWeek, servicesTableData } = value;
           return state
+            .set(NUMBER_OF_INTAKES_THIS_MONTH, numberOfIntakesThisMonth)
+            .set(NUMBER_OF_RELEASES_THIS_WEEK, numberOfReleasesThisWeek)
             .set(SERVICES_TABLE_DATA, servicesTableData)
             .setIn([ACTIONS, GET_REPORTS_DATA, REQUEST_STATE], RequestStates.SUCCESS);
         },

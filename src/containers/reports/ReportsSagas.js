@@ -2,6 +2,7 @@
 import Papa from 'papaparse';
 import FS from 'file-saver';
 import {
+  all,
   call,
   put,
   select,
@@ -46,6 +47,7 @@ import { TABLE_HEADERS } from './ReportsConstants';
 
 const {
   ENROLLMENT_STATUS,
+  JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PEOPLE,
   PROVIDER,
@@ -56,6 +58,7 @@ const {
   FIRST_NAME,
   LAST_NAME,
   NAME,
+  PROJECTED_RELEASE_DATETIME,
   STATUS,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
@@ -211,15 +214,64 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getReportsData.request(id));
 
-    let response :Object = yield call(getProvidersWorker, getProviders({ fetchNeighbors: false }));
-    if (response.error) throw response.error;
-    let providers :List = fromJS(response.data);
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const dateTimeCompletedPTID :UUID = getPTIDFromEDM(edm, DATETIME_COMPLETED);
+    const now = DateTime.local();
+    const needsSearchOptions = {
+      entitySetIds: [needsAssessmentESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: [{
+        min: 1,
+        constraints: [{
+          searchTerm: getUTCDateRangeSearchString(
+            dateTimeCompletedPTID,
+            'month',
+            now,
+            now
+          ),
+          fuzzy: false
+        }]
+      }]
+    };
+    const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
+    const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const releasesSearchOptions = {
+      entitySetIds: [jailStaysESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: [{
+        min: 1,
+        constraints: [{
+          searchTerm: getUTCDateRangeSearchString(
+            projectedReleaseDateTimePTID,
+            'week',
+            now,
+            now
+          ),
+          fuzzy: false
+        }]
+      }]
+    };
+
+    const [providersResponse, needsAssessmentResponse, jailStaysResponse] = yield all([
+      call(getProvidersWorker, getProviders({ fetchNeighbors: false })),
+      call(executeSearchWorker, executeSearch({ searchOptions: needsSearchOptions })),
+      call(executeSearchWorker, executeSearch({ searchOptions: releasesSearchOptions }))
+    ]);
+    if (providersResponse.error) throw providersResponse.error;
+    if (needsAssessmentResponse.error) throw needsAssessmentResponse.error;
+    if (jailStaysResponse.error) throw jailStaysResponse.error;
+
+    const numberOfIntakesThisMonth :number = needsAssessmentResponse.data.numHits;
+    const numberOfReleasesThisWeek :number = jailStaysResponse.data.numHits;
+    let providers :List = fromJS(providersResponse.data);
     const providerEKIDs :UUID[] = [];
     providers.forEach((provider :Map) => {
       providerEKIDs.push(getEKID(provider));
     });
-
-    const app = yield select(getAppFromState);
     const providersESID :UUID = getESIDFromApp(app, PROVIDER);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const searchFilter :Object = {
@@ -227,12 +279,12 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       destinationEntitySetIds: [enrollmentStatusESID],
       sourceEntitySetIds: [],
     };
-    response = yield call(
+    const enrollmentResponse :Object = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: providersESID, filter: searchFilter })
     );
-    if (response.error) throw response.error;
-    const enrollmentStatusesByProviderEKID :Map = fromJS(response.data)
+    if (enrollmentResponse.error) throw enrollmentResponse.error;
+    const enrollmentStatusesByProviderEKID :Map = fromJS(enrollmentResponse.data)
       .map((statusList :List) => statusList.map((neighbor :Map) => getNeighborDetails(neighbor)))
       .map((statusList :List) => statusList
         .filter((status :Map) => status.getIn([STATUS, 0]) === ENROLLMENT_STATUSES[1])) // 'Enrolled'
@@ -259,7 +311,7 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     });
 
-    yield put(getReportsData.success(id, { servicesTableData }));
+    yield put(getReportsData.success(id, { numberOfIntakesThisMonth, numberOfReleasesThisWeek, servicesTableData }));
   }
   catch (error) {
     LOG.error(action.type, error);

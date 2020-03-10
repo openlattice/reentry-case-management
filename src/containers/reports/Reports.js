@@ -25,7 +25,7 @@ import { APP, REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants'
 const { NEUTRALS, WHITE } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { SERVICES_TABLE_DATA } = REPORTS;
+const { NUMBER_OF_INTAKES_THIS_MONTH, NUMBER_OF_RELEASES_THIS_WEEK, SERVICES_TABLE_DATA } = REPORTS;
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -92,6 +92,8 @@ type Props = {
     getReportsData :RequestSequence;
   };
   entitySetIdsByFqn :Map;
+  numberOfIntakesThisMonth :number;
+  numberOfReleasesThisWeek :number;
   requestStates :{
     GET_REPORTS_DATA :RequestState;
   };
@@ -101,6 +103,8 @@ type Props = {
 const Reports = ({
   actions,
   entitySetIdsByFqn,
+  numberOfIntakesThisMonth,
+  numberOfReleasesThisWeek,
   requestStates,
   servicesTableData
 } :Props) => {
@@ -118,11 +122,11 @@ const Reports = ({
       </HeaderRow>
       <StatsWrapper>
         <StatBox>
-          <Number>96</Number>
+          <Number>{ numberOfIntakesThisMonth }</Number>
           <Category>New Intakes This Week</Category>
         </StatBox>
         <StatBox>
-          <Number>173</Number>
+          <Number>{ numberOfReleasesThisWeek }</Number>
           <Category>People Released This Week</Category>
         </StatBox>
       </StatsWrapper>
@@ -146,6 +150,8 @@ const mapStateToProps = (state :Map) => {
   const reports :Map = state.get(REPORTS.REPORTS);
   const selectedOrgId :UUID = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
+    [NUMBER_OF_INTAKES_THIS_MONTH]: reports.get(NUMBER_OF_INTAKES_THIS_MONTH),
+    [NUMBER_OF_RELEASES_THIS_WEEK]: reports.get(NUMBER_OF_RELEASES_THIS_WEEK),
     [SERVICES_TABLE_DATA]: reports.get(SERVICES_TABLE_DATA),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     requestStates: {
