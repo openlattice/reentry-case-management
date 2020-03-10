@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardSegment,
   Colors,
+  Skeleton,
   Table
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -87,6 +88,13 @@ const TableHeader = styled(CardHeader)`
   font-weight: 600;
 `;
 
+const StatsBoxSkeleton = () => (
+  <>
+    <Skeleton height={36} width="20%" />
+    <Skeleton height={24} width="80%" />
+  </>
+);
+
 type Props = {
   actions :{
     getReportsData :RequestSequence;
@@ -122,12 +130,32 @@ const Reports = ({
       </HeaderRow>
       <StatsWrapper>
         <StatBox>
-          <Number>{ numberOfIntakesThisMonth }</Number>
-          <Category>New Intakes This Week</Category>
+          {
+            tableIsLoading
+              ? (
+                <StatsBoxSkeleton />
+              )
+              : (
+                <>
+                  <Number>{ numberOfIntakesThisMonth }</Number>
+                  <Category>New Intakes This Month</Category>
+                </>
+              )
+          }
         </StatBox>
         <StatBox>
-          <Number>{ numberOfReleasesThisWeek }</Number>
-          <Category>People Released This Week</Category>
+          {
+            tableIsLoading
+              ? (
+                <StatsBoxSkeleton />
+              )
+              : (
+                <>
+                  <Number>{ numberOfReleasesThisWeek }</Number>
+                  <Category>People Released This Week</Category>
+                </>
+              )
+          }
         </StatBox>
       </StatsWrapper>
       <TableCard>
