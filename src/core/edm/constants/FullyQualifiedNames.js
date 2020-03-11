@@ -67,6 +67,7 @@ const APP_TYPE_FQNS :Object = {
 };
 
 const PROPERTY_TYPE_FQNS = {
+  CATEGORY: new FullyQualifiedName('ol.category'),
   CITY: new FullyQualifiedName('location.city'),
   COUNTRY: new FullyQualifiedName('ol.country'),
   COUNTY: new FullyQualifiedName('ol.county'),
@@ -80,6 +81,7 @@ const PROPERTY_TYPE_FQNS = {
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
   GENDER: new FullyQualifiedName('person.gender'),
+  GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
   HIGHEST_EDUCATION_LEVEL: new FullyQualifiedName('person.highesteducation'),
   LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
   MARITAL_STATUS: new FullyQualifiedName('person.maritalstatus'),
