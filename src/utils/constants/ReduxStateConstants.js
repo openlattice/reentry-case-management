@@ -42,6 +42,10 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
+const PARTICIPANT_TASKS :Object = {
+  PARTICIPANT_TASKS: 'participantTasks',
+};
+
 const PROVIDERS :Object = {
   CONTACT_INFO_BY_CONTACT_PERSON_EKID: 'contactInfoByContactPersonEKID',
   PROVIDERS: 'providers',
@@ -72,6 +76,7 @@ export {
   EVENT,
   INTAKE,
   PARTICIPANTS,
+  PARTICIPANT_TASKS,
   PROFILE,
   PROVIDERS,
   RELEASES,
