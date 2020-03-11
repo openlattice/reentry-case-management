@@ -43,6 +43,7 @@ const PARTICIPANTS :Object = {
 };
 
 const PARTICIPANT_TASKS :Object = {
+  FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
   PARTICIPANT_TASKS: 'participantTasks',
 };
 
