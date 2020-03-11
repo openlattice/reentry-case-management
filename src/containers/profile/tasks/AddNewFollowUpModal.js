@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
   List,
@@ -18,16 +18,18 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
+  getNewFollowUpAssociations,
+  hydrateNewFollowUpForm,
+  preprocessFormData,
+  removeEKIDsFromFormData,
+} from './utils/AddNewFollowUpUtils';
+import {
   APP,
   EDM,
-  PARTICIPANT_TASKS,
-  SHARED
+  PARTICIPANT_FOLLOW_UPS,
+  PROVIDERS,
+  SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
-
-const FixedWidthModal = styled.div`
-  padding-bottom: 30px;
-  width: 576px;
-`;
 
 const {
   getEntityAddressKey,
@@ -38,6 +40,13 @@ const {
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
+const { PROVIDERS_LIST } = PROVIDERS;
+const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
+
+const FixedWidthModal = styled.div`
+  padding-bottom: 30px;
+  width: 576px;
+`;
 
 type Props = {
   actions :{
@@ -45,8 +54,12 @@ type Props = {
   entitySetIdsByFqn :Map;
   isVisible :boolean;
   onClose :() => void;
+  personEKID :UUID;
   propertyTypeIdsByFqn :Map;
+  providersList :List;
+  reentryStaffMembers :List;
   requestStates :{
+    CREATE_NEW_FOLLOW_UP :RequestState;
   };
 };
 
@@ -55,10 +68,48 @@ const AddNewFollowUpModal = ({
   entitySetIdsByFqn,
   isVisible,
   onClose,
+  personEKID,
   propertyTypeIdsByFqn,
-  requestStates
+  providersList,
+  reentryStaffMembers,
+  requestStates,
 } :Props) => {
 
+  const [formData, updateFormData] = useState({});
+  const onChange = ({ formData: newFormData } :Object) => {
+    updateFormData(newFormData);
+  };
+  const closeModal = useCallback(() => {
+    updateFormData({});
+    // actions.clearEditRequestStates();
+    onClose();
+  }, [onClose]);
+  // useEffect(() => {
+  //   if (requestIsSuccess(requestStates[CREATE_NEW_FOLLOW_UP])) {
+  //     closeModal();
+  //   }
+  // }, [closeModal, requestStates]);
+
+  const onSubmit = () => {
+    if (Object.keys(formData).length) {
+      const preprocessedFormData :Object = preprocessFormData(formData);
+      const associations :Array<Array<*>> = getNewFollowUpAssociations(preprocessedFormData, personEKID);
+      const updatedFormData :Object = removeEKIDsFromFormData(preprocessedFormData);
+      const entityData :Object = processEntityData(updatedFormData, entitySetIdsByFqn, propertyTypeIdsByFqn);
+      const associationEntityData :Object = processAssociationEntityData(
+        fromJS(associations),
+        entitySetIdsByFqn,
+        propertyTypeIdsByFqn
+      );
+      console.log('preprocessedFormData: ', preprocessedFormData);
+      console.log('associations: ', associations);
+      console.log('updatedFormData: ', updatedFormData);
+      console.log('entityData: ', entityData);
+      console.log('associationEntityData: ', associationEntityData);
+      // actions.createNewFollowUp({ associationEntityData, entityData });
+    }
+  };
+  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList);
   const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
   const renderFooter = () => {
     const isSubmitting :boolean = false;
@@ -66,8 +117,8 @@ const AddNewFollowUpModal = ({
       <ModalFooter
           isPendingPrimary={isSubmitting}
           isPendingSecondary={false}
-          onClickPrimary={() => {}}
-          onClickSecondary={() => {}}
+          onClickPrimary={onSubmit}
+          onClickSecondary={closeModal}
           shouldStretchButtons
           textPrimary="Save"
           textSecondary="Discard" />
@@ -76,9 +127,9 @@ const AddNewFollowUpModal = ({
   return (
     <Modal
         isVisible={isVisible}
-        onClickPrimary={() => {}}
-        onClickSecondary={() => {}}
-        onClose={onClose}
+        onClickPrimary={onSubmit}
+        onClickSecondary={closeModal}
+        onClose={closeModal}
         shouldStretchButtons
         textPrimary="Save"
         textSecondary="Discard"
@@ -87,9 +138,12 @@ const AddNewFollowUpModal = ({
         withHeader={renderHeader}>
       <FixedWidthModal>
         <Form
+            formData={formData}
             hideSubmit
             noPadding
-            schema={schema}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            schema={hydratedSchema}
             uiSchema={uiSchema} />
       </FixedWidthModal>
     </Modal>
@@ -97,9 +151,12 @@ const AddNewFollowUpModal = ({
 };
 
 const mapStateToProps = (state :Map) => {
-  const participantTasks :Map = state.get(PARTICIPANT_TASKS.PARTICIPANT_TASKS);
+  const providers :Map = state.get(PROVIDERS.PROVIDERS);
+  const participantFollowUps :Map = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
+    [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
+    [REENTRY_STAFF_MEMBERS]: participantFollowUps.get(REENTRY_STAFF_MEMBERS),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
