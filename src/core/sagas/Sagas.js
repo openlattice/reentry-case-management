@@ -10,7 +10,7 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
-import * as ParticipantTasksSagas from '../../containers/profile/tasks/TasksSagas';
+import * as ParticipantFollowUpsSagas from '../../containers/profile/tasks/FollowUpsSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as ProfileSagas from '../../containers/profile/ProfileSagas';
 import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
@@ -44,9 +44,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(IntakeSagas.getIncarcerationFacilitiesWatcher),
     fork(IntakeSagas.submitIntakeFormWatcher),
 
-    // ParticipantTasksSagas
-    fork(ParticipantTasksSagas.getFollowUpNeighborsWatcher),
-    fork(ParticipantTasksSagas.loadTasksWatcher),
+    // ParticipantFollowUpsSagas
+    fork(ParticipantFollowUpsSagas.getFollowUpNeighborsWatcher),
+    fork(ParticipantFollowUpsSagas.loadTasksWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),

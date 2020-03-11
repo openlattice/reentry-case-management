@@ -32,7 +32,7 @@ import {
   LOAD_TASKS,
   getFollowUpNeighbors,
   loadTasks,
-} from './TasksActions';
+} from './FollowUpsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { APP } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';

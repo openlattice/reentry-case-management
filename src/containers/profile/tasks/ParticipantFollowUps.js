@@ -16,13 +16,14 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import AddNewFollowUpModal from './AddNewFollowUpModal';
 import * as Routes from '../../../core/router/Routes';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
-import { formatTableData } from './utils/ParticipantTasksUtils';
+import { formatTableData } from './utils/ParticipantFollowUpsUtils';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { LOAD_TASKS, loadTasks } from './TasksActions';
+import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
 import { PARTICIPANT_TASKS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
@@ -58,7 +59,19 @@ type Props = {
   };
 };
 
-class ParticipantTasks extends Component<Props> {
+type State = {
+  modalIsVisible :boolean;
+};
+
+class ParticipantTasks extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      modalIsVisible: false,
+    };
+  }
 
   componentDidMount() {
     const {
@@ -68,6 +81,14 @@ class ParticipantTasks extends Component<Props> {
       }
     } = this.props;
     if (participantId) actions.loadTasks({ participantEKID: participantId });
+  }
+
+  openModal = () => {
+    this.setState({ modalIsVisible: true });
+  }
+
+  closeModal = () => {
+    this.setState({ modalIsVisible: false });
   }
 
   goToProfile = () => {
@@ -89,6 +110,7 @@ class ParticipantTasks extends Component<Props> {
       participantNeighbors,
       requestStates,
     } = this.props;
+    const { modalIsVisible } = this.state;
 
     if (requestIsPending(requestStates[LOAD_TASKS])) {
       return (
@@ -113,7 +135,7 @@ class ParticipantTasks extends Component<Props> {
         </Breadcrumbs>
         <HeaderRow>
           <PageHeader>{ header }</PageHeader>
-          <Button mode="primary">New Task</Button>
+          <Button mode="primary" onClick={this.openModal}>New Task</Button>
         </HeaderRow>
         <Card>
           <CardSegment padding="0">
@@ -122,6 +144,7 @@ class ParticipantTasks extends Component<Props> {
                 headers={[]} />
           </CardSegment>
         </Card>
+        <AddNewFollowUpModal isVisible={modalIsVisible} onClose={this.closeModal} />
       </>
     );
   }

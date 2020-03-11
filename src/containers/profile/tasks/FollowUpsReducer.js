@@ -8,7 +8,7 @@ import {
   LOAD_TASKS,
   getFollowUpNeighbors,
   loadTasks,
-} from './TasksActions';
+} from './FollowUpsActions';
 import { PARTICIPANT_TASKS, SHARED } from '../../../utils/constants/ReduxStateConstants';
 
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_TASKS;
