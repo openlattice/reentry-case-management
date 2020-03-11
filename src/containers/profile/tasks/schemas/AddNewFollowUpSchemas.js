@@ -2,6 +2,7 @@
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
+import { FOLLOW_UPS_CATEGORIES, FOLLOW_UPS_TASK_TYPES } from '../FollowUpsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
@@ -16,6 +17,7 @@ const {
   GENERAL_DATETIME,
   TITLE
 } = PROPERTY_TYPE_FQNS;
+const CATEGORIES :any = Object.values(FOLLOW_UPS_CATEGORIES);
 
 const schema :Object = {
   type: 'object',
@@ -40,12 +42,12 @@ const schema :Object = {
         [getEntityAddressKey(0, FOLLOW_UPS, CATEGORY)]: {
           type: 'string',
           title: 'Type',
-          enum: ['Task', 'Meeting'],
-          enumNames: ['Task', 'Meeting'],
+          enum: CATEGORIES,
         },
         [getEntityAddressKey(0, FOLLOW_UPS, TITLE)]: {
           type: 'string',
-          title: 'Title',
+          title: 'Action item',
+          enum: FOLLOW_UPS_TASK_TYPES,
         },
         [getEntityAddressKey(0, FOLLOW_UPS, GENERAL_DATETIME)]: {
           type: 'string',
@@ -63,7 +65,11 @@ const schema :Object = {
           enumNames: []
         },
       },
-      required: [getEntityAddressKey(0, FOLLOW_UPS, CATEGORY), getEntityAddressKey(0, FOLLOW_UPS, GENERAL_DATETIME)]
+      required: [
+        getEntityAddressKey(1, REENTRY_STAFF, ENTITY_KEY_ID),
+        getEntityAddressKey(0, FOLLOW_UPS, CATEGORY),
+        getEntityAddressKey(0, FOLLOW_UPS, GENERAL_DATETIME)
+      ]
     }
   }
 };
@@ -79,7 +85,7 @@ const uiSchema :Object = {
     },
     [getEntityAddressKey(0, FOLLOW_UPS, CATEGORY)]: {
       classNames: 'column-span-12',
-      'ui:widget': 'radio',
+      'ui:widget': 'RadioWidget',
       'ui:options': {
         row: true
       }

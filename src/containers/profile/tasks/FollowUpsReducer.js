@@ -1,17 +1,19 @@
 // @flow
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
+  getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
 } from './FollowUpsActions';
-import { PARTICIPANT_TASKS, SHARED } from '../../../utils/constants/ReduxStateConstants';
+import { PARTICIPANT_FOLLOW_UPS, SHARED } from '../../../utils/constants/ReduxStateConstants';
 
-const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_TASKS;
+const { FOLLOW_UP_NEIGHBOR_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const INITIAL_STATE :Map = fromJS({
@@ -21,11 +23,30 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [FOLLOW_UP_NEIGHBOR_MAP]: Map(),
+  [REENTRY_STAFF_MEMBERS]: List(),
 });
 
 export default function participantTasksReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case getEntitiesForNewFollowUpForm.case(action.type): {
+      return getEntitiesForNewFollowUpForm.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, action.id], action)
+          .setIn([ACTIONS, GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(REENTRY_STAFF_MEMBERS, value)
+            .setIn([ACTIONS, GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, action.id]),
+      });
+    }
 
     case getFollowUpNeighbors.case(action.type): {
       return getFollowUpNeighbors.reducer(state, action, {
