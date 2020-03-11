@@ -1,12 +1,15 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Breadcrumbs,
   Button,
+  Card,
+  CardSegment,
   Colors,
-  Spinner
+  Spinner,
+  Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -15,22 +18,25 @@ import type { Match } from 'react-router';
 
 import * as Routes from '../../../core/router/Routes';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
+import { formatTableData } from './utils/ParticipantTasksUtils';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { LOAD_TASKS, loadTasks } from './TasksActions';
 import { PARTICIPANT_TASKS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { FOLLOW_UPS } = APP_TYPE_FQNS;
 
 const HeaderRow = styled.div`
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-top: 36px;
+  margin: 36px 0 24px;
 `;
 
 const PageHeader = styled.div`
@@ -80,6 +86,7 @@ class ParticipantTasks extends Component<Props> {
         params: { participantId }
       },
       participant,
+      participantNeighbors,
       requestStates,
     } = this.props;
 
@@ -91,6 +98,8 @@ class ParticipantTasks extends Component<Props> {
 
     const participantName :string = getPersonFullName(participant);
     const header :string = `${participantName}'s Tasks`;
+    const tasks :List = participantNeighbors.get(FOLLOW_UPS, List());
+    const tasksTableData :Object[] = formatTableData(tasks, participantName);
     return (
       <>
         <Breadcrumbs>
@@ -106,6 +115,13 @@ class ParticipantTasks extends Component<Props> {
           <PageHeader>{ header }</PageHeader>
           <Button mode="primary">New Task</Button>
         </HeaderRow>
+        <Card>
+          <CardSegment padding="0">
+            <Table
+                data={tasksTableData}
+                headers={[]} />
+          </CardSegment>
+        </Card>
       </>
     );
   }
