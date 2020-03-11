@@ -42,9 +42,10 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
-const PARTICIPANT_TASKS :Object = {
+const PARTICIPANT_FOLLOW_UPS :Object = {
   FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
-  PARTICIPANT_TASKS: 'participantTasks',
+  PARTICIPANT_FOLLOW_UPS: 'participantFollowUps',
+  REENTRY_STAFF_MEMBERS: 'reentryStaffMembers',
 };
 
 const PROVIDERS :Object = {
@@ -77,7 +78,7 @@ export {
   EVENT,
   INTAKE,
   PARTICIPANTS,
-  PARTICIPANT_TASKS,
+  PARTICIPANT_FOLLOW_UPS,
   PROFILE,
   PROVIDERS,
   RELEASES,
