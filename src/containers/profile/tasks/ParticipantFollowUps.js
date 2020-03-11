@@ -144,20 +144,23 @@ class ParticipantTasks extends Component<Props, State> {
                 headers={[]} />
           </CardSegment>
         </Card>
-        <AddNewFollowUpModal isVisible={modalIsVisible} onClose={this.closeModal} />
+        <AddNewFollowUpModal
+            isVisible={modalIsVisible}
+            onClose={this.closeModal}
+            personEKID={participantId} />
       </>
     );
   }
 }
 
 const mapStateToProps = (state :Map) => {
-  const participantTasks = state.get(PARTICIPANT_TASKS.PARTICIPANT_TASKS);
+  const participantFollowUps = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   const profile = state.get(PROFILE.PROFILE);
   return {
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     requestStates: {
-      [LOAD_TASKS]: participantTasks.getIn([ACTIONS, LOAD_TASKS, REQUEST_STATE]),
+      [LOAD_TASKS]: participantFollowUps.getIn([ACTIONS, LOAD_TASKS, REQUEST_STATE]),
     }
   };
 };
