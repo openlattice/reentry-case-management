@@ -34,10 +34,14 @@ import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantWorker, getParticipantNeighborsWorker } from '../ProfileSagas';
 import { getProviders } from '../../providers/ProvidersActions';
 import { getProvidersWorker } from '../../providers/ProvidersSagas';
+import { submitDataGraph } from '../../../core/data/DataActions'
+import { submitDataGraphWorker } from '../../../core/data/DataSagas'
 import {
+  CREATE_NEW_FOLLOW_UP,
   GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
+  createNewFollowUp,
   getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
@@ -56,6 +60,65 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { FOLLOW_UPS, REENTRY_STAFF } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+
+/*
+ *
+ * FollowUpsActions.createNewFollowUp()
+ *
+ */
+
+function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const sagaResponse :Object = {};
+
+  try {
+    yield put(createNewFollowUp.request(id));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    // const app = yield select(getAppFromState);
+    // const edm = yield select(getEdmFromState);
+    // const providerESID :UUID = getESIDFromApp(app, PROVIDER);
+    // const providerAddressESID :UUID = getESIDFromApp(app, PROVIDER_ADDRESS);
+    //
+    // const { data } = response;
+    // const { entityKeyIds } = data;
+    // const newProviderEKID :UUID = entityKeyIds[providerESID][0];
+    // const newProviderAddressEKID :UUID = entityKeyIds[providerAddressESID][0];
+    // const { entityData } = value;
+    // const providerData :Object = entityData[providerESID][0];
+    //
+    // let newProvider :Map = fromJS({
+    //   [ENTITY_KEY_ID]: [newProviderEKID]
+    // });
+    // fromJS(providerData).forEach((entityValue :List, ptid :UUID) => {
+    //   const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+    //   newProvider = newProvider.set(propertyFqn, entityValue);
+    // });
+    // const newProviderAddress :Map = fromJS({
+    //   [ENTITY_KEY_ID]: [newProviderAddressEKID]
+    // });
+
+    yield put(createNewFollowUp.success(id));
+  }
+  catch (error) {
+    sagaResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(createNewFollowUp.failure(id, error));
+  }
+  finally {
+    yield put(createNewFollowUp.finally(id));
+  }
+  return sagaResponse;
+}
+
+function* createNewFollowUpWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, createNewFollowUpWorker);
+}
 
 /*
  *
