@@ -24,7 +24,7 @@ import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
-import { PARTICIPANT_TASKS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
+import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
