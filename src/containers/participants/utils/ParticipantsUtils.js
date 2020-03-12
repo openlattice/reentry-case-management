@@ -34,7 +34,7 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const jailStayEKID :UUID = getEKID(jailStay);
     const jailName :string = jailNamesByJailStayEKID.get(jailStayEKID);
 
-    const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT]).get(0);
+    const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT], List()).get(0);
     const { [DATETIME_COMPLETED]: enrollmentDateTime } = getEntityProperties(needsAssessment, [DATETIME_COMPLETED]);
     const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
 
@@ -42,7 +42,7 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
       name: personName,
       dob: dateOfBirth,
       jail: jailName,
-      enrollmentDate,
+      enrollmentDate: enrollmentDate || undefined,
       id: personEKID,
     });
     data = data.push(personDataObject);
