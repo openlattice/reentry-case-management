@@ -3,6 +3,7 @@ import { List, Map } from 'immutable';
 import { Models } from 'lattice';
 import { DateTime } from 'luxon';
 
+import COLORS from '../core/style/Colors';
 import { getEKID, getFirstEntityValue } from './DataUtils';
 
 const { FullyQualifiedName } = Models;
@@ -43,7 +44,29 @@ const sortEntitiesByDateProperty = (
     return date.valueOf();
   });
 
+const generateTableHeaders = (headers :string[]) :Object[] => {
+
+  const tableHeaders = [];
+  headers.forEach((header :string) => {
+    tableHeaders.push({
+      cellStyle: {
+        backgroundColor: 'white',
+        color: COLORS.GRAY_01,
+        fontSize: '10px',
+        fontWeight: '600',
+        padding: '15px',
+        textAlign: 'left',
+      },
+      key: header,
+      label: header,
+      sortable: (header && header !== ' ') || false,
+    });
+  });
+  return tableHeaders;
+};
+
 export {
+  generateTableHeaders,
   getValuesFromEntityList,
   pipeConcat,
   pipeValue,
