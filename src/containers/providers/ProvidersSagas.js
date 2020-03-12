@@ -217,6 +217,7 @@ function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const providers :List = fromJS(response.data);
+    sagaResponse.data = response.data;
 
     if (fetchNeighbors) {
       const providerEKIDs :UUID[] = [];

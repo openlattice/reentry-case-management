@@ -5,10 +5,11 @@
 const ROOT :string = '/';
 const LOGIN :string = '/login';
 
-const RELEASES :string = '/releases';
 const NEW_INTAKE :string = '/newintake';
 const PARTICIPANTS :string = '/participants';
 const PROVIDERS :string = '/providers';
+const RELEASES :string = '/releases';
+const REPORTS :string = '/reports';
 
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
@@ -21,5 +22,6 @@ export {
   PARTICIPANT_TASK_MANAGER,
   PROVIDERS,
   RELEASES,
+  REPORTS,
   ROOT,
 };

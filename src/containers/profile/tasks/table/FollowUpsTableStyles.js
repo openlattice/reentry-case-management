@@ -9,7 +9,7 @@ const { getStickyPosition } = StyleUtils;
 
 const StyledTableRow = styled.tr`
   background-color: ${WHITE};
-  border-bottom: 1px solid ${COLORS.GRAY_03};
+  border-bottom: 1px solid ${COLORS.GRAY_04};
   font-size: 14px;
   padding: 20px 34px;
 
