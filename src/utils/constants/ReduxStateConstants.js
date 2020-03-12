@@ -66,6 +66,14 @@ const RELEASES :Object = {
   SEARCHED_PEOPLE: 'searchedPeople',
 };
 
+const REPORTS :Object = {
+  NUMBER_OF_INTAKES_PER_MONTH: 'numberOfIntakesPerMonth',
+  NUMBER_OF_INTAKES_THIS_MONTH: 'numberOfIntakesThisMonth',
+  NUMBER_OF_RELEASES_THIS_WEEK: 'numberOfReleasesThisWeek',
+  REPORTS: 'reports',
+  SERVICES_TABLE_DATA: 'servicesTableData',
+};
+
 export {
   APP,
   EDM,
@@ -75,5 +83,6 @@ export {
   PROFILE,
   PROVIDERS,
   RELEASES,
+  REPORTS,
   SHARED,
 };

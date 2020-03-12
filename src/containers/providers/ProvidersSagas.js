@@ -203,6 +203,7 @@ function* getProviderNeighborsWatcher() :Generator<*, *, *> {
 function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const sagaResponse = {};
 
   try {
     yield put(getProviders.request(id));
@@ -216,6 +217,7 @@ function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const providers :List = fromJS(response.data);
+    sagaResponse.data = response.data;
 
     if (fetchNeighbors) {
       const providerEKIDs :UUID[] = [];
@@ -228,12 +230,14 @@ function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getProviders.success(id, providers));
   }
   catch (error) {
+    sagaResponse.error = error;
     LOG.error(action.type, error);
     yield put(getProviders.failure(id, error));
   }
   finally {
     yield put(getProviders.finally(id));
   }
+  return sagaResponse;
 }
 
 function* getProvidersWatcher() :Generator<*, *, *> {

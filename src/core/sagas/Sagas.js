@@ -14,6 +14,7 @@ import * as ParticipantsSagas from '../../containers/participants/ParticipantsSa
 import * as ProfileSagas from '../../containers/profile/ProfileSagas';
 import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
+import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -70,6 +71,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReleasesSagas.searchPeopleByJailStayWatcher),
     fork(ReleasesSagas.searchReleasesByDateWatcher),
     fork(ReleasesSagas.searchReleasesByPersonNameWatcher),
+
+    // ReportsSagas
+    fork(ReportsSagas.downloadParticipantsWatcher),
+    fork(ReportsSagas.getIntakesPerYearWatcher),
+    fork(ReportsSagas.getReportsDataWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
