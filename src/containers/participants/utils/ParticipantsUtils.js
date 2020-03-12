@@ -30,7 +30,7 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const dateOfBirth :string = DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT);
 
     const personEKID :UUID = getEKID(person);
-    const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS]);
+    const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS], List());
     const jailStay :Map = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]).last();
     const jailStayEKID :UUID = getEKID(jailStay);
     const jailName :string = jailNamesByJailStayEKID.get(jailStayEKID);
