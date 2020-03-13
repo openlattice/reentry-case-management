@@ -14,6 +14,7 @@ import {
   loadProfile,
 } from './ProfileActions';
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
+import { CREATE_NEW_FOLLOW_UP, createNewFollowUp } from './tasks/FollowUpsActions';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
@@ -24,7 +25,7 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
-const { ENROLLMENT_STATUS } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS, FOLLOW_UPS } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -50,6 +51,27 @@ const INITIAL_STATE :Map = fromJS({
 export default function profileReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case createNewFollowUp.case(action.type): {
+      return createNewFollowUp.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id], action)
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { newFollowUp } = value;
+          const participantNeighborMap :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .update(FOLLOW_UPS, List(), (followUps) => followUps.push(newFollowUp));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighborMap)
+            .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
 
     case getEnrollmentStatusNeighbors.case(action.type): {
 
