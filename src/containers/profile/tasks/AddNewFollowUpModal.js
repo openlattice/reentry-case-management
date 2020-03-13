@@ -1,14 +1,7 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import {
-  List,
-  Map,
-  fromJS,
-  has,
-  get,
-  mergeDeep,
-} from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -16,6 +9,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
+import { CREATE_NEW_FOLLOW_UP, clearAddRequestState, createNewFollowUp } from './FollowUpsActions';
 import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
   getNewFollowUpAssociations,
@@ -23,6 +17,7 @@ import {
   preprocessFormData,
   removeEKIDsFromFormData,
 } from './utils/AddNewFollowUpUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
@@ -31,12 +26,7 @@ import {
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
 
-const {
-  getEntityAddressKey,
-  getPageSectionKey,
-  processAssociationEntityData,
-  processEntityData,
-} = DataProcessingUtils;
+const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
@@ -50,6 +40,8 @@ const FixedWidthModal = styled.div`
 
 type Props = {
   actions :{
+    clearAddRequestState :() => { type :string };
+    createNewFollowUp :RequestSequence;
   };
   entitySetIdsByFqn :Map;
   isVisible :boolean;
@@ -81,14 +73,14 @@ const AddNewFollowUpModal = ({
   };
   const closeModal = useCallback(() => {
     updateFormData({});
-    // actions.clearEditRequestStates();
+    actions.clearAddRequestState();
     onClose();
-  }, [onClose]);
-  // useEffect(() => {
-  //   if (requestIsSuccess(requestStates[CREATE_NEW_FOLLOW_UP])) {
-  //     closeModal();
-  //   }
-  // }, [closeModal, requestStates]);
+  }, [actions, onClose]);
+  useEffect(() => {
+    if (requestIsSuccess(requestStates[CREATE_NEW_FOLLOW_UP])) {
+      closeModal();
+    }
+  }, [closeModal, requestStates]);
 
   const onSubmit = () => {
     if (Object.keys(formData).length) {
@@ -101,22 +93,16 @@ const AddNewFollowUpModal = ({
         entitySetIdsByFqn,
         propertyTypeIdsByFqn
       );
-      console.log('preprocessedFormData: ', preprocessedFormData);
-      console.log('associations: ', associations);
-      console.log('updatedFormData: ', updatedFormData);
-      console.log('entityData: ', entityData);
-      console.log('associationEntityData: ', associationEntityData);
-      // actions.createNewFollowUp({ associationEntityData, entityData });
+      actions.createNewFollowUp({ associationEntityData, entityData });
     }
   };
   const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList);
   const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = false;
+    const isSubmitting :boolean = requestIsPending(requestStates[CREATE_NEW_FOLLOW_UP]);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}
-          isPendingSecondary={false}
           onClickPrimary={onSubmit}
           onClickSecondary={closeModal}
           shouldStretchButtons
@@ -160,12 +146,15 @@ const mapStateToProps = (state :Map) => {
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
+      [CREATE_NEW_FOLLOW_UP]: participantFollowUps.getIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE]),
     }
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearAddRequestState,
+    createNewFollowUp,
   }, dispatch)
 });
 
