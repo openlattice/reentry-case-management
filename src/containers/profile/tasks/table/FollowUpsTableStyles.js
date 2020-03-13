@@ -4,7 +4,7 @@ import { Colors, StyleUtils } from 'lattice-ui-kit';
 
 import COLORS from '../../../../core/style/Colors';
 
-const { NEUTRALS, WHITE } = Colors;
+const { WHITE } = Colors;
 const { getStickyPosition } = StyleUtils;
 
 const StyledTableRow = styled.tr`
@@ -20,15 +20,6 @@ const StyledTableRow = styled.tr`
   td,
   th {
     ${getStickyPosition}
-  }
-
-  &:hover {
-    cursor: pointer;
-    background: ${OL.GREY14};
-  }
-
-  &:active {
-    background-color: ${OL.PURPLE06};
   }
 `;
 
