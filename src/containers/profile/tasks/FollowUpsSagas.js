@@ -112,7 +112,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
     const { entityKeyIds } = data;
     const [newFollowUpEKID] :UUID = entityKeyIds[followUpsESID];
     let newMeetingsEKID :UUID = '';
-    if (isDefined(entityKeyIds[followUpsESID])) [newMeetingsEKID] = entityKeyIds[followUpsESID];
+    if (isDefined(entityKeyIds[meetingsESID])) [newMeetingsEKID] = entityKeyIds[meetingsESID];
 
     const { associationEntityData, entityData } = value;
     const followUpData :Object = entityData[followUpsESID][0];
