@@ -46,6 +46,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(IntakeSagas.submitIntakeFormWatcher),
 
     // ParticipantFollowUpsSagas
+    fork(ParticipantFollowUpsSagas.createNewFollowUpWatcher),
     fork(ParticipantFollowUpsSagas.getEntitiesForNewFollowUpFormWatcher),
     fork(ParticipantFollowUpsSagas.getFollowUpNeighborsWatcher),
     fork(ParticipantFollowUpsSagas.loadTasksWatcher),

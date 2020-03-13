@@ -30,13 +30,14 @@ import {
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,
+  getPropertyFqnFromEDM,
 } from '../../../utils/DataUtils';
 import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantWorker, getParticipantNeighborsWorker } from '../ProfileSagas';
 import { getProviders } from '../../providers/ProvidersActions';
 import { getProvidersWorker } from '../../providers/ProvidersSagas';
-import { submitDataGraph } from '../../../core/data/DataActions'
-import { submitDataGraphWorker } from '../../../core/data/DataSagas'
+import { submitDataGraph } from '../../../core/data/DataActions';
+import { submitDataGraphWorker } from '../../../core/data/DataSagas';
 import {
   CREATE_NEW_FOLLOW_UP,
   GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
@@ -48,8 +49,13 @@ import {
   loadTasks,
 } from './FollowUpsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP,
+  EDM,
+  PARTICIPANT_FOLLOW_UPS,
+  PROVIDERS,
+} from '../../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { DST } from '../../../utils/constants/GeneralConstants';
 
 const LOG = new Logger('FollowUpsSagas');
@@ -58,9 +64,21 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { FOLLOW_UPS, REENTRY_STAFF } = APP_TYPE_FQNS;
+const {
+  APPEARS_IN,
+  ASSIGNED_TO,
+  FOLLOW_UPS,
+  MEETINGS,
+  PROVIDER,
+  REENTRY_STAFF,
+  REPORTED,
+} = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+const getEdmFromState = (state) => state.get(EDM.EDM, Map());
+const getParticipantFollowUpsFromState = (state) => state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS, Map());
+const getProvidersFromState = (state) => state.get(PROVIDERS.PROVIDERS, Map());
 
 /*
  *
@@ -80,30 +98,70 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
 
-    // const app = yield select(getAppFromState);
-    // const edm = yield select(getEdmFromState);
-    // const providerESID :UUID = getESIDFromApp(app, PROVIDER);
-    // const providerAddressESID :UUID = getESIDFromApp(app, PROVIDER_ADDRESS);
-    //
-    // const { data } = response;
-    // const { entityKeyIds } = data;
-    // const newProviderEKID :UUID = entityKeyIds[providerESID][0];
-    // const newProviderAddressEKID :UUID = entityKeyIds[providerAddressESID][0];
-    // const { entityData } = value;
-    // const providerData :Object = entityData[providerESID][0];
-    //
-    // let newProvider :Map = fromJS({
-    //   [ENTITY_KEY_ID]: [newProviderEKID]
-    // });
-    // fromJS(providerData).forEach((entityValue :List, ptid :UUID) => {
-    //   const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
-    //   newProvider = newProvider.set(propertyFqn, entityValue);
-    // });
-    // const newProviderAddress :Map = fromJS({
-    //   [ENTITY_KEY_ID]: [newProviderAddressEKID]
-    // });
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const participantFollowUps = yield select(getParticipantFollowUpsFromState);
+    const providers = yield select(getProvidersFromState);
+    const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
+    const reportedESID :UUID = getESIDFromApp(app, REPORTED);
+    const assignedToESID :UUID = getESIDFromApp(app, ASSIGNED_TO);
+    const appearsInESID :UUID = getESIDFromApp(app, APPEARS_IN);
 
-    yield put(createNewFollowUp.success(id));
+    const { data } = response;
+    const { entityKeyIds } = data;
+    const [newFollowUpEKID] :UUID = entityKeyIds[followUpsESID];
+    let newMeetingsEKID :UUID = '';
+    if (isDefined(entityKeyIds[followUpsESID])) [newMeetingsEKID] = entityKeyIds[followUpsESID];
+
+    const { associationEntityData, entityData } = value;
+    const followUpData :Object = entityData[followUpsESID][0];
+
+    const newFollowUp :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([newFollowUpEKID]));
+      fromJS(followUpData).forEach((entityValue :List, ptid :UUID) => {
+        const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+        map.set(propertyFqn, List(entityValue));
+      });
+    }).asImmutable();
+
+    let newMeeting :Map = Map().asMutable();
+    if (newMeetingsEKID.length) {
+      newMeeting = Map().withMutations((map :Map) => {
+        map.set(ENTITY_KEY_ID, List([newMeetingsEKID]));
+        const meetingData :Map = fromJS(entityData[meetingsESID][0]);
+        meetingData.forEach((entityValue :List, ptid :UUID) => {
+          const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+          map.set(propertyFqn, List(entityValue));
+        });
+      }).asImmutable();
+    }
+
+    const reentryStaffMembers :List = participantFollowUps.get(PARTICIPANT_FOLLOW_UPS.REENTRY_STAFF_MEMBERS, List());
+    const providersList :List = providers.get(PROVIDERS.PROVIDERS_LIST, List());
+    const followUpNeighbors :Map = Map().withMutations((map :Map) => {
+      map.set(MEETINGS, newMeeting);
+      const assignedToAssociation :Object = associationEntityData[assignedToESID][0];
+      const reentryStaffAssignedToEKID :UUID = assignedToAssociation.srcEntityKeyId;
+      const staffMemberAssignedTo :Map = reentryStaffMembers
+        .find((member :Map) => getEKID(member) === reentryStaffAssignedToEKID);
+      map.set(ASSIGNED_TO, staffMemberAssignedTo);
+      if (isDefined(associationEntityData[reportedESID])) {
+        const reportedAssociation :Object = associationEntityData[reportedESID][0];
+        const reentryStaffReportedByEKID :Object = reportedAssociation.srcEntityKeyId;
+        const staffMemberWhoReported :Map = reentryStaffMembers
+          .find((member :Map) => getEKID(member) === reentryStaffReportedByEKID);
+        map.set(REPORTED, staffMemberWhoReported);
+      }
+      if (isDefined(associationEntityData[appearsInESID])) {
+        const appearsInAssociation :Object = associationEntityData[appearsInESID][0];
+        const providerEKID :Object = appearsInAssociation.srcEntityKeyId;
+        const linkedProvider :Map = providersList.find((member :Map) => getEKID(member) === providerEKID);
+        map.set(PROVIDER, linkedProvider);
+      }
+    });
+
+    yield put(createNewFollowUp.success(id, { newFollowUp, newFollowUpEKID, followUpNeighbors }));
   }
   catch (error) {
     sagaResponse.error = error;
@@ -118,7 +176,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
 
 function* createNewFollowUpWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, createNewFollowUpWorker);
+  yield takeEvery(CREATE_NEW_FOLLOW_UP, createNewFollowUpWorker);
 }
 
 /*
@@ -278,6 +336,8 @@ function* loadTasksWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createNewFollowUpWatcher,
+  createNewFollowUpWorker,
   getEntitiesForNewFollowUpFormWatcher,
   getEntitiesForNewFollowUpFormWorker,
   getFollowUpNeighborsWatcher,
