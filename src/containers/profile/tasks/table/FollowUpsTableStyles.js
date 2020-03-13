@@ -21,8 +21,13 @@ const StyledTableRow = styled.tr`
   th {
     ${getStickyPosition}
   }
+
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
+/* eslint-disable import/prefer-default-export */
 export {
   StyledTableRow,
 };
