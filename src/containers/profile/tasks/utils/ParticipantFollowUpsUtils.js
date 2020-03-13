@@ -9,7 +9,7 @@ const {
   CATEGORY,
   DESCRIPTION,
   GENERAL_DATETIME,
-  TITLE
+  OL_TITLE
 } = PROPERTY_TYPE_FQNS;
 
 const formatTableData = (tasks :List, personName :string) => {
@@ -20,8 +20,8 @@ const formatTableData = (tasks :List, personName :string) => {
       [CATEGORY]: category,
       [DESCRIPTION]: description,
       [GENERAL_DATETIME]: dueDateTime,
-      [TITLE]: title
-    } = getEntityProperties(task, [CATEGORY, DESCRIPTION, GENERAL_DATETIME, TITLE]);
+      [OL_TITLE]: title
+    } = getEntityProperties(task, [CATEGORY, DESCRIPTION, GENERAL_DATETIME, OL_TITLE]);
     const taskName :string = category === 'Meeting' ? `${category} with ${personName}` : title;
     const dueDateString :string = `Due by: ${DateTime.fromISO(dueDateTime).toLocaleString(DateTime.DATE_SHORT)}`;
 
