@@ -31,7 +31,7 @@ const {
   GENERAL_DATETIME,
   LAST_NAME,
   NAME,
-  NOTES,
+  GENERAL_NOTES,
 } = PROPERTY_TYPE_FQNS;
 
 const hydrateNewFollowUpForm = (schema :Object, reentryStaff :List, providersList :List) :Object => {
@@ -99,7 +99,7 @@ const preprocessFormData = (formData :Object) :Object => {
     );
     updatedFormData = setIn(
       updatedFormData,
-      [pageSection, getEntityAddressKey(0, MEETINGS, NOTES)],
+      [pageSection, getEntityAddressKey(0, MEETINGS, GENERAL_NOTES)],
       getIn(updatedFormData, [pageSection, getEntityAddressKey(0, FOLLOW_UPS, DESCRIPTION)])
     );
   }
