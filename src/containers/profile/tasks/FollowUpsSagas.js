@@ -24,6 +24,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { isDefined } from '../../../utils/LangUtils';
 import {
+  getAssociationESID,
   getEKID,
   getESIDFromApp,
   getFqnFromApp,
@@ -180,9 +181,11 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const app = yield select(getAppFromState);
     const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
     const reentryStaffESID :UUID = getESIDFromApp(app, REENTRY_STAFF);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
+    const providerESID :UUID = getESIDFromApp(app, PROVIDER);
     const searchFilter = {
       entityKeyIds: followUpEKIDs,
-      sourceEntitySetIds: [reentryStaffESID],
+      sourceEntitySetIds: [meetingsESID, providerESID, reentryStaffESID],
       destinationEntitySetIds: [],
     };
     const response :Object = yield call(
@@ -193,10 +196,14 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const followUpNeighborMap :Map = Map().withMutations((map :Map) => {
       fromJS(response.data).forEach((neighborList :List, followUpEKID :UUID) => {
         neighborList.forEach((neighbor :Map) => {
+          // store reentry staff by their association ESIDs (reported vs. assigned to)
+          const associationESID :UUID = getAssociationESID(neighbor);
           const neighborESID :UUID = getNeighborESID(neighbor);
-          const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
+          let esidToUseAsKey :UUID = associationESID;
+          if (neighborESID === meetingsESID || neighborESID === providerESID) esidToUseAsKey = neighborESID;
+          const fqn :FullyQualifiedName = getFqnFromApp(app, esidToUseAsKey);
           const entity :Map = getNeighborDetails(neighbor);
-          map.updateIn([followUpEKID, neighborEntityFqn], List(), (entityList) => entityList.push(entity));
+          map.update(followUpEKID, Map(), (entitiesMap) => entitiesMap.set(fqn, entity));
         });
       });
     });
