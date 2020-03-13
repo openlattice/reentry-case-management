@@ -3,6 +3,7 @@ import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { getEKID, getEntityProperties } from '../../../../utils/DataUtils';
+import { sortEntitiesByDateProperty } from '../../../../utils/Utils';
 import { PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -12,9 +13,10 @@ const {
   OL_TITLE
 } = PROPERTY_TYPE_FQNS;
 
-const formatTableData = (tasks :List, personName :string) => {
+const formatTableData = (tasks :List, personName :string) :Object[] => {
+  const sortedTasks :List = sortEntitiesByDateProperty(tasks || List(), [GENERAL_DATETIME]);
   const tableData = [];
-  tasks.forEach((task :Map) => {
+  sortedTasks.forEach((task :Map) => {
     const taskEKID :UUID = getEKID(task);
     const {
       [CATEGORY]: category,
