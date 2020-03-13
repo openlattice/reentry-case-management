@@ -15,7 +15,7 @@ const {
   DESCRIPTION,
   ENTITY_KEY_ID,
   GENERAL_DATETIME,
-  TITLE
+  OL_TITLE
 } = PROPERTY_TYPE_FQNS;
 const CATEGORIES :any = Object.values(FOLLOW_UPS_CATEGORIES);
 
@@ -44,7 +44,7 @@ const schema :Object = {
           title: 'Type',
           enum: CATEGORIES,
         },
-        [getEntityAddressKey(0, FOLLOW_UPS, TITLE)]: {
+        [getEntityAddressKey(0, FOLLOW_UPS, OL_TITLE)]: {
           type: 'string',
           title: 'Action item',
           enum: FOLLOW_UPS_TASK_TYPES,
@@ -90,7 +90,7 @@ const uiSchema :Object = {
         row: true
       }
     },
-    [getEntityAddressKey(0, FOLLOW_UPS, TITLE)]: {
+    [getEntityAddressKey(0, FOLLOW_UPS, OL_TITLE)]: {
       classNames: 'column-span-6'
     },
     [getEntityAddressKey(0, FOLLOW_UPS, GENERAL_DATETIME)]: {
