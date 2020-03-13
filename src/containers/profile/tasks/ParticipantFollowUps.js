@@ -6,9 +6,12 @@ import {
   Breadcrumbs,
   Button,
   Card,
+  CardHeader,
   CardSegment,
   Colors,
+  SearchInput,
   Spinner,
+  StyleUtils,
   Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -17,6 +20,9 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import AddNewFollowUpModal from './AddNewFollowUpModal';
+import TableHeaderRow from './table/TableHeaderRow';
+import TableRow from './table/TableRow';
+
 import * as Routes from '../../../core/router/Routes';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 import { formatTableData } from './utils/ParticipantFollowUpsUtils';
@@ -28,10 +34,14 @@ import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constant
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
+const { getStyleVariation } = StyleUtils;
 const { NEUTRALS } = Colors;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
+
+const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate']
+  .map((header :string) => ({ key: header, label: '', sortable: false }));
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -45,6 +55,34 @@ const PageHeader = styled.div`
   font-size: 28px;
   font-weight: 600;
 `;
+
+const TableCardHeader = styled(CardHeader)`
+  background-color: ${NEUTRALS[6]};
+  padding: 20px 30px;
+`;
+
+const InputWrapper = styled.div`
+  width: 100%;
+`;
+
+const getWidthVariation = getStyleVariation('width', {
+  default: 'auto',
+  taskName: '240px',
+  taskDescription: 'auto',
+  dueDate: '200px',
+});
+
+const Cell = styled.td`
+  width: ${getWidthVariation};
+`;
+
+type HeadCellProps = {
+  width :string;
+};
+
+const HeadCell = ({ width } :HeadCellProps) => (
+  <Cell width={width} />
+);
 
 type Props = {
   actions :{
@@ -138,10 +176,16 @@ class ParticipantTasks extends Component<Props, State> {
           <Button mode="primary" onClick={this.openModal}>New Task</Button>
         </HeaderRow>
         <Card>
+          <TableCardHeader>
+            <InputWrapper>
+              <SearchInput placeholder="Enter keywords here" />
+            </InputWrapper>
+          </TableCardHeader>
           <CardSegment padding="0">
             <Table
+                components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
                 data={tasksTableData}
-                headers={[]} />
+                headers={tableHeaders} />
           </CardSegment>
         </Card>
         <AddNewFollowUpModal
