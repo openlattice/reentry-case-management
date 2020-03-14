@@ -98,6 +98,7 @@ type Props = {
 };
 
 type State = {
+  input :string;
   modalIsVisible :boolean;
 };
 
@@ -107,6 +108,7 @@ class ParticipantTasks extends Component<Props, State> {
     super(props);
 
     this.state = {
+      input: '',
       modalIsVisible: false,
     };
   }
@@ -119,6 +121,23 @@ class ParticipantTasks extends Component<Props, State> {
       }
     } = this.props;
     if (participantId) actions.loadTasks({ participantEKID: participantId });
+  }
+
+  onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
+    const { name, value } = e.currentTarget;
+    this.setState({ [name]: value });
+  }
+
+  filterTableData = (tableData :Object[]) => {
+    const { input } = this.state;
+    if (!input.length) return tableData;
+    const filteredTableData :Object[] = tableData.filter((row :Object) => {
+      const { taskName, taskDescription } = row;
+      const trimmedInput :string = input.trim().toLowerCase();
+      return taskName.trim().toLowerCase().includes(trimmedInput)
+        || taskDescription.trim().toLowerCase().includes(trimmedInput);
+    });
+    return filteredTableData;
   }
 
   openModal = () => {
@@ -159,7 +178,8 @@ class ParticipantTasks extends Component<Props, State> {
     const participantName :string = getPersonFullName(participant);
     const header :string = `${participantName}'s Tasks`;
     const tasks :List = participantNeighbors.get(FOLLOW_UPS, List());
-    const tasksTableData :Object[] = formatTableData(tasks, participantName);
+    const tasksData :Object[] = formatTableData(tasks, participantName);
+    const filteredData :Object[] = this.filterTableData(tasksData);
     return (
       <>
         <Breadcrumbs>
@@ -178,13 +198,16 @@ class ParticipantTasks extends Component<Props, State> {
         <Card>
           <TableCardHeader>
             <InputWrapper>
-              <SearchInput placeholder="Enter keywords here" />
+              <SearchInput
+                  name="input"
+                  onChange={this.onInputChange}
+                  placeholder="Enter keywords here" />
             </InputWrapper>
           </TableCardHeader>
           <CardSegment padding="0">
             <Table
                 components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
-                data={tasksTableData}
+                data={filteredData}
                 headers={tableHeaders} />
           </CardSegment>
         </Card>
