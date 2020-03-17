@@ -34,7 +34,7 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
     let taskStatus :string = status;
     const today :DateTime = DateTime.local();
     // $FlowFixMe
-    const dueDateIsBeforeToday :boolean = DateTime.fromISO(dateTimeCompleted).startOf('day') < today.startOf('day');
+    const dueDateIsBeforeToday :boolean = DateTime.fromISO(dueDateTime).startOf('day') < today.startOf('day');
     if (!status && !dateTimeCompleted && dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.LATE;
     if (!status && !dateTimeCompleted && !dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.PENDING;
 
