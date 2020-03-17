@@ -11,6 +11,7 @@ import {
   Map,
   fromJS,
   get,
+  has,
 } from 'immutable';
 import { Models } from 'lattice';
 import {
@@ -32,21 +33,24 @@ import {
   getNeighborESID,
   getPropertyFqnFromEDM,
 } from '../../../utils/DataUtils';
+import { constructNewEntityFromSubmittedData } from '../../../utils/FormUtils';
 import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantWorker, getParticipantNeighborsWorker } from '../ProfileSagas';
 import { getProviders } from '../../providers/ProvidersActions';
 import { getProvidersWorker } from '../../providers/ProvidersSagas';
-import { submitDataGraph } from '../../../core/data/DataActions';
-import { submitDataGraphWorker } from '../../../core/data/DataSagas';
+import { submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
+import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import {
   CREATE_NEW_FOLLOW_UP,
   GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
+  MARK_FOLLOW_UP_AS_COMPLETE,
   createNewFollowUp,
   getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
+  markFollowUpAsComplete,
 } from './FollowUpsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import {
@@ -335,6 +339,57 @@ function* loadTasksWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_TASKS, loadTasksWorker);
 }
 
+/*
+ *
+ * FollowUpsActions.markFollowUpAsComplete()
+ *
+ */
+
+function* markFollowUpAsCompleteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(markFollowUpAsComplete.request(id, value));
+    const response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) throw response.error;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
+
+    const { entityData } = value;
+    let followUpData :Map = fromJS(get(entityData, followUpsESID));
+    const followUpEKID :UUID = followUpData.keySeq().first();
+    followUpData = get(followUpData, followUpEKID);
+    const newFollowUp :Map = constructNewEntityFromSubmittedData(followUpData, followUpEKID, edm);
+    let newMeeting :Map = Map();
+
+    if (has(entityData, meetingsESID)) {
+      let meetingData :Map = fromJS(get(entityData, meetingsESID));
+      const meetingEKID :UUID = meetingData.keySeq().first();
+      meetingData = get(meetingData, meetingEKID);
+      newMeeting = constructNewEntityFromSubmittedData(meetingData, meetingEKID, edm);
+    }
+
+    yield put(markFollowUpAsComplete.success(id, { followUpEKID, newFollowUp, newMeeting }));
+  }
+  catch (error) {
+    LOG.error('caught exception in markFollowUpAsCompleteWorker()', error);
+    yield put(markFollowUpAsComplete.failure(id, error));
+  }
+  finally {
+    yield put(markFollowUpAsComplete.finally(id));
+  }
+}
+
+function* markFollowUpAsCompleteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(MARK_FOLLOW_UP_AS_COMPLETE, markFollowUpAsCompleteWorker);
+}
+
 export {
   createNewFollowUpWatcher,
   createNewFollowUpWorker,
@@ -344,4 +399,6 @@ export {
   getFollowUpNeighborsWorker,
   loadTasksWatcher,
   loadTasksWorker,
+  markFollowUpAsCompleteWatcher,
+  markFollowUpAsCompleteWorker,
 };

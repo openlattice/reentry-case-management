@@ -50,6 +50,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantFollowUpsSagas.getEntitiesForNewFollowUpFormWatcher),
     fork(ParticipantFollowUpsSagas.getFollowUpNeighborsWatcher),
     fork(ParticipantFollowUpsSagas.loadTasksWatcher),
+    fork(ParticipantFollowUpsSagas.markFollowUpAsCompleteWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),
