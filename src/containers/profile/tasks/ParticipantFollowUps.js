@@ -40,7 +40,7 @@ const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
 
-const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate']
+const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate', 'taskStatus']
   .map((header :string) => ({ key: header, label: '', sortable: false }));
 
 const HeaderRow = styled.div`
@@ -70,6 +70,7 @@ const getWidthVariation = getStyleVariation('width', {
   taskName: '240px',
   taskDescription: 'auto',
   dueDate: '200px',
+  taskStatus: '100px'
 });
 
 const Cell = styled.td`

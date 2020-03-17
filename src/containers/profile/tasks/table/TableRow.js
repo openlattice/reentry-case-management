@@ -1,7 +1,7 @@
 // @flow
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
-import { CardSegment, Colors } from 'lattice-ui-kit';
+import { CardSegment, Colors, StyleUtils } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
@@ -9,8 +9,15 @@ import { StyledTableRow } from './FollowUpsTableStyles';
 import { getEntityProperties } from '../../../../utils/DataUtils';
 import { PARTICIPANT_FOLLOW_UPS } from '../../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
+import { FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
 
-const { NEUTRALS } = Colors;
+const { getStyleVariation } = StyleUtils;
+const {
+  GREEN_1,
+  NEUTRALS,
+  REDS,
+  WHITE
+} = Colors;
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
 const { ASSIGNED_TO, PROVIDER, REPORTED } = APP_TYPE_FQNS;
 const { FIRST_NAME, LAST_NAME, NAME } = PROPERTY_TYPE_FQNS;
@@ -36,13 +43,45 @@ const TaskDescriptionPreview = styled.td`
 `;
 
 const DueBy = styled.td`
-  text-align: right;
+  text-align: left;
+  ${cellPadding}
+  padding-left: 30px;
+`;
+
+const statusStyles = css`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+`;
+
+const StatusWrapper = styled.td`
+  ${statusStyles}
+  justify-content: flex-end;
   ${cellPadding}
   padding-right: 30px;
 `;
 
+const statusColorVariation = getStyleVariation('bgColor', {
+  default: NEUTRALS[1],
+  [FOLLOW_UPS_STATUSES.COMPLETED]: GREEN_1,
+  [FOLLOW_UPS_STATUSES.LATE]: REDS[4],
+  [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
+});
+
+const Status = styled.div`
+  ${statusStyles}
+  border-radius: 4px;
+  color: ${WHITE};
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 0;
+  text-transform: uppercase;
+  width: 70px;
+  background-color: ${statusColorVariation};
+`;
+
 const ExpandedCell = styled.td.attrs(() => ({
-  colSpan: 3
+  colSpan: 4
 }))`
 `;
 
@@ -51,6 +90,14 @@ const ExpandedHeader = styled.div`
   justify-content: space-between;
   margin-bottom: 20px;
   width: 100%;
+`;
+
+const ExpandedHeaderEndGroup = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding-left: 30px;
+  width: 270px;
 `;
 
 const ExpandedDescription = styled.div`
@@ -78,7 +125,8 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
     dueDate,
     id,
     taskName,
-    taskDescription
+    taskDescription,
+    taskStatus,
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
   const neighbors :Map = followUpNeighborMap.get(id, Map());
@@ -105,7 +153,10 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
           <CardSegment padding="20px 30px" vertical>
             <ExpandedHeader>
               <div>{ taskName }</div>
-              <div>{ dueDate }</div>
+              <ExpandedHeaderEndGroup>
+                <div>{ dueDate }</div>
+                <Status bgColor={taskStatus}>{ taskStatus }</Status>
+              </ExpandedHeaderEndGroup>
             </ExpandedHeader>
             <ExpandedDescription>{ taskDescription }</ExpandedDescription>
             <PeopleRow>
@@ -123,6 +174,9 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
       <TaskName>{ taskName }</TaskName>
       <TaskDescriptionPreview>{ taskDescription }</TaskDescriptionPreview>
       <DueBy>{ dueDate }</DueBy>
+      <StatusWrapper>
+        <Status bgColor={taskStatus}>{ taskStatus }</Status>
+      </StatusWrapper>
     </StyledTableRow>
   );
 };
