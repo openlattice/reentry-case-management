@@ -48,6 +48,7 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
       dueDate: dueDateString,
       taskStatus,
       dateCompleted,
+      taskTitle: title,
     };
     tableData.push(taskRow);
   });

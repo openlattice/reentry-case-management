@@ -12,7 +12,7 @@ const FOLLOW_UPS_TASK_TYPES :string[] = [
 ];
 
 const FOLLOW_UPS_STATUSES :Object = {
-  COMPLETED: 'Completed',
+  DONE: 'Done',
   LATE: 'Late',
   PENDING: 'Pending',
 };
