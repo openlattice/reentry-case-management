@@ -9,7 +9,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
-import { CREATE_NEW_FOLLOW_UP, clearAddRequestState, createNewFollowUp } from './FollowUpsActions';
+import { CREATE_NEW_FOLLOW_UP, clearSubmissionRequestStates, createNewFollowUp } from './FollowUpsActions';
 import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
   getNewFollowUpAssociations,
@@ -40,7 +40,7 @@ const FixedWidthModal = styled.div`
 
 type Props = {
   actions :{
-    clearAddRequestState :() => { type :string };
+    clearSubmissionRequestStates :() => { type :string };
     createNewFollowUp :RequestSequence;
   };
   entitySetIdsByFqn :Map;
@@ -73,7 +73,7 @@ const AddNewFollowUpModal = ({
   };
   const closeModal = useCallback(() => {
     updateFormData({});
-    actions.clearAddRequestState();
+    actions.clearSubmissionRequestStates();
     onClose();
   }, [actions, onClose]);
   useEffect(() => {
@@ -153,7 +153,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    clearAddRequestState,
+    clearSubmissionRequestStates,
     createNewFollowUp,
   }, dispatch)
 });
