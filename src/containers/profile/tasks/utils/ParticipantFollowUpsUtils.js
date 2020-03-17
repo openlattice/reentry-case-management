@@ -38,12 +38,16 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
     if (!status && !dateTimeCompleted && dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.LATE;
     if (!status && !dateTimeCompleted && !dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.PENDING;
 
+    let dateCompleted :string = '';
+    if (dateTimeCompleted) dateCompleted = DateTime.fromISO(dateTimeCompleted).toLocaleString(DateTime.DATE_SHORT);
+
     const taskRow :Object = {
       id: taskEKID,
       taskName,
       taskDescription: description,
       dueDate: dueDateString,
       taskStatus,
+      dateCompleted,
     };
     tableData.push(taskRow);
   });

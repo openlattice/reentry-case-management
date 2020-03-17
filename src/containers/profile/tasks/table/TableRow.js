@@ -1,7 +1,14 @@
 // @flow
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
-import { CardSegment, Colors, StyleUtils } from 'lattice-ui-kit';
+import {
+  CardSegment,
+  Colors,
+  IconButton,
+  StyleUtils,
+} from 'lattice-ui-kit';
+import { faCheck } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
@@ -112,6 +119,14 @@ const PeopleRow = styled.div`
   width: 50%;
 `;
 
+const ProviderAndButtonRow = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  height: 40px;
+  width: 100%;
+`;
+
 type Props = {
   actions:{
   };
@@ -127,6 +142,7 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
     taskName,
     taskDescription,
     taskStatus,
+    dateCompleted,
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
   const neighbors :Map = followUpNeighborMap.get(id, Map());
@@ -145,6 +161,7 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
   const personWhoReportedName :string = `Reported by: ${reportedFirstName} ${reportedLastName}`;
   const { [NAME]: linkedProviderName } = getEntityProperties(linkedProvider, [NAME]);
   const providerName :string = `Provider: ${linkedProviderName}`;
+  const dateCompletedString :string = `Date completed: ${dateCompleted}`;
 
   if (expanded) {
     return (
@@ -163,7 +180,19 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
               <div>{ personAssignedToName }</div>
               <div>{ personWhoReportedName }</div>
             </PeopleRow>
-            <div>{ providerName }</div>
+            <ProviderAndButtonRow>
+              <div>{ providerName }</div>
+              {
+                taskStatus !== FOLLOW_UPS_STATUSES.COMPLETED && (
+                  <IconButton small icon={<FontAwesomeIcon icon={faCheck} />} />
+                )
+              }
+              {
+                taskStatus === FOLLOW_UPS_STATUSES.COMPLETED && (
+                  <div>{ dateCompletedString }</div>
+                )
+              }
+            </ProviderAndButtonRow>
           </CardSegment>
         </ExpandedCell>
       </StyledTableRow>
