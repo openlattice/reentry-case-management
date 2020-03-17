@@ -11,7 +11,14 @@ const FOLLOW_UPS_TASK_TYPES :string[] = [
   'Submit Application',
 ];
 
+const FOLLOW_UPS_STATUSES :Object = {
+  COMPLETED: 'Completed',
+  LATE: 'Late',
+  PENDING: 'Pending',
+};
+
 export {
   FOLLOW_UPS_CATEGORIES,
+  FOLLOW_UPS_STATUSES,
   FOLLOW_UPS_TASK_TYPES,
 };
