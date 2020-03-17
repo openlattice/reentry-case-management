@@ -4,15 +4,17 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
-  CLEAR_ADD_REQUEST_STATE,
+  CLEAR_SUBMISSION_REQUEST_STATES,
   CREATE_NEW_FOLLOW_UP,
   GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
+  MARK_FOLLOW_UP_AS_COMPLETE,
   createNewFollowUp,
   getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
+  markFollowUpAsComplete,
 } from './FollowUpsActions';
 import { PARTICIPANT_FOLLOW_UPS, SHARED } from '../../../utils/constants/ReduxStateConstants';
 
@@ -33,6 +35,9 @@ const INITIAL_STATE :Map = fromJS({
     [LOAD_TASKS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [MARK_FOLLOW_UP_AS_COMPLETE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [FOLLOW_UP_NEIGHBOR_MAP]: Map(),
   [REENTRY_STAFF_MEMBERS]: List(),
@@ -42,9 +47,10 @@ export default function participantTasksReducer(state :Map = INITIAL_STATE, acti
 
   switch (action.type) {
 
-    case CLEAR_ADD_REQUEST_STATE: {
+    case CLEAR_SUBMISSION_REQUEST_STATES: {
       return state
-        .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -111,6 +117,28 @@ export default function participantTasksReducer(state :Map = INITIAL_STATE, acti
         SUCCESS: () => state.setIn([ACTIONS, LOAD_TASKS, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, LOAD_TASKS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, LOAD_TASKS, action.id]),
+      });
+    }
+
+    case markFollowUpAsComplete.case(action.type): {
+      return markFollowUpAsComplete.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, action.id], action)
+          .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { followUpEKID, newMeeting } = value;
+          const followUpNeighborMap = state.get(FOLLOW_UP_NEIGHBOR_MAP)
+            .update(followUpEKID,
+              Map(),
+              (existingMeeting :Map) => existingMeeting.mergeWith((oldVal, newVal) => newVal, newMeeting));
+          return state
+            .set(FOLLOW_UP_NEIGHBOR_MAP, followUpNeighborMap)
+            .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, action.id]),
       });
     }
 
