@@ -165,11 +165,9 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
                 }
                 return false;
               });
-              console.log('followUp, ', followUp);
               followUp = followUp.mergeWith((oldVal, newVal) => newVal, newFollowUp);
               return followUps.set(followUpIndex, followUp);
             });
-          console.log('participantNeighbors, ', participantNeighbors);
           return state
             .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
             .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.SUCCESS);
