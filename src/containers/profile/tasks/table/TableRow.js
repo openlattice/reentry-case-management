@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
+import CompleteFollowUpModal from '../CompleteFollowUpModal';
 import { StyledTableRow } from './FollowUpsTableStyles';
 import { getEntityProperties } from '../../../../utils/DataUtils';
 import { PARTICIPANT_FOLLOW_UPS } from '../../../../utils/constants/ReduxStateConstants';
@@ -26,7 +27,12 @@ const {
   WHITE
 } = Colors;
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
-const { ASSIGNED_TO, PROVIDER, REPORTED } = APP_TYPE_FQNS;
+const {
+  ASSIGNED_TO,
+  MEETINGS,
+  PROVIDER,
+  REPORTED,
+} = APP_TYPE_FQNS;
 const { FIRST_NAME, LAST_NAME, NAME } = PROPERTY_TYPE_FQNS;
 
 const cellPadding = css`
@@ -70,7 +76,7 @@ const StatusWrapper = styled.td`
 
 const statusColorVariation = getStyleVariation('bgColor', {
   default: NEUTRALS[1],
-  [FOLLOW_UPS_STATUSES.COMPLETED]: GREEN_1,
+  [FOLLOW_UPS_STATUSES.DONE]: GREEN_1,
   [FOLLOW_UPS_STATUSES.LATE]: REDS[4],
   [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
 });
@@ -90,12 +96,13 @@ const Status = styled.div`
 const ExpandedCell = styled.td.attrs(() => ({
   colSpan: 4
 }))`
+  outline: none;
 `;
 
 const ExpandedHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   width: 100%;
 `;
 
@@ -108,8 +115,13 @@ const ExpandedHeaderEndGroup = styled.div`
 `;
 
 const ExpandedDescription = styled.div`
-  margin-bottom: 20px;
+  margin: 10px 0 20px;
   width: 100%;
+`;
+
+const TitleRow = styled.div`
+  margin-top: -10px;
+  margin-bottom: 10px;
 `;
 
 const PeopleRow = styled.div`
@@ -143,9 +155,13 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
     taskDescription,
     taskStatus,
     dateCompleted,
+    taskTitle,
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
+  const [completionModalVisible, setCompletionModalVisibility] = useState(false);
+
   const neighbors :Map = followUpNeighborMap.get(id, Map());
+  const meeting :any = neighbors.get(MEETINGS, Map());
   const personAssignedTo :Map = neighbors.get(ASSIGNED_TO, Map());
   const personWhoReported :Map = neighbors.get(REPORTED, Map());
   const linkedProvider :Map = neighbors.get(PROVIDER, Map());
@@ -165,16 +181,17 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
 
   if (expanded) {
     return (
-      <StyledTableRow className={className} onClick={() => expandOrCollapseRow(!expanded)}>
+      <StyledTableRow className={className}>
         <ExpandedCell>
           <CardSegment padding="20px 30px" vertical>
-            <ExpandedHeader>
+            <ExpandedHeader onClick={() => expandOrCollapseRow(!expanded)}>
               <div>{ taskName }</div>
               <ExpandedHeaderEndGroup>
                 <div>{ dueDate }</div>
                 <Status bgColor={taskStatus}>{ taskStatus }</Status>
               </ExpandedHeaderEndGroup>
             </ExpandedHeader>
+            { taskName.includes('Meeting') && (<TitleRow>{ taskTitle }</TitleRow>)}
             <ExpandedDescription>{ taskDescription }</ExpandedDescription>
             <PeopleRow>
               <div>{ personAssignedToName }</div>
@@ -183,18 +200,25 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
             <ProviderAndButtonRow>
               <div>{ providerName }</div>
               {
-                taskStatus !== FOLLOW_UPS_STATUSES.COMPLETED && (
-                  <IconButton small icon={<FontAwesomeIcon icon={faCheck} />} />
+                taskStatus !== FOLLOW_UPS_STATUSES.DONE && (
+                  <IconButton
+                      onClick={() => setCompletionModalVisibility(true)}
+                      icon={<FontAwesomeIcon icon={faCheck} />} />
                 )
               }
               {
-                taskStatus === FOLLOW_UPS_STATUSES.COMPLETED && (
+                taskStatus === FOLLOW_UPS_STATUSES.DONE && (
                   <div>{ dateCompletedString }</div>
                 )
               }
             </ProviderAndButtonRow>
           </CardSegment>
         </ExpandedCell>
+        <CompleteFollowUpModal
+            followUpEKID={id}
+            isVisible={completionModalVisible}
+            meeting={meeting}
+            onClose={() => setCompletionModalVisibility(false)} />
       </StyledTableRow>
     );
   }
