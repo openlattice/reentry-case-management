@@ -21,7 +21,7 @@ import { FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
-  GREEN_1,
+  GREEN_2,
   NEUTRALS,
   REDS,
   WHITE
@@ -76,8 +76,8 @@ const StatusWrapper = styled.td`
 
 const statusColorVariation = getStyleVariation('bgColor', {
   default: NEUTRALS[1],
-  [FOLLOW_UPS_STATUSES.DONE]: GREEN_1,
-  [FOLLOW_UPS_STATUSES.LATE]: REDS[4],
+  [FOLLOW_UPS_STATUSES.DONE]: GREEN_2,
+  [FOLLOW_UPS_STATUSES.LATE]: REDS[3],
   [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
 });
 
