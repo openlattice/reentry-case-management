@@ -1,8 +1,9 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Colors, Select } from 'lattice-ui-kit';
 
+import AddNewFollowUpModal from './AddNewFollowUpModal';
 import TasksTable from '../../components/tasks/TasksTable';
 import { GrayerButton } from '../profile/styled/GeneralProfileStyles';
 
@@ -25,17 +26,23 @@ const SelectWrapper = styled.div`
   width: 186px;
 `;
 
-const TaskManager = () => (
-  <>
-    <PageHeader>Task Manager</PageHeader>
-    <Row>
-      <SelectWrapper>
-        <Select />
-      </SelectWrapper>
-      <GrayerButton>New Task</GrayerButton>
-    </Row>
-    <TasksTable tasksData={[]} />
-  </>
-);
+const TaskManager = () => {
+  const [newFollowUpModalVisible, setModalVisibility] = useState(false);
+  return (
+    <>
+      <PageHeader>Task Manager</PageHeader>
+      <Row>
+        <SelectWrapper>
+          <Select />
+        </SelectWrapper>
+        <GrayerButton onClick={() => setModalVisibility(true)}>New Task</GrayerButton>
+      </Row>
+      <TasksTable tasksData={[]} />
+      <AddNewFollowUpModal
+          isVisible={newFollowUpModalVisible}
+          onClose={() => setModalVisibility(false)} />
+    </>
+  );
+};
 
 export default TaskManager;
