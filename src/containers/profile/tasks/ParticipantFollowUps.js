@@ -20,6 +20,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import AddNewFollowUpModal from './AddNewFollowUpModal';
+import NoResults from '../../../components/noresults/NoResults';
 import TableHeaderRow from './table/TableHeaderRow';
 import TableRow from './table/TableRow';
 
@@ -206,10 +207,18 @@ class ParticipantTasks extends Component<Props, State> {
             </InputWrapper>
           </TableCardHeader>
           <CardSegment padding="0">
-            <Table
-                components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
-                data={filteredData}
-                headers={tableHeaders} />
+            {
+              filteredData.length
+                ? (
+                  <Table
+                      components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
+                      data={filteredData}
+                      headers={tableHeaders} />
+                )
+                : (
+                  <NoResults text="No Tasks Found" />
+                )
+            }
           </CardSegment>
         </Card>
         <AddNewFollowUpModal
