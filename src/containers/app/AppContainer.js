@@ -35,6 +35,7 @@ import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
 import Providers from '../providers/Providers';
 import Releases from '../releases/Releases';
 import Reports from '../reports/Reports';
+import TaskManager from '../tasks/TaskManager';
 
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
@@ -108,6 +109,7 @@ class AppContainer extends Component<Props> {
           <Route path={Routes.PARTICIPANTS} component={ParticipantsSearch} />
           <Route path={Routes.PROVIDERS} component={Providers} />
           <Route path={Routes.REPORTS} component={Reports} />
+          <Route path={Routes.TASKS} component={TaskManager} />
           <Redirect to="/home" />
         </Switch>
       );
@@ -160,6 +162,7 @@ class AppContainer extends Component<Props> {
             <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
             <NavLink to={Routes.REPORTS}>Reports</NavLink>
             <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
+            <NavLink to={Routes.TASKS}>Tasks</NavLink>
           </AppNavigationWrapper>
         </AppHeaderWrapper>
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>

@@ -10,6 +10,7 @@ const PARTICIPANTS :string = '/participants';
 const PROVIDERS :string = '/providers';
 const RELEASES :string = '/releases';
 const REPORTS :string = '/reports';
+const TASKS :string = '/tasks';
 
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
@@ -24,4 +25,5 @@ export {
   RELEASES,
   REPORTS,
   ROOT,
+  TASKS,
 };
