@@ -2,7 +2,7 @@
 import styled from 'styled-components';
 import { Colors, StyleUtils } from 'lattice-ui-kit';
 
-import COLORS from '../../../../core/style/Colors';
+import COLORS from '../../core/style/Colors';
 
 const { WHITE } = Colors;
 const { getStickyPosition } = StyleUtils;

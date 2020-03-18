@@ -12,12 +12,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
-import CompleteFollowUpModal from '../CompleteFollowUpModal';
+import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { StyledTableRow } from './FollowUpsTableStyles';
-import { getEntityProperties } from '../../../../utils/DataUtils';
-import { PARTICIPANT_FOLLOW_UPS } from '../../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
-import { FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
