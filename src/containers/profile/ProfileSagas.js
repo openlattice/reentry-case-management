@@ -197,7 +197,7 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       yield call(getEnrollmentStatusNeighborsWorker, getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs }));
     }
 
-    workerResponse.data = response.data;
+    workerResponse.data = personNeighborMap;
     yield put(getParticipantNeighbors.success(id, personNeighborMap));
   }
   catch (error) {

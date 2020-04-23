@@ -12,7 +12,7 @@ import ModalHeader from '../../components/modal/ModalHeader';
 
 import { schema, uiSchema } from './schemas/AddProviderSchemas';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
-import { CREATE_NEW_PROVIDER, createNewProvider } from './ProvidersActions';
+import { CREATE_NEW_PROVIDER, clearEditRequestStates, createNewProvider } from './ProvidersActions';
 import {
   APP,
   EDM,
@@ -33,6 +33,7 @@ const FixedWidthModal = styled.div`
 
 type Props = {
   actions :{
+    clearEditRequestStates :() => { type :string };
     createNewProvider :RequestSequence;
   };
   entitySetIdsByFqn :Map;
@@ -57,8 +58,9 @@ const AddProviderModal = ({
 
   const closeModal = useCallback(() => {
     updateFormData({});
+    actions.clearEditRequestStates();
     onClose();
-  }, [onClose]);
+  }, [actions, onClose]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
@@ -132,6 +134,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearEditRequestStates,
     createNewProvider,
   }, dispatch)
 });

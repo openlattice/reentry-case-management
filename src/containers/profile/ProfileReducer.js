@@ -14,6 +14,13 @@ import {
   loadProfile,
 } from './ProfileActions';
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
+import {
+  CREATE_NEW_FOLLOW_UP,
+  MARK_FOLLOW_UP_AS_COMPLETE,
+  createNewFollowUp,
+  markFollowUpAsComplete,
+} from './tasks/FollowUpsActions';
+import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
@@ -24,7 +31,7 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
-const { ENROLLMENT_STATUS } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS, FOLLOW_UPS } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -50,6 +57,27 @@ const INITIAL_STATE :Map = fromJS({
 export default function profileReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case createNewFollowUp.case(action.type): {
+      return createNewFollowUp.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id], action)
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { newFollowUp } = value;
+          const participantNeighborMap :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .update(FOLLOW_UPS, List(), (followUps) => followUps.push(newFollowUp));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighborMap)
+            .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
 
     case getEnrollmentStatusNeighbors.case(action.type): {
 
@@ -115,6 +143,37 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => state.setIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, LOAD_PROFILE, action.id]),
+      });
+    }
+
+    case markFollowUpAsComplete.case(action.type): {
+      return markFollowUpAsComplete.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, action.id], action)
+          .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          const { followUpEKID, newFollowUp } = value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .update(FOLLOW_UPS, List(), (followUps) => {
+              let followUpIndex :number = -1;
+              let followUp :Map = followUps.find((entity :Map, index :number) => {
+                if (getEKID(entity) === followUpEKID) {
+                  followUpIndex = index;
+                  return true;
+                }
+                return false;
+              });
+              followUp = followUp.mergeWith((oldVal, newVal) => newVal, newFollowUp);
+              return followUps.set(followUpIndex, followUp);
+            });
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, MARK_FOLLOW_UP_AS_COMPLETE, action.id]),
       });
     }
 

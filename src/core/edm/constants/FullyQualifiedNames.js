@@ -67,11 +67,13 @@ const APP_TYPE_FQNS :Object = {
 };
 
 const PROPERTY_TYPE_FQNS = {
+  CATEGORY: new FullyQualifiedName('ol.category'),
   CITY: new FullyQualifiedName('location.city'),
   COUNTRY: new FullyQualifiedName('ol.country'),
   COUNTY: new FullyQualifiedName('ol.county'),
   DATE: new FullyQualifiedName('general.date'),
   DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
+  DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
   EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
@@ -80,6 +82,9 @@ const PROPERTY_TYPE_FQNS = {
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
   GENDER: new FullyQualifiedName('person.gender'),
+  GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
+  GENERAL_NOTES: new FullyQualifiedName('general.notes'),
+  GENERAL_STATUS: new FullyQualifiedName('general.status'),
   HIGHEST_EDUCATION_LEVEL: new FullyQualifiedName('person.highesteducation'),
   LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
   MARITAL_STATUS: new FullyQualifiedName('person.maritalstatus'),
@@ -88,6 +93,7 @@ const PROPERTY_TYPE_FQNS = {
   NOTES: new FullyQualifiedName('ol.notes'),
   OL_DATETIME: new FullyQualifiedName('ol.datetime'),
   OL_ID_FQN: new FullyQualifiedName('ol.id'),
+  OL_TITLE: new FullyQualifiedName('ol.title'),
   PERSON_SEX: new FullyQualifiedName('nc.PersonSex'),
   PHONE_NUMBER: new FullyQualifiedName('contact.phonenumber'),
   PREFERRED: new FullyQualifiedName('ol.preferred'),

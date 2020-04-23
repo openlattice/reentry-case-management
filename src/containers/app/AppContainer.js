@@ -31,6 +31,7 @@ import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import IntakeForm from '../intake/IntakeForm';
 import ParticipantsSearch from '../participants/ParticipantsSearch';
 import ParticipantProfile from '../profile/ParticipantProfile';
+import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
 import Providers from '../providers/Providers';
 import Releases from '../releases/Releases';
 import Reports from '../reports/Reports';
@@ -100,6 +101,7 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route exact strict path="/home" />
+          <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
           <Route path={Routes.RELEASES} component={Releases} />

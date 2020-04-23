@@ -73,6 +73,7 @@ export default function providersReducer(state :Map = INITIAL_STATE, action :Seq
     case CLEAR_EDIT_REQUEST_STATES: {
       return state
         .setIn([ACTIONS, ADD_NEW_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, CREATE_NEW_PROVIDER, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_PROVIDER, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_PROVIDER_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
     }

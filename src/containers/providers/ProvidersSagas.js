@@ -203,7 +203,7 @@ function* getProviderNeighborsWatcher() :Generator<*, *, *> {
 function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const sagaResponse = {};
+  const sagaResponse :Object = {};
 
   try {
     yield put(getProviders.request(id));
@@ -227,6 +227,7 @@ function* getProvidersWorker(action :SequenceAction) :Generator<*, *, *> {
       if (providerEKIDs.length) yield call(getProviderNeighborsWorker, getProviderNeighbors({ providerEKIDs }));
     }
 
+    sagaResponse.data = providers;
     yield put(getProviders.success(id, providers));
   }
   catch (error) {

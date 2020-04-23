@@ -12,12 +12,14 @@ const RELEASES :string = '/releases';
 const REPORTS :string = '/reports';
 
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
+const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 
 export {
   LOGIN,
   NEW_INTAKE,
   PARTICIPANTS,
   PARTICIPANT_PROFILE,
+  PARTICIPANT_TASK_MANAGER,
   PROVIDERS,
   RELEASES,
   REPORTS,

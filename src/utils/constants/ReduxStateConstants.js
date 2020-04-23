@@ -42,6 +42,12 @@ const PARTICIPANTS :Object = {
   SEARCHED_PARTICIPANTS: 'searchedParticipants',
 };
 
+const PARTICIPANT_FOLLOW_UPS :Object = {
+  FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
+  PARTICIPANT_FOLLOW_UPS: 'participantFollowUps',
+  REENTRY_STAFF_MEMBERS: 'reentryStaffMembers',
+};
+
 const PROVIDERS :Object = {
   CONTACT_INFO_BY_CONTACT_PERSON_EKID: 'contactInfoByContactPersonEKID',
   PROVIDERS: 'providers',
@@ -80,6 +86,7 @@ export {
   EVENT,
   INTAKE,
   PARTICIPANTS,
+  PARTICIPANT_FOLLOW_UPS,
   PROFILE,
   PROVIDERS,
   RELEASES,
