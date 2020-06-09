@@ -22,6 +22,7 @@ import { formatTableData } from './utils/ParticipantFollowUpsUtils';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
 import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -140,7 +141,9 @@ class ParticipantTasks extends Component<Props, State> {
         <AddNewFollowUpModal
             isVisible={modalIsVisible}
             onClose={this.closeModal}
-            personEKID={participantId} />
+            personEKID={participantId}
+            schema={schema}
+            uiSchema={uiSchema} />
       </>
     );
   }

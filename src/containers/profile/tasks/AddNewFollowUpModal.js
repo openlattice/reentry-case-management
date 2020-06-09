@@ -10,7 +10,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { CREATE_NEW_FOLLOW_UP, clearSubmissionRequestStates, createNewFollowUp } from './FollowUpsActions';
-import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
   getNewFollowUpAssociations,
   hydrateNewFollowUpForm,
@@ -53,6 +52,8 @@ type Props = {
   requestStates :{
     CREATE_NEW_FOLLOW_UP :RequestState;
   };
+  schema :Object;
+  uiSchema :Object;
 };
 
 const AddNewFollowUpModal = ({
@@ -65,6 +66,8 @@ const AddNewFollowUpModal = ({
   providersList,
   reentryStaffMembers,
   requestStates,
+  schema,
+  uiSchema,
 } :Props) => {
 
   const [formData, updateFormData] = useState({});

@@ -1,11 +1,13 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Colors, Select } from 'lattice-ui-kit';
+import { Button, Colors, Select } from 'lattice-ui-kit';
 
-import AddNewFollowUpModal from './AddNewFollowUpModal';
+// import AddNewFollowUpModal from './AddNewFollowUpModal';
+import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
 import TasksTable from '../../components/tasks/TasksTable';
-import { GrayerButton } from '../profile/styled/GeneralProfileStyles';
+import { addLinkedPersonField } from './utils/TaskManagerUtils';
+import { schema, uiSchema } from '../profile/tasks/schemas/AddNewFollowUpSchemas';
 
 const { NEUTRALS } = Colors;
 
@@ -28,6 +30,7 @@ const SelectWrapper = styled.div`
 
 const TaskManager = () => {
   const [newFollowUpModalVisible, setModalVisibility] = useState(false);
+  const { taskSchema, taskUiSchema } = addLinkedPersonField(schema, uiSchema);
   return (
     <>
       <PageHeader>Task Manager</PageHeader>
@@ -35,12 +38,14 @@ const TaskManager = () => {
         <SelectWrapper>
           <Select />
         </SelectWrapper>
-        <GrayerButton onClick={() => setModalVisibility(true)}>New Task</GrayerButton>
+        <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
       </Row>
       <TasksTable tasksData={[]} />
       <AddNewFollowUpModal
           isVisible={newFollowUpModalVisible}
-          onClose={() => setModalVisibility(false)} />
+          onClose={() => setModalVisibility(false)}
+          schema={taskSchema}
+          uiSchema={taskUiSchema} />
     </>
   );
 };
