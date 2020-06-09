@@ -18,6 +18,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
+import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
@@ -174,9 +175,12 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
     personWhoReported,
     [FIRST_NAME, LAST_NAME]
   );
-  const personWhoReportedName :string = `Reported by: ${reportedFirstName} ${reportedLastName}`;
+  const reporter :string = !personWhoReported.isEmpty()
+    ? `${reportedFirstName} ${reportedLastName}`
+    : EMPTY_FIELD;
+  const personWhoReportedName :string = `Reported by: ${reporter}`;
   const { [NAME]: linkedProviderName } = getEntityProperties(linkedProvider, [NAME]);
-  const providerName :string = `Provider: ${linkedProviderName}`;
+  const providerName :string = `Provider: ${linkedProviderName || EMPTY_FIELD}`;
   const dateCompletedString :string = `Date completed: ${dateCompleted}`;
 
   if (expanded) {
