@@ -43,7 +43,7 @@ const cellPadding = css`
 const TaskName = styled.td`
   margin-right: 10px;
   font-size: 14px;
-  ${cellPadding}
+  padding: 20px 15px 20px 0;
   padding-left: 30px;
 `;
 
