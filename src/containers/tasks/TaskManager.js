@@ -9,6 +9,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
 import TasksTable from '../../components/tasks/TasksTable';
+import { GrayerButton } from '../profile/styled/GeneralProfileStyles';
 import { GET_FOLLOW_UP_NEIGHBORS, SEARCH_FOR_TASKS, searchForTasks } from './TasksActions';
 import { addLinkedPersonField, formatTasksForTable } from './utils/TaskManagerUtils';
 import { schema, uiSchema } from '../profile/tasks/schemas/AddNewFollowUpSchemas';
@@ -37,6 +38,12 @@ const Row = styled.div`
   margin: 25px 0;
 `;
 
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 200px 120px;
+  grid-gap: 0 10px;
+`;
+
 const SelectWrapper = styled.div`
   width: 186px;
 `;
@@ -61,6 +68,7 @@ const TaskManager = ({
 } :Props) => {
 
   const [newFollowUpModalVisible, setModalVisibility] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
   const reducedReqState = reduceRequestStates([
     requestStates[GET_FOLLOW_UP_NEIGHBORS],
@@ -76,6 +84,12 @@ const TaskManager = ({
   }, [actions]);
   const tasksData :Object[] = formatTasksForTable(followUps, followUpNeighborMap);
   const { taskSchema, taskUiSchema } = addLinkedPersonField(schema, uiSchema);
+
+  const buttonText :string = completed ? 'See Incomplete Tasks' : 'See Completed Tasks';
+  const getFreshTasks = () => {
+    setCompleted(!completed);
+    actions.searchForTasks({ completed: !completed });
+  };
   return (
     <>
       <PageHeader>Task Manager</PageHeader>
@@ -83,7 +97,12 @@ const TaskManager = ({
         <SelectWrapper>
           <Select />
         </SelectWrapper>
-        <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
+        <ButtonsWrapper>
+          <GrayerButton onClick={getFreshTasks}>
+            { buttonText }
+          </GrayerButton>
+          <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
+        </ButtonsWrapper>
       </Row>
       <TasksTable hasSearched={hasSearched} isLoading={isSearching} tasksData={tasksData} />
       <AddNewFollowUpModal
