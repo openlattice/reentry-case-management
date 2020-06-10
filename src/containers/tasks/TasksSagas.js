@@ -1,5 +1,6 @@
 // @flow
 import {
+  all,
   call,
   put,
   select,
@@ -31,10 +32,14 @@ import {
 import { getSearchTerm } from '../../utils/SearchUtils';
 import {
   GET_FOLLOW_UP_NEIGHBORS,
+  LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   getFollowUpNeighbors,
+  loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
+import { getEntitiesForNewFollowUpForm } from '../profile/tasks/FollowUpsActions';
+import { getEntitiesForNewFollowUpFormWorker } from '../profile/tasks/FollowUpsSagas';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
@@ -181,9 +186,44 @@ function* searchForTasksWatcher() :Generator<*, *, *> {
   yield takeEvery(SEARCH_FOR_TASKS, searchForTasksWorker);
 }
 
+/*
+ *
+ * TasksActions.loadTaskManagerData()
+ *
+ */
+
+function* loadTaskManagerDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(loadTaskManagerData.request(id));
+
+    yield all([
+      call(searchForTasksWorker, searchForTasks({ completed: false })),
+      call(getEntitiesForNewFollowUpFormWorker, getEntitiesForNewFollowUpForm()),
+    ]);
+
+    yield put(loadTaskManagerData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(loadTaskManagerData.failure(id, error));
+  }
+  finally {
+    yield put(loadTaskManagerData.finally(id));
+  }
+}
+
+function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(LOAD_TASK_MANAGER_DATA, loadTaskManagerDataWorker);
+}
+
 export {
   getFollowUpNeighborsWatcher,
   getFollowUpNeighborsWorker,
+  loadTaskManagerDataWatcher,
+  loadTaskManagerDataWorker,
   searchForTasksWatcher,
   searchForTasksWorker,
 };

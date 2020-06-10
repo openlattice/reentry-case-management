@@ -92,6 +92,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // TasksSagas
     fork(TasksSagas.getFollowUpNeighborsWatcher),
+    fork(TasksSagas.loadTaskManagerDataWatcher),
     fork(TasksSagas.searchForTasksWatcher),
   ]);
 }
