@@ -7,11 +7,17 @@ import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { getTaskName } from '../../profile/tasks/utils/ParticipantFollowUpsUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { FOLLOW_UPS_STATUSES } from '../../profile/tasks/FollowUpsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { PEOPLE, SUBJECT_OF } = APP_TYPE_FQNS;
+const {
+  ASSIGNED_TO,
+  PEOPLE,
+  REPORTED,
+  SUBJECT_OF,
+} = APP_TYPE_FQNS;
 const {
   CATEGORY,
   ENTITY_KEY_ID,
@@ -51,9 +57,34 @@ const addLinkedPersonField = (schema :Object, uiSchema :Object) :Object => {
   return { taskSchema, taskUiSchema };
 };
 
-const formatTasksForTable = (followUps :List, followUpNeighbors :Map) :Object[] => {
+const formatTasksForTable = (
+  followUps :List,
+  followUpNeighbors :Map,
+  selectedAssignees :Object[],
+  selectedReporters :Object[],
+) :Object[] => {
 
-  const sortedTasks :List = sortEntitiesByDateProperty(followUps || List(), [GENERAL_DATETIME]);
+  let filteredFollowUps :List = followUps;
+  const assigneeEKIDs = isDefined(selectedAssignees) ? selectedAssignees.map((option :Object) => option.value) : [];
+  if (assigneeEKIDs.length) {
+    filteredFollowUps = followUps.filter((task :Map) => {
+      const taskEKID :UUID = getEKID(task);
+      const personAssignedTo :Map = followUpNeighbors.getIn([taskEKID, ASSIGNED_TO], Map());
+      const personAssignedToEKID :UUID = getEKID(personAssignedTo);
+      return assigneeEKIDs.includes(personAssignedToEKID);
+    });
+  }
+  const reporterEKIDs = isDefined(selectedReporters) ? selectedReporters.map((option :Object) => option.value) : [];
+  if (reporterEKIDs.length) {
+    filteredFollowUps = followUps.filter((task :Map) => {
+      const taskEKID :UUID = getEKID(task);
+      const personWhoReported :Map = followUpNeighbors.getIn([taskEKID, REPORTED], Map());
+      const personWhoReportedEKID :UUID = getEKID(personWhoReported);
+      return reporterEKIDs.includes(personWhoReportedEKID);
+    });
+  }
+
+  const sortedTasks :List = sortEntitiesByDateProperty(filteredFollowUps || List(), [GENERAL_DATETIME]);
   const tableData = [];
   sortedTasks.forEach((task :Map) => {
     const taskEKID :UUID = getEKID(task);
@@ -94,7 +125,16 @@ const formatTasksForTable = (followUps :List, followUpNeighbors :Map) :Object[] 
   return tableData;
 };
 
+const getReentryStaffOptions = (reentryStaffMembers :List) :Object[] => {
+  const reentryStaffOptions :Object[] = [];
+  reentryStaffMembers.forEach((staff :Map) => {
+    reentryStaffOptions.push({ label: getPersonFullName(staff), value: getEKID(staff) });
+  });
+  return reentryStaffOptions;
+};
+
 export {
   addLinkedPersonField,
   formatTasksForTable,
+  getReentryStaffOptions,
 };
