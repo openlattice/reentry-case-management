@@ -7,7 +7,7 @@ import { isDefined } from '../../../../utils/LangUtils';
 import { getValuesFromEntityList } from '../../../../utils/Utils';
 import { deleteKeyFromFormData } from '../../../../utils/FormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
-import { FOLLOW_UPS_CATEGORIES } from '../FollowUpsConstants';
+import { FOLLOW_UPS_CATEGORIES, FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
@@ -21,6 +21,7 @@ const {
   REENTRY_STAFF,
   REPORTED,
   SUBJECT_OF,
+  STATUS,
 } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -89,6 +90,12 @@ const preprocessFormData = (formData :Object) :Object => {
     updatedFormData,
     [pageSection, getEntityAddressKey(0, FOLLOW_UPS, GENERAL_DATETIME)],
     dueDateTime
+  );
+
+  updatedFormData = setIn(
+    updatedFormData,
+    [pageSection, getEntityAddressKey(0, FOLLOW_UPS, STATUS)],
+    FOLLOW_UPS_STATUSES.PENDING
   );
 
   if (isMeeting) {
