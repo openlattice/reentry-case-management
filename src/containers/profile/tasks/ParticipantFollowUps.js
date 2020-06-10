@@ -21,7 +21,7 @@ import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 import { formatTableData } from './utils/ParticipantFollowUpsUtils';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
 import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
@@ -117,9 +117,12 @@ class ParticipantTasks extends Component<Props, State> {
         <Spinner size="2x" />
       );
     }
+    const isLoading = requestIsPending(requestStates[LOAD_TASKS]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[LOAD_TASKS])
+      || requestIsFailure(requestStates[LOAD_TASKS]);
 
     const participantName :string = getPersonFullName(participant);
-    const header :string = `${participantName}'s Tasks`;
+    const header :string = isLoading ? '' : `${participantName}'s Tasks`;
     const tasks :List = participantNeighbors.get(FOLLOW_UPS, List());
     const tasksData :Object[] = formatTableData(tasks, participantName);
     return (
@@ -137,7 +140,10 @@ class ParticipantTasks extends Component<Props, State> {
           <PageHeader>{ header }</PageHeader>
           <Button mode="primary" onClick={this.openModal}>New Task</Button>
         </HeaderRow>
-        <TasksTable tasksData={tasksData} />
+        <TasksTable
+            hasSearched={hasSearched}
+            isLoading={isLoading}
+            tasksData={tasksData} />
         <AddNewFollowUpModal
             isVisible={modalIsVisible}
             onClose={this.closeModal}

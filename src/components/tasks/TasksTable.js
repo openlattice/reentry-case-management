@@ -7,6 +7,7 @@ import {
   CardSegment,
   Colors,
   SearchInput,
+  Spinner,
   StyleUtils,
   Table,
 } from 'lattice-ui-kit';
@@ -19,6 +20,11 @@ const { getStyleVariation } = StyleUtils;
 const { NEUTRALS } = Colors;
 const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate', 'taskStatus']
   .map((header :string) => ({ key: header, label: '', sortable: false }));
+
+const SpinnerWrapper = styled(CardSegment)`
+  align-items: center;
+  justify-content: center;
+`;
 
 const TableCardHeader = styled(CardHeader)`
   background-color: ${NEUTRALS[6]};
@@ -50,10 +56,12 @@ const HeadCell = ({ width } :HeadCellProps) => (
 );
 
 type Props = {
+  hasSearched ? :boolean;
+  isLoading ? :boolean;
   tasksData :Object[];
 };
 
-const TasksTable = ({ tasksData } :Props) => {
+const TasksTable = ({ hasSearched, isLoading, tasksData } :Props) => {
   const [input, onInputChange] = useState('');
   const filterTableData = (tableData :Object[]) :Object[] => {
     if (!input.length) return tableData;
@@ -72,26 +80,31 @@ const TasksTable = ({ tasksData } :Props) => {
         <InputWrapper>
           <SearchInput
               name="input"
-              onChange={onInputChange}
+              onChange={(e) => onInputChange(e.target.value)}
               placeholder="Enter keywords here" />
         </InputWrapper>
       </TableCardHeader>
       <CardSegment padding="0">
+        { isLoading && <SpinnerWrapper><Spinner size="2x" /></SpinnerWrapper> }
+        { (hasSearched && !filteredData.length) && (
+          <NoResults text="No Tasks Found" />
+        )}
         {
-          filteredData.length
-            ? (
-              <Table
-                  components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
-                  data={filteredData}
-                  headers={tableHeaders} />
-            )
-            : (
-              <NoResults text="No Tasks Found" />
-            )
+          (filteredData.length > 0 && hasSearched) && (
+            <Table
+                components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
+                data={filteredData}
+                headers={tableHeaders} />
+          )
         }
       </CardSegment>
     </Card>
   );
+};
+
+TasksTable.defaultProps = {
+  hasSearched: false,
+  isLoading: false,
 };
 
 export default TasksTable;
