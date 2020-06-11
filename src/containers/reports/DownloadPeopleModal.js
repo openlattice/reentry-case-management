@@ -105,7 +105,7 @@ const DownloadPeopleModal = ({
               label="New Intakes"
               onChange={onChangeNewIntakes} />
           <Checkbox
-              label="Active Enrollments"
+              label="All Enrollments (through selected month, if applicable)"
               onChange={onChangeActiveEnrollments} />
         </CardSegment>
       </FixedWidthModal>
