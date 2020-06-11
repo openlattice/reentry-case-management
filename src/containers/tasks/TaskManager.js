@@ -14,7 +14,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
 import TasksTable from '../../components/tasks/TasksTable';
-import { GrayerButton } from '../profile/styled/GeneralProfileStyles';
 import {
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASK_MANAGER_DATA,
@@ -22,7 +21,7 @@ import {
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
-import { addLinkedPersonField, formatTasksForTable, getReentryStaffOptions } from './utils/TaskManagerUtils';
+import { addLinkedPersonField, formatTasksForTable, getReentryStaffOptions, getTaskOptionsForSearch } from './utils/TaskManagerUtils';
 import { schema, uiSchema } from '../profile/tasks/schemas/AddNewFollowUpSchemas';
 import {
   reduceRequestStates,
@@ -30,12 +29,21 @@ import {
   requestIsPending,
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
+import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
 const { NEUTRALS } = Colors;
 const { FOLLOW_UPS, FOLLOW_UP_NEIGHBOR_MAP } = TASK_MANAGER;
 const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+
+const { DONE, LATE, PENDING } = FOLLOW_UPS_STATUSES;
+const FOLLOW_UP_STATUS_OPTIONS :Object[] = [
+  { label: DONE, value: DONE },
+  { label: LATE, value: LATE },
+  { label: PENDING, value: PENDING },
+];
 
 const PageHeader = styled.div`
   color: ${NEUTRALS[0]};
@@ -52,12 +60,6 @@ const Row = styled.div`
   span {
     display: flex;
   }
-`;
-
-const ButtonsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: 200px 120px;
-  grid-gap: 0 10px;
 `;
 
 const SelectWrapper = styled.div`
@@ -90,7 +92,7 @@ const TaskManager = ({
 } :Props) => {
 
   const [newFollowUpModalVisible, setModalVisibility] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [selectedTaskStatuses, selectTaskStatus] = useState([]);
   const [selectedAssignees, selectAssignee] = useState([]);
   const [selectedReporters, selectReporter] = useState([]);
 
@@ -112,16 +114,21 @@ const TaskManager = ({
     ? (requestIsSuccess(reducedReqState) || requestIsFailure(reducedReqState))
     : false;
 
-  const buttonText :string = completed ? 'See Incomplete Tasks' : 'See Completed Tasks';
-  const getFreshTasks = () => {
-    setCompleted(!completed);
-    actions.searchForTasks({ completed: !completed });
+  const getFreshTasks = (option :Object) => {
+    selectTaskStatus(option);
+    actions.searchForTasks({ statuses: getTaskOptionsForSearch(selectedTaskStatuses, option) });
   };
   return (
     <>
       <PageHeader>Task Manager</PageHeader>
       <Row>
         <span>
+          <SelectWrapper>
+            <Label>Task status:</Label>
+            <CheckboxSelect
+                onChange={getFreshTasks}
+                options={FOLLOW_UP_STATUS_OPTIONS} />
+          </SelectWrapper>
           <SelectWrapper>
             <Label>Assigned to:</Label>
             <CheckboxSelect
@@ -135,12 +142,7 @@ const TaskManager = ({
                 options={reentryStaffOptions} />
           </SelectWrapper>
         </span>
-        <ButtonsWrapper>
-          <GrayerButton onClick={getFreshTasks}>
-            { buttonText }
-          </GrayerButton>
-          <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
-        </ButtonsWrapper>
+        <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
       </Row>
       <TasksTable hasSearched={hasSearched} isLoading={isSearching} tasksData={tasksData} />
       <AddNewFollowUpModal
