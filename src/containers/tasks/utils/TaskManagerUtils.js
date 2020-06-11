@@ -133,8 +133,17 @@ const getReentryStaffOptions = (reentryStaffMembers :List) :Object[] => {
   return reentryStaffOptions;
 };
 
+const getTaskOptionsForSearch = (alreadySelectedStatuses :Object[], selectedStatus :Object[] | void) => {
+  if (!isDefined(selectedStatus) || (Array.isArray(selectedStatus) && !selectedStatus.length)) {
+    if (alreadySelectedStatuses.length === 1) return [];
+    return alreadySelectedStatuses.map<Object>((status :Object) => status.value);
+  }
+  return selectedStatus.map<Object>((status :Object) => status.value);
+};
+
 export {
   addLinkedPersonField,
   formatTasksForTable,
   getReentryStaffOptions,
+  getTaskOptionsForSearch,
 };
