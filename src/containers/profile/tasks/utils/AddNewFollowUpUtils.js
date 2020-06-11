@@ -84,18 +84,20 @@ const hydrateNewFollowUpForm = (
     providersLabels
   );
 
-  if (isDefined(participants) && !participants.isEmpty()) {
-    const [participantsValues, participantsLabels] = getValuesFromEntityList(participants, [FIRST_NAME, LAST_NAME]);
-    newSchema = setIn(
-      newSchema,
-      ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enum'],
-      participantsValues
-    );
-    newSchema = setIn(
-      newSchema,
-      ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enumNames'],
-      participantsLabels
-    );
+  if (isDefined(participants)) {
+    if (!participants.isEmpty()) {
+      const [participantsValues, participantsLabels] = getValuesFromEntityList(participants, [FIRST_NAME, LAST_NAME]);
+      newSchema = setIn(
+        newSchema,
+        ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enum'],
+        participantsValues
+      );
+      newSchema = setIn(
+        newSchema,
+        ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enumNames'],
+        participantsLabels
+      );
+    }
   }
 
   return newSchema;

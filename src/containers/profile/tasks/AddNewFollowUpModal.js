@@ -145,7 +145,7 @@ const AddNewFollowUpModal = ({
 };
 
 AddNewFollowUpModal.defaultProps = {
-  participants: []
+  participants: List()
 };
 
 const mapStateToProps = (state :Map) => {
