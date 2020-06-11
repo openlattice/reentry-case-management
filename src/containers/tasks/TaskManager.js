@@ -15,6 +15,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
 import TasksTable from '../../components/tasks/TasksTable';
 import {
+  GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   loadTaskManagerData,
@@ -38,7 +39,7 @@ import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/consta
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
 const { NEUTRALS } = Colors;
-const { FOLLOW_UPS } = TASK_MANAGER;
+const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
 const { FOLLOW_UP_NEIGHBOR_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
@@ -79,8 +80,10 @@ type Props = {
   };
   followUps :List;
   followUpNeighborMap :Map;
+  participants :Object[];
   reentryStaffMembers :List;
   requestStates :{
+    GET_PEOPLE_FOR_NEW_TASK_FORM :RequestState;
     GET_FOLLOW_UP_NEIGHBORS :RequestState;
     LOAD_TASK_MANAGER_DATA :RequestState;
     SEARCH_FOR_TASKS :RequestState;
@@ -91,6 +94,7 @@ const TaskManager = ({
   actions,
   followUps,
   followUpNeighborMap,
+  participants,
   reentryStaffMembers,
   requestStates,
 } :Props) => {
@@ -109,6 +113,7 @@ const TaskManager = ({
   const reentryStaffOptions :Object[] = getReentryStaffOptions(reentryStaffMembers);
 
   const reducedReqState = reduceRequestStates([
+    requestStates[GET_PEOPLE_FOR_NEW_TASK_FORM],
     requestStates[GET_FOLLOW_UP_NEIGHBORS],
     requestStates[LOAD_TASK_MANAGER_DATA],
     requestStates[SEARCH_FOR_TASKS],
@@ -152,6 +157,7 @@ const TaskManager = ({
       <AddNewFollowUpModal
           isVisible={newFollowUpModalVisible}
           onClose={() => setModalVisibility(false)}
+          participants={participants}
           schema={taskSchema}
           uiSchema={taskUiSchema} />
     </>
@@ -164,8 +170,10 @@ const mapStateToProps = (state :Map) => {
   return {
     [FOLLOW_UPS]: taskManager.get(FOLLOW_UPS),
     [FOLLOW_UP_NEIGHBOR_MAP]: participantFollowUps.get(FOLLOW_UP_NEIGHBOR_MAP),
+    [PARTICIPANTS]: taskManager.get(PARTICIPANTS),
     [REENTRY_STAFF_MEMBERS]: participantFollowUps.get(REENTRY_STAFF_MEMBERS),
     requestStates: {
+      [GET_PEOPLE_FOR_NEW_TASK_FORM]: taskManager.getIn([ACTIONS, GET_PEOPLE_FOR_NEW_TASK_FORM, REQUEST_STATE]),
       [GET_FOLLOW_UP_NEIGHBORS]: participantFollowUps.getIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE]),
       [LOAD_TASK_MANAGER_DATA]: taskManager.getIn([ACTIONS, LOAD_TASK_MANAGER_DATA, REQUEST_STATE]),
       [SEARCH_FOR_TASKS]: taskManager.getIn([ACTIONS, SEARCH_FOR_TASKS, REQUEST_STATE]),

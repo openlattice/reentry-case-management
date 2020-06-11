@@ -12,6 +12,7 @@ import ModalHeader from '../../../components/modal/ModalHeader';
 import { CREATE_NEW_FOLLOW_UP, clearSubmissionRequestStates, createNewFollowUp } from './FollowUpsActions';
 import {
   getNewFollowUpAssociations,
+  getParticipantEKIDForNewTask,
   hydrateNewFollowUpForm,
   preprocessFormData,
   removeEKIDsFromFormData,
@@ -45,6 +46,7 @@ type Props = {
   entitySetIdsByFqn :Map;
   isVisible :boolean;
   onClose :() => void;
+  participants ? :List;
   personEKID :UUID;
   propertyTypeIdsByFqn :Map;
   providersList :List;
@@ -61,6 +63,7 @@ const AddNewFollowUpModal = ({
   entitySetIdsByFqn,
   isVisible,
   onClose,
+  participants,
   personEKID,
   propertyTypeIdsByFqn,
   providersList,
@@ -85,10 +88,12 @@ const AddNewFollowUpModal = ({
     }
   }, [closeModal, requestStates]);
 
+  const participantEKID :UUID = getParticipantEKIDForNewTask(personEKID, formData);
+
   const onSubmit = () => {
     if (Object.keys(formData).length) {
       const preprocessedFormData :Object = preprocessFormData(formData);
-      const associations :Array<Array<*>> = getNewFollowUpAssociations(preprocessedFormData, personEKID);
+      const associations :Array<Array<*>> = getNewFollowUpAssociations(preprocessedFormData, participantEKID);
       const updatedFormData :Object = removeEKIDsFromFormData(preprocessedFormData);
       const entityData :Object = processEntityData(updatedFormData, entitySetIdsByFqn, propertyTypeIdsByFqn);
       const associationEntityData :Object = processAssociationEntityData(
@@ -99,7 +104,7 @@ const AddNewFollowUpModal = ({
       actions.createNewFollowUp({ associationEntityData, entityData });
     }
   };
-  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList);
+  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList, participants);
   const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[CREATE_NEW_FOLLOW_UP]);
@@ -137,6 +142,10 @@ const AddNewFollowUpModal = ({
       </FixedWidthModal>
     </Modal>
   );
+};
+
+AddNewFollowUpModal.defaultProps = {
+  participants: []
 };
 
 const mapStateToProps = (state :Map) => {
