@@ -1,0 +1,21 @@
+// @flow
+import { newRequestSequence } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
+
+const GET_PEOPLE_FOR_NEW_TASK_FORM :'GET_PEOPLE_FOR_NEW_TASK_FORM' = 'GET_PEOPLE_FOR_NEW_TASK_FORM';
+const getPeopleForNewTaskForm :RequestSequence = newRequestSequence(GET_PEOPLE_FOR_NEW_TASK_FORM);
+
+const LOAD_TASK_MANAGER_DATA :'LOAD_TASK_MANAGER_DATA' = 'LOAD_TASK_MANAGER_DATA';
+const loadTaskManagerData :RequestSequence = newRequestSequence(LOAD_TASK_MANAGER_DATA);
+
+const SEARCH_FOR_TASKS :'SEARCH_FOR_TASKS' = 'SEARCH_FOR_TASKS';
+const searchForTasks :RequestSequence = newRequestSequence(SEARCH_FOR_TASKS);
+
+export {
+  GET_PEOPLE_FOR_NEW_TASK_FORM,
+  LOAD_TASK_MANAGER_DATA,
+  SEARCH_FOR_TASKS,
+  getPeopleForNewTaskForm,
+  loadTaskManagerData,
+  searchForTasks,
+};

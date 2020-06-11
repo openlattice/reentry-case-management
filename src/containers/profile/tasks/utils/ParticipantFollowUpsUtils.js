@@ -16,6 +16,12 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const getTaskName = (category :string, title :string, personName :string) :string => {
+  if (category === 'Meeting') return `${category} with ${personName}`;
+  if (title && title.length) return title;
+  return category;
+};
+
 const formatTableData = (tasks :List, personName :string) :Object[] => {
   const sortedTasks :List = sortEntitiesByDateProperty(tasks || List(), [GENERAL_DATETIME]);
   const tableData = [];
@@ -29,14 +35,15 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
       [OL_TITLE]: title,
       [STATUS]: status
     } = getEntityProperties(task, [CATEGORY, DATETIME_COMPLETED, DESCRIPTION, GENERAL_DATETIME, OL_TITLE, STATUS]);
-    const taskName :string = category === 'Meeting' ? `${category} with ${personName}` : title;
+    const taskName :string = getTaskName(category, title, personName);
     const dueDateString :string = `Due by: ${DateTime.fromISO(dueDateTime).toLocaleString(DateTime.DATE_SHORT)}`;
     let taskStatus :string = status;
     const today :DateTime = DateTime.local();
     // $FlowFixMe
     const dueDateIsBeforeToday :boolean = DateTime.fromISO(dueDateTime).startOf('day') < today.startOf('day');
-    if (!status && !dateTimeCompleted && dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.LATE;
-    if (!status && !dateTimeCompleted && !dueDateIsBeforeToday) taskStatus = FOLLOW_UPS_STATUSES.PENDING;
+    if (status === FOLLOW_UPS_STATUSES.PENDING && !dateTimeCompleted && dueDateIsBeforeToday) {
+      taskStatus = FOLLOW_UPS_STATUSES.LATE;
+    }
 
     let dateCompleted :string = '';
     if (dateTimeCompleted) dateCompleted = DateTime.fromISO(dateTimeCompleted).toLocaleString(DateTime.DATE_SHORT);
@@ -55,7 +62,7 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
   return tableData;
 };
 
-/* eslint-disable import/prefer-default-export */
 export {
   formatTableData,
+  getTaskName,
 };

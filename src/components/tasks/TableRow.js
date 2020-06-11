@@ -12,16 +12,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
-import CompleteFollowUpModal from '../CompleteFollowUpModal';
+import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { StyledTableRow } from './FollowUpsTableStyles';
-import { getEntityProperties } from '../../../../utils/DataUtils';
-import { PARTICIPANT_FOLLOW_UPS } from '../../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
-import { FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
+import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
-  GREEN_1,
+  GREEN_2,
   NEUTRALS,
   REDS,
   WHITE
@@ -42,7 +43,7 @@ const cellPadding = css`
 const TaskName = styled.td`
   margin-right: 10px;
   font-size: 14px;
-  ${cellPadding}
+  padding: 20px 15px 20px 0;
   padding-left: 30px;
 `;
 
@@ -76,8 +77,8 @@ const StatusWrapper = styled.td`
 
 const statusColorVariation = getStyleVariation('bgColor', {
   default: NEUTRALS[1],
-  [FOLLOW_UPS_STATUSES.DONE]: GREEN_1,
-  [FOLLOW_UPS_STATUSES.LATE]: REDS[4],
+  [FOLLOW_UPS_STATUSES.DONE]: GREEN_2,
+  [FOLLOW_UPS_STATUSES.LATE]: REDS[3],
   [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
 });
 
@@ -174,9 +175,12 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
     personWhoReported,
     [FIRST_NAME, LAST_NAME]
   );
-  const personWhoReportedName :string = `Reported by: ${reportedFirstName} ${reportedLastName}`;
+  const reporter :string = !personWhoReported.isEmpty()
+    ? `${reportedFirstName} ${reportedLastName}`
+    : EMPTY_FIELD;
+  const personWhoReportedName :string = `Reported by: ${reporter}`;
   const { [NAME]: linkedProviderName } = getEntityProperties(linkedProvider, [NAME]);
-  const providerName :string = `Provider: ${linkedProviderName}`;
+  const providerName :string = `Provider: ${linkedProviderName || EMPTY_FIELD}`;
   const dateCompletedString :string = `Date completed: ${dateCompleted}`;
 
   if (expanded) {

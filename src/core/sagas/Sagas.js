@@ -17,6 +17,7 @@ import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
+import * as TasksSagas from '../../containers/tasks/TasksSagas';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -88,5 +89,10 @@ export default function* sagas() :Generator<*, *, *> {
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
     fork(RoutingSagas.goToRouteWatcher),
+
+    // TasksSagas
+    fork(TasksSagas.getPeopleForNewTaskFormWatcher),
+    fork(TasksSagas.loadTaskManagerDataWatcher),
+    fork(TasksSagas.searchForTasksWatcher),
   ]);
 }

@@ -73,6 +73,7 @@ const {
   ASSIGNED_TO,
   FOLLOW_UPS,
   MEETINGS,
+  PEOPLE,
   PROVIDER,
   REENTRY_STAFF,
   REPORTED,
@@ -245,9 +246,10 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const reentryStaffESID :UUID = getESIDFromApp(app, REENTRY_STAFF);
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const providerESID :UUID = getESIDFromApp(app, PROVIDER);
+    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
     const searchFilter = {
       entityKeyIds: followUpEKIDs,
-      sourceEntitySetIds: [meetingsESID, providerESID, reentryStaffESID],
+      sourceEntitySetIds: [meetingsESID, peopleESID, providerESID, reentryStaffESID],
       destinationEntitySetIds: [],
     };
     const response :Object = yield call(

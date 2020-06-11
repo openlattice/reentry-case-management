@@ -80,6 +80,12 @@ const REPORTS :Object = {
   SERVICES_TABLE_DATA: 'servicesTableData',
 };
 
+const TASK_MANAGER :Object = {
+  FOLLOW_UPS: 'followUps',
+  PARTICIPANTS: 'participants',
+  TASK_MANAGER: 'taskManager',
+};
+
 export {
   APP,
   EDM,
@@ -92,4 +98,5 @@ export {
   RELEASES,
   REPORTS,
   SHARED,
+  TASK_MANAGER,
 };

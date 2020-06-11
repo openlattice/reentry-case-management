@@ -5,14 +5,8 @@ import { List, Map } from 'immutable';
 import {
   Breadcrumbs,
   Button,
-  Card,
-  CardHeader,
-  CardSegment,
   Colors,
-  SearchInput,
   Spinner,
-  StyleUtils,
-  Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -20,28 +14,24 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import AddNewFollowUpModal from './AddNewFollowUpModal';
-import TableHeaderRow from './table/TableHeaderRow';
-import TableRow from './table/TableRow';
+import TasksTable from '../../../components/tasks/TasksTable';
 
 import * as Routes from '../../../core/router/Routes';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 import { formatTableData } from './utils/ParticipantFollowUpsUtils';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
 import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
-const { getStyleVariation } = StyleUtils;
 const { NEUTRALS } = Colors;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
-
-const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate', 'taskStatus']
-  .map((header :string) => ({ key: header, label: '', sortable: false }));
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -55,35 +45,6 @@ const PageHeader = styled.div`
   font-size: 28px;
   font-weight: 600;
 `;
-
-const TableCardHeader = styled(CardHeader)`
-  background-color: ${NEUTRALS[6]};
-  padding: 20px 30px;
-`;
-
-const InputWrapper = styled.div`
-  width: 100%;
-`;
-
-const getWidthVariation = getStyleVariation('width', {
-  default: 'auto',
-  taskName: '240px',
-  taskDescription: 'auto',
-  dueDate: '200px',
-  taskStatus: '100px'
-});
-
-const Cell = styled.td`
-  width: ${getWidthVariation};
-`;
-
-type HeadCellProps = {
-  width :string;
-};
-
-const HeadCell = ({ width } :HeadCellProps) => (
-  <Cell width={width} />
-);
 
 type Props = {
   actions :{
@@ -99,7 +60,6 @@ type Props = {
 };
 
 type State = {
-  input :string;
   modalIsVisible :boolean;
 };
 
@@ -109,7 +69,6 @@ class ParticipantTasks extends Component<Props, State> {
     super(props);
 
     this.state = {
-      input: '',
       modalIsVisible: false,
     };
   }
@@ -122,23 +81,6 @@ class ParticipantTasks extends Component<Props, State> {
       }
     } = this.props;
     if (participantId) actions.loadTasks({ participantEKID: participantId });
-  }
-
-  onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
-    const { name, value } = e.currentTarget;
-    this.setState({ [name]: value });
-  }
-
-  filterTableData = (tableData :Object[]) => {
-    const { input } = this.state;
-    if (!input.length) return tableData;
-    const filteredTableData :Object[] = tableData.filter((row :Object) => {
-      const { taskName, taskDescription } = row;
-      const trimmedInput :string = input.trim().toLowerCase();
-      return taskName.trim().toLowerCase().includes(trimmedInput)
-        || taskDescription.trim().toLowerCase().includes(trimmedInput);
-    });
-    return filteredTableData;
   }
 
   openModal = () => {
@@ -175,12 +117,14 @@ class ParticipantTasks extends Component<Props, State> {
         <Spinner size="2x" />
       );
     }
+    const isLoading = requestIsPending(requestStates[LOAD_TASKS]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[LOAD_TASKS])
+      || requestIsFailure(requestStates[LOAD_TASKS]);
 
     const participantName :string = getPersonFullName(participant);
-    const header :string = `${participantName}'s Tasks`;
+    const header :string = isLoading ? '' : `${participantName}'s Tasks`;
     const tasks :List = participantNeighbors.get(FOLLOW_UPS, List());
     const tasksData :Object[] = formatTableData(tasks, participantName);
-    const filteredData :Object[] = this.filterTableData(tasksData);
     return (
       <>
         <Breadcrumbs>
@@ -196,26 +140,16 @@ class ParticipantTasks extends Component<Props, State> {
           <PageHeader>{ header }</PageHeader>
           <Button mode="primary" onClick={this.openModal}>New Task</Button>
         </HeaderRow>
-        <Card>
-          <TableCardHeader>
-            <InputWrapper>
-              <SearchInput
-                  name="input"
-                  onChange={this.onInputChange}
-                  placeholder="Enter keywords here" />
-            </InputWrapper>
-          </TableCardHeader>
-          <CardSegment padding="0">
-            <Table
-                components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
-                data={filteredData}
-                headers={tableHeaders} />
-          </CardSegment>
-        </Card>
+        <TasksTable
+            hasSearched={hasSearched}
+            isLoading={isLoading}
+            tasksData={tasksData} />
         <AddNewFollowUpModal
             isVisible={modalIsVisible}
             onClose={this.closeModal}
-            personEKID={participantId} />
+            personEKID={participantId}
+            schema={schema}
+            uiSchema={uiSchema} />
       </>
     );
   }
