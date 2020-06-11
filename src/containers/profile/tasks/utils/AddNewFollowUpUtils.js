@@ -1,5 +1,10 @@
 // @flow
-import { List, getIn, setIn } from 'immutable';
+import {
+  List,
+  getIn,
+  removeIn,
+  setIn,
+} from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
@@ -21,7 +26,6 @@ const {
   REENTRY_STAFF,
   REPORTED,
   SUBJECT_OF,
-  STATUS,
 } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -30,12 +34,19 @@ const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   GENERAL_DATETIME,
+  GENERAL_NOTES,
   LAST_NAME,
   NAME,
-  GENERAL_NOTES,
+  STATUS,
 } = PROPERTY_TYPE_FQNS;
 
-const hydrateNewFollowUpForm = (schema :Object, reentryStaff :List, providersList :List) :Object => {
+const hydrateNewFollowUpForm = (
+  schema :Object,
+  reentryStaff :List,
+  providersList :List,
+  participants ? :List
+) :Object => {
+
   let newSchema :Object = schema;
   const pageSection :string = getPageSectionKey(1, 1);
 
@@ -73,6 +84,20 @@ const hydrateNewFollowUpForm = (schema :Object, reentryStaff :List, providersLis
     providersLabels
   );
 
+  if (isDefined(participants) && !participants.isEmpty()) {
+    const [participantsValues, participantsLabels] = getValuesFromEntityList(participants, [FIRST_NAME, LAST_NAME]);
+    newSchema = setIn(
+      newSchema,
+      ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enum'],
+      participantsValues
+    );
+    newSchema = setIn(
+      newSchema,
+      ['properties', pageSection, 'properties', getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID), 'enumNames'],
+      participantsLabels
+    );
+  }
+
   return newSchema;
 };
 
@@ -98,6 +123,7 @@ const preprocessFormData = (formData :Object) :Object => {
     FOLLOW_UPS_STATUSES.PENDING
   );
 
+
   if (isMeeting) {
     updatedFormData = setIn(
       updatedFormData,
@@ -110,6 +136,7 @@ const preprocessFormData = (formData :Object) :Object => {
       getIn(updatedFormData, [pageSection, getEntityAddressKey(0, FOLLOW_UPS, DESCRIPTION)])
     );
   }
+
   return updatedFormData;
 };
 
@@ -162,16 +189,28 @@ const removeEKIDsFromFormData = (formData :Object) :Object => {
   const reporterPath :string[] = [pageSection, getEntityAddressKey(0, REENTRY_STAFF, ENTITY_KEY_ID)];
   const assigneePath :string[] = [pageSection, getEntityAddressKey(1, REENTRY_STAFF, ENTITY_KEY_ID)];
   const providerPath :string[] = [pageSection, getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)];
+  const personPath :string[] = [pageSection, getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)];
 
   if (isDefined(getIn(formData, reporterPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, reporterPath);
   if (isDefined(getIn(formData, assigneePath))) updatedFormData = deleteKeyFromFormData(updatedFormData, assigneePath);
   if (isDefined(getIn(formData, providerPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, providerPath);
+  if (isDefined(getIn(formData, providerPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, personPath);
 
   return updatedFormData;
 };
 
+const getParticipantEKIDForNewTask = (personEKID :any, formData :Object) => {
+  if (isDefined(personEKID)) return personEKID;
+  const personEKIDInFormData = getIn(formData, [
+    getPageSectionKey(1, 1),
+    getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)
+  ]);
+  return personEKIDInFormData;
+};
+
 export {
   getNewFollowUpAssociations,
+  getParticipantEKIDForNewTask,
   hydrateNewFollowUpForm,
   preprocessFormData,
   removeEKIDsFromFormData,
