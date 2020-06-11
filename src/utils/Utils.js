@@ -3,7 +3,8 @@ import { List, Map } from 'immutable';
 import { Models } from 'lattice';
 import { DateTime } from 'luxon';
 
-import { getEKID, getFirstNeighborValue } from './DataUtils';
+import COLORS from '../core/style/Colors';
+import { getEKID, getFirstEntityValue } from './DataUtils';
 
 const { FullyQualifiedName } = Models;
 
@@ -21,8 +22,7 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
 
     let label :string = '';
     propertyList.forEach((propertyType) => {
-      const backUpValue = entity.get(propertyType, '');
-      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
+      const property = getFirstEntityValue(entity, propertyType, '');
       label = label.concat(' ', property);
     });
     const entityEKID :UUID = getEKID(entity);
@@ -44,7 +44,29 @@ const sortEntitiesByDateProperty = (
     return date.valueOf();
   });
 
+const generateTableHeaders = (headers :string[]) :Object[] => {
+
+  const tableHeaders = [];
+  headers.forEach((header :string) => {
+    tableHeaders.push({
+      cellStyle: {
+        backgroundColor: 'white',
+        color: COLORS.GRAY_01,
+        fontSize: '10px',
+        fontWeight: '600',
+        padding: '15px',
+        textAlign: 'left',
+      },
+      key: header,
+      label: header,
+      sortable: (header && header !== ' ') || false,
+    });
+  });
+  return tableHeaders;
+};
+
 export {
+  generateTableHeaders,
   getValuesFromEntityList,
   pipeConcat,
   pipeValue,

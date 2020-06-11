@@ -1,5 +1,6 @@
 // @flow
 import {
+  List,
   Map,
   getIn,
   isImmutable,
@@ -14,6 +15,7 @@ import { APP, EDM } from './constants/ReduxStateConstants';
 const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
+const ASSOCIATION_ENTITY_SET :string = 'associationEntitySet';
 const NEIGHBOR_DETAILS :string = 'neighborDetails';
 const NEIGHBOR_ENTITY_SET :string = 'neighborEntitySet';
 const ID :string = 'id';
@@ -36,24 +38,30 @@ const getFqnFromApp = (app :Object | Map, esid :UUID) => {
   ]);
 };
 
-const getFirstNeighborValue = (
-  neighborObj :Map,
+const getFirstEntityValue = (
+  entityObj :Map,
   fqn :FullyQualifiedName | string,
   defaultValue :string = ''
-) => neighborObj.getIn(
-
-  [NEIGHBOR_DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
+) => (
+  entityObj.getIn([fqn, 0], defaultValue)
 );
 
-const getEntityProperties = (entityObj :Map, propertyList :FullyQualifiedName[]) => {
+const getEntityProperties = (
+  entityObj :Map,
+  propertyList :FullyQualifiedName[]
+) :{ [FullyQualifiedName]:any } => {
 
   let returnPropertyFields = {};
-  if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
+  if (propertyList.length && isImmutable(entityObj) && !entityObj.isEmpty()) {
     propertyList.forEach((propertyType :FullyQualifiedName) => {
-      const backUpValue = entityObj.get(propertyType, '');
-      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields = set(returnPropertyFields, propertyType, property);
+      const value :List = entityObj.get(propertyType, List());
+      if (List.isList(value) && value.count() > 1) {
+        returnPropertyFields = set(returnPropertyFields, propertyType, value.toJS());
+      }
+      else {
+        const property = getFirstEntityValue(entityObj, propertyType, '');
+        returnPropertyFields = set(returnPropertyFields, propertyType, property);
+      }
     });
   }
   return returnPropertyFields;
@@ -70,6 +78,10 @@ const getPTIDFromEDM = (
   edm :Map, propertyFqn :FullyQualifiedName
 ) => edm.getIn([EDM.TYPE_IDS_BY_FQN, EDM.PROPERTY_TYPES, propertyFqn]);
 
+const getPropertyFqnFromEDM = (
+  edm :Map, ptid :UUID
+) => new FullyQualifiedName(edm.getIn([EDM.TYPES_BY_ID, EDM.PROPERTY_TYPES, ptid, 'type']));
+
 const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
   if (isImmutable(neighborObj)) {
@@ -80,13 +92,17 @@ const getNeighborDetails = (neighborObj :Map) :Map => {
 
 const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIGHBOR_ENTITY_SET, ID]));
 
+const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
+
 export {
+  getAssociationESID,
   getEKID,
   getESIDFromApp,
   getEntityProperties,
-  getFirstNeighborValue,
+  getFirstEntityValue,
   getFqnFromApp,
   getNeighborDetails,
   getNeighborESID,
   getPTIDFromEDM,
+  getPropertyFqnFromEDM,
 };

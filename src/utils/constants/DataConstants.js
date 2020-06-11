@@ -60,6 +60,8 @@ const EDUCATION_LEVELS :string[] = [
   'Elementary or High school, GED',
   'High school diploma',
   'College, no degree',
+  'Associate\'s Degree',
+  'Bachelor\'s Degree',
   'Postsecondary',
 ];
 
@@ -508,7 +510,6 @@ const NC_COUNTIES :string[] = [
 
 // source: http://www.occourts.org/directory/criminal/appearances-in-court/hearing-types.html
 const HEARING_TYPES = [
-  'Arraignment',
   'Court Trial',
   'Formal/Informal Probation',
   'Held to Answer/Arraignment',
