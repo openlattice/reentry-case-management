@@ -91,6 +91,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RoutingSagas.goToRouteWatcher),
 
     // TasksSagas
+    fork(TasksSagas.getPeopleForNewTaskFormWatcher),
     fork(TasksSagas.loadTaskManagerDataWatcher),
     fork(TasksSagas.searchForTasksWatcher),
   ]);

@@ -13,6 +13,8 @@ import {
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  DataApiActions,
+  DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
@@ -23,12 +25,15 @@ import { isDefined } from '../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
+  getEntityProperties,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import {
+  GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  getPeopleForNewTaskForm,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
@@ -39,12 +44,12 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { executeSearch } = SearchApiActions;
 const { executeSearchWorker } = SearchApiSagas;
-const {
-  FOLLOW_UPS,
-} = APP_TYPE_FQNS;
-const { GENERAL_DATETIME, STATUS } = PROPERTY_TYPE_FQNS;
+const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
+const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -180,6 +185,47 @@ function* searchForTasksWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * TasksActions.getPeopleForNewTaskForm()
+ *
+ */
+
+function* getPeopleForNewTaskFormWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(getPeopleForNewTaskForm.request(id));
+
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: peopleESID }));
+    if (response.error) throw response.error;
+    const people :List = fromJS(response.data)
+      .sort((person1 :Map, person2 :Map) => {
+        const { [LAST_NAME]: lastName1 } = getEntityProperties(person1, [LAST_NAME]);
+        const { [LAST_NAME]: lastName2 } = getEntityProperties(person2, [LAST_NAME]);
+        if (lastName1 < lastName2) return -1;
+        if (lastName1 > lastName2) return 1;
+        return 0;
+      });
+
+    yield put(getPeopleForNewTaskForm.success(id, people));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getPeopleForNewTaskForm.failure(id, error));
+  }
+  finally {
+    yield put(getPeopleForNewTaskForm.finally(id));
+  }
+}
+
+function* getPeopleForNewTaskFormWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PEOPLE_FOR_NEW_TASK_FORM, getPeopleForNewTaskFormWorker);
+}
+
+/*
+ *
  * TasksActions.loadTaskManagerData()
  *
  */
@@ -193,6 +239,7 @@ function* loadTaskManagerDataWorker(action :SequenceAction) :Generator<*, *, *> 
     yield all([
       call(searchForTasksWorker, searchForTasks({ statuses: [] })),
       call(getEntitiesForNewFollowUpFormWorker, getEntitiesForNewFollowUpForm()),
+      call(getPeopleForNewTaskFormWorker, getPeopleForNewTaskForm()),
     ]);
 
     yield put(loadTaskManagerData.success(id));
@@ -212,8 +259,8 @@ function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
 }
 
 export {
-  // getFollowUpNeighborsWatcher,
-  // getFollowUpNeighborsWorker,
+  getPeopleForNewTaskFormWatcher,
+  getPeopleForNewTaskFormWorker,
   loadTaskManagerDataWatcher,
   loadTaskManagerDataWorker,
   searchForTasksWatcher,
