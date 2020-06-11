@@ -135,8 +135,7 @@ const getReentryStaffOptions = (reentryStaffMembers :List) :Object[] => {
 
 const getTaskOptionsForSearch = (alreadySelectedStatuses :Object[], selectedStatus :Object[] | void) => {
   if (!isDefined(selectedStatus) || (Array.isArray(selectedStatus) && !selectedStatus.length)) {
-    if (alreadySelectedStatuses.length === 1) return [];
-    return alreadySelectedStatuses.map<Object>((status :Object) => status.value);
+    return [];
   }
   return selectedStatus.map<Object>((status :Object) => status.value);
 };
