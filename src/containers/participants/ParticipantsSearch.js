@@ -50,7 +50,7 @@ const NoParticipantsFound = () => (
 const labels = Map({
   name: 'Name',
   dob: 'Date of Birth',
-  jail: 'Jail',
+  facility: 'Facility',
   enrollmentDate: 'Enrollment Date',
 });
 
