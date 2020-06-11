@@ -82,7 +82,6 @@ const REPORTS :Object = {
 
 const TASK_MANAGER :Object = {
   FOLLOW_UPS: 'followUps',
-  FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
   TASK_MANAGER: 'taskManager',
 };
 

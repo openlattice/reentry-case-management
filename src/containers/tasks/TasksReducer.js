@@ -4,23 +4,18 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
-  GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
-  getFollowUpNeighbors,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
 import { SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
 
-const { FOLLOW_UPS, FOLLOW_UP_NEIGHBOR_MAP } = TASK_MANAGER;
+const { FOLLOW_UPS } = TASK_MANAGER;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
-    [GET_FOLLOW_UP_NEIGHBORS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [LOAD_TASK_MANAGER_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -28,29 +23,12 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [FOLLOW_UP_NEIGHBOR_MAP]: Map(),
   [FOLLOW_UPS]: List(),
 });
 
 export default function tasksReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
-
-    case getFollowUpNeighbors.case(action.type): {
-      return getFollowUpNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, action.id], action)
-          .setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-          const { value } = action;
-          return state
-            .set(FOLLOW_UP_NEIGHBOR_MAP, value)
-            .setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state.setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, action.id]),
-      });
-    }
 
     case loadTaskManagerData.case(action.type): {
       return loadTaskManagerData.reducer(state, action, {
