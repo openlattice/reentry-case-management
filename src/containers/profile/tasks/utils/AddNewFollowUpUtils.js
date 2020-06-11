@@ -1,10 +1,5 @@
 // @flow
-import {
-  List,
-  getIn,
-  removeIn,
-  setIn,
-} from 'immutable';
+import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
