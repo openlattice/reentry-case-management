@@ -124,19 +124,7 @@ type Props = {
   };
 };
 
-type State = {
-  hydratedSchema :Object;
-};
-
-class IntakeForm extends Component<Props, State> {
-
-  constructor(props :Props) {
-    super(props);
-
-    this.state = {
-      hydratedSchema: schemas[0]
-    };
-  }
+class IntakeForm extends Component<Props> {
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
@@ -149,14 +137,10 @@ class IntakeForm extends Component<Props, State> {
     const {
       actions,
       entitySetIdsByFqn,
-      incarcerationFacilities,
       requestStates,
     } = this.props;
     if (!prevProps.entitySetIdsByFqn.equals(entitySetIdsByFqn)) {
       actions.getIncarcerationFacilities();
-    }
-    if (!prevProps.incarcerationFacilities.equals(incarcerationFacilities)) {
-      this.updateSchema(incarcerationFacilities);
     }
     const wasSubmittingIntake :boolean = requestIsPending(prevProps.requestStates[SUBMIT_INTAKE_FORM]);
     const intakeWasSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
@@ -173,11 +157,6 @@ class IntakeForm extends Component<Props, State> {
   goToParticipantProfile = () => {
     const { actions, newParticipantEKID } = this.props;
     actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
-  }
-
-  updateSchema = (incarcerationFacilities :List) => {
-    const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
-    this.setState({ hydratedSchema });
   }
 
   onSubmit = ({ formData } :Object) => {
@@ -241,8 +220,8 @@ class IntakeForm extends Component<Props, State> {
   }
 
   render() {
-    const { requestStates } = this.props;
-    const { hydratedSchema } = this.state;
+    const { incarcerationFacilities, requestStates } = this.props;
+    const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
     return (
       <Paged
           render={(props :Object) => {
