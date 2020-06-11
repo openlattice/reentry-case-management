@@ -41,7 +41,7 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const personDataObject :Map = fromJS({
       name: personName,
       dob: dateOfBirth,
-      jail: jailName,
+      facility: jailName,
       enrollmentDate: enrollmentDate || undefined,
       id: personEKID,
     });

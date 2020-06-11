@@ -58,6 +58,7 @@ const {
   NAME,
   NOTES,
   OL_DATETIME,
+  OL_ID_FQN,
   PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED_METHOD_OF_CONTACT,
@@ -66,7 +67,6 @@ const {
   RECOGNIZED_END_DATETIME,
   REGISTERED_FLAG,
   SOURCE,
-  SSN,
   STREET,
   TITLE,
   TYPE,
@@ -123,9 +123,9 @@ const personInformationSchema :Object = {
           enum: ETHNICITIES,
           enumNames: ETHNICITIES
         },
-        [getEntityAddressKey(0, PEOPLE, SSN)]: {
+        [getEntityAddressKey(0, PEOPLE, OL_ID_FQN)]: {
           type: 'string',
-          title: 'Social Security #',
+          title: 'Facility ID',
         },
       },
       required: [
@@ -372,7 +372,7 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, SSN)]: {
+    [getEntityAddressKey(0, PEOPLE, OL_ID_FQN)]: {
       classNames: 'column-span-4',
     },
     'ui:order': [
@@ -384,7 +384,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PERSON_DETAILS, GENDER),
       getEntityAddressKey(0, PEOPLE, RACE),
       getEntityAddressKey(0, PEOPLE, ETHNICITY),
-      getEntityAddressKey(0, PEOPLE, SSN),
+      getEntityAddressKey(0, PEOPLE, OL_ID_FQN),
     ]
   },
   [getPageSectionKey(1, 2)]: {
