@@ -5,13 +5,11 @@ import { DateTime } from 'luxon';
 import { generateReviewSchemas } from '../../../utils/FormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
-  COUNTRIES,
   EDUCATION_LEVELS,
   ETHNICITIES,
   GENDERS,
   HEARING_TYPES,
   MARITAL_STATUSES,
-  NC_COUNTIES,
   PREFERRED_COMMUNICATION_METHODS,
   PROVIDER_TYPES,
   RACES,
@@ -41,7 +39,6 @@ const {
 } = APP_TYPE_FQNS;
 const {
   CITY,
-  COUNTRY,
   COUNTY,
   DATE,
   DATETIME_COMPLETED,
@@ -151,12 +148,6 @@ const personInformationSchema :Object = {
           title: 'State',
           enum: US_STATES,
           enumNames: US_STATES
-        },
-        [getEntityAddressKey(0, LOCATION, COUNTRY)]: {
-          type: 'string',
-          title: 'Country',
-          enum: COUNTRIES,
-          enumNames: COUNTRIES
         },
         [getEntityAddressKey(0, LOCATION, ZIP)]: {
           type: 'string',
@@ -315,16 +306,21 @@ const personInformationSchema :Object = {
         },
         [getEntityAddressKey(1, LOCATION, COUNTY)]: {
           type: 'string',
-          title: 'Registered NC County',
-          enum: NC_COUNTIES,
-          enumNames: NC_COUNTIES,
+          title: 'Registered County',
+        },
+        [getEntityAddressKey(1, LOCATION, US_STATE)]: {
+          type: 'string',
+          title: 'Registered State',
+          enum: US_STATES,
+          enumNames: US_STATES
         },
         [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
           type: 'string',
           title: 'Registered date',
           format: 'date',
         },
-      }
+      },
+      required: [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
     },
     [getPageSectionKey(1, 6)]: {
       type: 'object',
@@ -398,9 +394,6 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, LOCATION, US_STATE)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, LOCATION, COUNTRY)]: {
-      classNames: 'column-span-4',
-    },
     [getEntityAddressKey(0, LOCATION, ZIP)]: {
       classNames: 'column-span-4',
     },
@@ -417,7 +410,6 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, LOCATION, STREET),
       getEntityAddressKey(0, LOCATION, CITY),
       getEntityAddressKey(0, LOCATION, US_STATE),
-      getEntityAddressKey(0, LOCATION, COUNTRY),
       getEntityAddressKey(0, LOCATION, ZIP),
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
       getEntityAddressKey(1, CONTACT_INFO, EMAIL),
@@ -524,12 +516,16 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(1, LOCATION, COUNTY)]: {
       classNames: 'column-span-4',
     },
+    [getEntityAddressKey(1, LOCATION, US_STATE)]: {
+      classNames: 'column-span-4',
+    },
     [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
       classNames: 'column-span-4',
     },
     'ui:order': [
       getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG),
       getEntityAddressKey(1, LOCATION, COUNTY),
+      getEntityAddressKey(1, LOCATION, US_STATE),
       getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME),
     ]
   },

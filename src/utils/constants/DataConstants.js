@@ -60,6 +60,8 @@ const EDUCATION_LEVELS :string[] = [
   'Elementary or High school, GED',
   'High school diploma',
   'College, no degree',
+  'Associate\'s Degree',
+  'Bachelor\'s Degree',
   'Postsecondary',
 ];
 
