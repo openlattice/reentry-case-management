@@ -508,7 +508,6 @@ const NC_COUNTIES :string[] = [
 
 // source: http://www.occourts.org/directory/criminal/appearances-in-court/hearing-types.html
 const HEARING_TYPES = [
-  'Arraignment',
   'Court Trial',
   'Formal/Informal Probation',
   'Held to Answer/Arraignment',
