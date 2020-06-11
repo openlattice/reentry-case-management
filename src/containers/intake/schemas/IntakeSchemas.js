@@ -41,7 +41,6 @@ const {
 } = APP_TYPE_FQNS;
 const {
   CITY,
-  COUNTRY,
   COUNTY,
   DATE,
   DATETIME_COMPLETED,
@@ -151,12 +150,6 @@ const personInformationSchema :Object = {
           title: 'State',
           enum: US_STATES,
           enumNames: US_STATES
-        },
-        [getEntityAddressKey(0, LOCATION, COUNTRY)]: {
-          type: 'string',
-          title: 'Country',
-          enum: COUNTRIES,
-          enumNames: COUNTRIES
         },
         [getEntityAddressKey(0, LOCATION, ZIP)]: {
           type: 'string',
@@ -398,9 +391,6 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, LOCATION, US_STATE)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, LOCATION, COUNTRY)]: {
-      classNames: 'column-span-4',
-    },
     [getEntityAddressKey(0, LOCATION, ZIP)]: {
       classNames: 'column-span-4',
     },
@@ -417,7 +407,6 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, LOCATION, STREET),
       getEntityAddressKey(0, LOCATION, CITY),
       getEntityAddressKey(0, LOCATION, US_STATE),
-      getEntityAddressKey(0, LOCATION, COUNTRY),
       getEntityAddressKey(0, LOCATION, ZIP),
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
       getEntityAddressKey(1, CONTACT_INFO, EMAIL),
