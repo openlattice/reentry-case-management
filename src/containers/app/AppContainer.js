@@ -12,8 +12,12 @@ import {
   AppContentWrapper,
   AppHeaderWrapper,
   AppNavigationWrapper,
+  LatticeLuxonUtils,
+  MuiPickersUtilsProvider,
   Sizes,
   Spinner,
+  ThemeProvider,
+  lightTheme,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import {
@@ -24,7 +28,6 @@ import {
 } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
@@ -41,6 +44,7 @@ import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 
 import { isNonEmptyString } from '../../utils/LangUtils';
+import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { APP_CONTENT_WIDTH } = Sizes;
@@ -77,11 +81,6 @@ class AppContainer extends Component<Props> {
 
     const { actions } = this.props;
     actions.logout();
-
-    // TODO: tracking
-    // if (isFunction(gtag)) {
-    //   gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
-    // }
   }
 
   switchOrganization = (organization :Object) => {
@@ -98,7 +97,7 @@ class AppContainer extends Component<Props> {
 
     const { requestStates } = this.props;
 
-    if (requestStates[INITIALIZE_APPLICATION] === RequestStates.SUCCESS) {
+    if (requestIsSuccess(requestStates[INITIALIZE_APPLICATION])) {
       return (
         <Switch>
           <Route exact strict path="/home" />
@@ -115,7 +114,7 @@ class AppContainer extends Component<Props> {
       );
     }
 
-    if (requestStates[INITIALIZE_APPLICATION] === RequestStates.FAILURE) {
+    if (requestIsFailure(requestStates[INITIALIZE_APPLICATION])) {
       return (
         <AppContentWrapper>
           <Error>
@@ -132,7 +131,7 @@ class AppContainer extends Component<Props> {
 
   render() {
 
-    const { organizations, selectedOrgId } = this.props;
+    const { organizations, requestStates, selectedOrgId } = this.props;
 
     const userInfo = AuthUtils.getUserInfo();
     let user = null;
@@ -144,31 +143,36 @@ class AppContainer extends Component<Props> {
     }
 
     return (
-      <AppContainerWrapper>
-        <AppHeaderWrapper
-            appIcon={OpenLatticeIcon}
-            appTitle="Re-entry Case Management"
-            logout={this.logout}
-            organizationsSelect={{
-              onChange: this.switchOrganization,
-              organizations,
-              selectedOrganizationId: selectedOrgId
-            }}
-            user={user}>
-          <AppNavigationWrapper>
-            <NavLink to={Routes.ROOT} />
-            <NavLink to={Routes.RELEASES}>Releases</NavLink>
-            <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
-            <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
-            <NavLink to={Routes.REPORTS}>Reports</NavLink>
-            <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
-            <NavLink to={Routes.TASKS}>Tasks</NavLink>
-          </AppNavigationWrapper>
-        </AppHeaderWrapper>
-        <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-          { this.renderAppContent() }
-        </AppContentWrapper>
-      </AppContainerWrapper>
+      <ThemeProvider theme={lightTheme}>
+        <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
+          <AppContainerWrapper>
+            <AppHeaderWrapper
+                appIcon={OpenLatticeIcon}
+                appTitle="Re-entry Case Management"
+                logout={this.logout}
+                organizationsSelect={{
+                  isLoading: requestIsPending(requestStates[INITIALIZE_APPLICATION]),
+                  onChange: this.switchOrganization,
+                  organizations,
+                  selectedOrganizationId: selectedOrgId
+                }}
+                user={user}>
+              <AppNavigationWrapper>
+                <NavLink to={Routes.ROOT} />
+                <NavLink to={Routes.RELEASES}>Releases</NavLink>
+                <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
+                <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
+                <NavLink to={Routes.REPORTS}>Reports</NavLink>
+                <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
+                <NavLink to={Routes.TASKS}>Tasks</NavLink>
+              </AppNavigationWrapper>
+            </AppHeaderWrapper>
+            <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+              { this.renderAppContent() }
+            </AppContentWrapper>
+          </AppContainerWrapper>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
     );
   }
 }

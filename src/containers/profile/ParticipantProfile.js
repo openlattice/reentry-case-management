@@ -266,7 +266,7 @@ class ParticipantProfile extends Component<Props, State> {
             </CardHeader>
             {
               needs && (
-                <CardSegment padding="30px">
+                <CardSegment padding="30px" vertical={false}>
                   { needs.map((need :string) => <NeedsTag key={need}>{ need }</NeedsTag>) }
                 </CardSegment>
               )
@@ -283,7 +283,7 @@ class ParticipantProfile extends Component<Props, State> {
             <CardHeader padding="30px">
               <SmallCardHeaderTitle>Program History</SmallCardHeaderTitle>
             </CardHeader>
-            <GrayBar padding="15px 30px">
+            <GrayBar padding="15px 30px" vertical={false}>
               <div>{ referralSource }</div>
               { releaseDate && (<div>{ releaseText }</div>) }
             </GrayBar>

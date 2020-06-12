@@ -120,7 +120,6 @@ const preprocessFormData = (formData :Object) :Object => {
     FOLLOW_UPS_STATUSES.PENDING
   );
 
-
   if (isMeeting) {
     updatedFormData = setIn(
       updatedFormData,
