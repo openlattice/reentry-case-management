@@ -16,6 +16,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import * as Routes from '../../core/router/Routes';
 import { APP_NAME } from '../../utils/constants/GeneralConstants';
+import { ERR_ORGS_NOT_FOUND } from '../../utils/Errors';
 import {
   INITIALIZE_APPLICATION,
   SWITCH_ORGANIZATION,
@@ -51,6 +52,7 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
     if (appConfigsResponse.error) throw appConfigsResponse.error;
 
     const appConfigs :Object[] = appConfigsResponse.data || [];
+    if (!appConfigs.length) throw ERR_ORGS_NOT_FOUND;
 
     yield put(initializeApplication.success(action.id, { appConfigs }));
   }
