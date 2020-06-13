@@ -29,7 +29,6 @@ const NeedsTag = styled.div`
   border-radius: 3px;
   color: ${NEUTRALS[1]};
   font-size: 14px;
-  line-height: 1.35;
   margin-right: 20px;
   padding: 12px 20px;
   text-align: center;
@@ -38,7 +37,6 @@ const NeedsTag = styled.div`
 const Notes = styled.div`
   color: ${COLORS.GRAY_01};
   font-size: 14px;
-  line-height: 1.35;
 `;
 
 type Props = {

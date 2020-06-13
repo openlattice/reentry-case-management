@@ -12,7 +12,6 @@ const Header = styled(NavLink)`
   color: ${PURPLES[1]};
   font-size: 12px;
   font-weight: bold;
-  line-height: 1.35;
   text-decoration: none;
   text-transform: uppercase;
 `;
@@ -32,7 +31,6 @@ const CardHeaderTitle = styled.div`
   color: ${COLORS.GRAY_01};
   font-size: 22px;
   font-weight: 600;
-  line-height: 1.35;
 `;
 
 const SmallCardHeaderTitle = styled(CardHeaderTitle)`
