@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
@@ -10,6 +10,7 @@ import {
   EditButton,
 } from 'lattice-ui-kit';
 
+import EditNeedsModal from './EditNeedsModal';
 import { SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import COLORS from '../../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -45,13 +46,14 @@ type Props = {
 };
 
 const NeedsCard = ({ participantNeighbors } :Props) => {
+  const [editModalVisible, setEditModalVisibility] = useState(false);
   const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
   const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
   return (
     <Card>
       <NeedsCardHeader padding="30px" vertical={false}>
         <SmallCardHeaderTitle>Needs</SmallCardHeaderTitle>
-        <EditButton onClick={() => {}}>Edit</EditButton>
+        <EditButton onClick={() => setEditModalVisibility(true)}>Edit</EditButton>
       </NeedsCardHeader>
       {
         needs && (
@@ -67,6 +69,10 @@ const NeedsCard = ({ participantNeighbors } :Props) => {
           </CardSegment>
         )
       }
+      <EditNeedsModal
+          isVisible={editModalVisible}
+          needsAssessment={participantNeighbors.getIn([NEEDS_ASSESSMENT, 0], Map())}
+          onClose={() => setEditModalVisibility(false)} />
     </Card>
   );
 };
