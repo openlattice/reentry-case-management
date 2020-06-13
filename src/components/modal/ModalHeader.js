@@ -33,7 +33,7 @@ type HeaderProps = {
 };
 
 const ModalHeader = ({ onClose, title } :HeaderProps) => (
-  <ModalCardSegment padding="30px 30px 20px">
+  <ModalCardSegment padding="30px 30px 20px" vertical={false}>
     <ModalTitle>{ title }</ModalTitle>
     <CloseButton onClick={onClose}>
       <FontAwesomeIcon color={NEUTRALS[2]} icon={faTimes} size="lg" />
