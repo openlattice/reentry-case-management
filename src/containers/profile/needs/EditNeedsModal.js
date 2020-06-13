@@ -112,7 +112,7 @@ const EditNeedsModal = ({
     else onClose();
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
+  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Needs" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[EDIT_NEEDS]);
     return (
