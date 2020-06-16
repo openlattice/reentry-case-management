@@ -1,7 +1,7 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Map, fromJS } from 'immutable';
+import { List, Map } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { useDispatch, useSelector } from 'react-redux';
@@ -50,9 +50,9 @@ const EditNeedsModal = ({
 } :Props) => {
 
   const needsAssessmentEKID :UUID = getEKID(needsAssessment);
-  const entityIndexToIdMap :Map = fromJS({ [NEEDS_ASSESSMENT]: [needsAssessmentEKID] });
+  const entityIndexToIdMap :Map = Map({ [NEEDS_ASSESSMENT]: List([needsAssessmentEKID]) });
 
-  const originalFormData :Object = {
+  const originalFormData = {
     [getPageSectionKey(1, 1)]: {
       [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: needsAssessment.get(TYPE, []),
       [getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)]: needsAssessment.getIn([NOTES, 0], ''),
@@ -61,14 +61,12 @@ const EditNeedsModal = ({
   const [formData, updateFormData] = useState(originalFormData);
   const dispatch = useDispatch();
 
-  const requestStates :Object = {
-    [EDIT_NEEDS]: useSelector((store :Map) => store.getIn([
-      PROFILE.PROFILE,
-      ACTIONS,
-      EDIT_NEEDS,
-      REQUEST_STATE
-    ]))
-  };
+  const editNeedsReqState = useSelector((store :Map) => store.getIn([
+    PROFILE.PROFILE,
+    ACTIONS,
+    EDIT_NEEDS,
+    REQUEST_STATE
+  ]));
   const selectedOrgId :string = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
   const entitySetIds :Map = useSelector((store :Map) => store.getIn([
     APP.APP,
@@ -87,10 +85,10 @@ const EditNeedsModal = ({
   }, [dispatch, onClose]);
 
   useEffect(() => {
-    if (requestIsSuccess(requestStates[EDIT_NEEDS])) {
+    if (requestIsSuccess(editNeedsReqState)) {
       closeModal();
     }
-  }, [closeModal, requestStates]);
+  }, [closeModal, editNeedsReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
@@ -109,12 +107,14 @@ const EditNeedsModal = ({
     if (Object.values(entityData).length) {
       dispatch(editNeeds({ entityData, needsAssessmentEKID }));
     }
-    else onClose();
+    else {
+      onClose();
+    }
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Needs" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = requestIsPending(requestStates[EDIT_NEEDS]);
+    const isSubmitting :boolean = requestIsPending(editNeedsReqState);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}

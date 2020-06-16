@@ -5,7 +5,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { List, Map, fromJS } from 'immutable';
+import { Map, Set, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
@@ -54,8 +54,8 @@ function* editNeedsWorker(action :SequenceAction) :Generator<*, *, *> {
         const fqn = getPropertyFqnFromEDM(edm, ptid);
         map.set(fqn, propertyValue);
       });
-      map.set(ENTITY_KEY_ID, List([needsAssessmentEKID]));
-    }).asImmutable();
+      map.set(ENTITY_KEY_ID, Set([needsAssessmentEKID]));
+    });
 
     yield put(editNeeds.success(id, newNeedsData));
   }

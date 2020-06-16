@@ -95,11 +95,8 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
-          const newNeedsData :Map = seqAction.value;
-          const participantNeighborMap :Map = state.get(PARTICIPANT_NEIGHBORS)
-            .setIn([NEEDS_ASSESSMENT, 0], newNeedsData);
           return state
-            .set(PARTICIPANT_NEIGHBORS, participantNeighborMap)
+            .setIn([PARTICIPANT_NEIGHBORS, NEEDS_ASSESSMENT, 0], seqAction.value)
             .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
