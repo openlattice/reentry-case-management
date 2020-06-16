@@ -20,6 +20,7 @@ import {
   createNewFollowUp,
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
+import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -31,10 +32,13 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
-const { ENROLLMENT_STATUS, FOLLOW_UPS } = APP_TYPE_FQNS;
+const { ENROLLMENT_STATUS, FOLLOW_UPS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [EDIT_NEEDS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -58,6 +62,11 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
 
   switch (action.type) {
 
+    case CLEAR_EDIT_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
     case createNewFollowUp.case(action.type): {
       return createNewFollowUp.reducer(state, action, {
         REQUEST: () => state
@@ -76,6 +85,23 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
+
+    case editNeeds.case(action.type): {
+      return editNeeds.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_NEEDS, action.id], action)
+          .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, NEEDS_ASSESSMENT, 0], seqAction.value)
+            .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_NEEDS, action.id]),
       });
     }
 

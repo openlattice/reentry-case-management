@@ -23,7 +23,7 @@ import type { Match } from 'react-router';
 import * as Routes from '../../core/router/Routes';
 import RecordEventModal from './events/RecordEventModal';
 import Event from './events/Event';
-import COLORS from '../../core/style/Colors';
+import NeedsCard from './needs/NeedsCard';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -31,7 +31,13 @@ import {
   EventText,
   EventWrapper,
 } from './styled/EventStyles';
-import { GrayerButton, Header, NameHeader } from './styled/GeneralProfileStyles';
+import {
+  CardHeaderTitle,
+  GrayerButton,
+  Header,
+  NameHeader,
+  SmallCardHeaderTitle,
+} from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData, getMostRecentReleaseDate, getReentryEnrollmentDate } from './utils/ProfileUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
@@ -55,14 +61,11 @@ const {
 const {
   ENROLLMENT_STATUS,
   MANUAL_JAIL_STAYS,
-  NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
 } = APP_TYPE_FQNS;
 const {
   EFFECTIVE_DATE,
-  NOTES,
   SOURCE,
-  TYPE
 } = PROPERTY_TYPE_FQNS;
 const participantGridLabels = Map({
   lastName: 'Last name',
@@ -92,37 +95,8 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 20px;
 `;
 
-const CardHeaderTitle = styled.div`
-  color: ${COLORS.GRAY_01};
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.35;
-`;
-
-const SmallCardHeaderTitle = styled(CardHeaderTitle)`
-  color: ${NEUTRALS[0]};
-  font-size: 20px;
-`;
-
 const PictureWrapper = styled.div`
   margin-right: 45px;
-`;
-
-const NeedsTag = styled.div`
-  background-color: ${NEUTRALS[6]};
-  border-radius: 3px;
-  color: ${NEUTRALS[1]};
-  font-size: 14px;
-  line-height: 1.35;
-  margin-right: 20px;
-  padding: 12px 20px;
-  text-align: center;
-`;
-
-const Notes = styled.div`
-  color: ${COLORS.GRAY_01};
-  font-size: 14px;
-  line-height: 1.35;
 `;
 
 const EventsCard = styled(Card)`
@@ -216,8 +190,6 @@ class ParticipantProfile extends Component<Props, State> {
     const personEKID :UUID = getEKID(participant);
     const participantName :string = getPersonFullName(participant);
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
-    const needs :string[] = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, TYPE], []);
-    const notes :string = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0, NOTES, 0], '');
     const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
     const referralSource :string = `Referred from: ${participantNeighbors
       .getIn([REFERRAL_REQUEST, 0, SOURCE, 0], EMPTY_FIELD)}`;
@@ -260,25 +232,7 @@ class ParticipantProfile extends Component<Props, State> {
               </CardInnerWrapper>
             </CardSegment>
           </Card>
-          <Card>
-            <CardHeader padding="30px">
-              <SmallCardHeaderTitle>Needs</SmallCardHeaderTitle>
-            </CardHeader>
-            {
-              needs && (
-                <CardSegment padding="30px" vertical={false}>
-                  { needs.map((need :string) => <NeedsTag key={need}>{ need }</NeedsTag>) }
-                </CardSegment>
-              )
-            }
-            {
-              notes && (
-                <CardSegment padding="30px">
-                  <Notes>{ notes }</Notes>
-                </CardSegment>
-              )
-            }
-          </Card>
+          <NeedsCard participantNeighbors={participantNeighbors} />
           <EventsCard>
             <CardHeader padding="30px">
               <SmallCardHeaderTitle>Program History</SmallCardHeaderTitle>
