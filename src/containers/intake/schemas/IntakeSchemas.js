@@ -319,6 +319,11 @@ const personInformationSchema :Object = {
           title: 'Registered date',
           format: 'date',
         },
+        [getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME)]: {
+          type: 'string',
+          title: 'Registry end date',
+          format: 'date',
+        },
       },
       required: [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
     },
@@ -522,11 +527,15 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
       classNames: 'column-span-4',
     },
+    [getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME)]: {
+      classNames: 'column-span-4',
+    },
     'ui:order': [
       getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG),
       getEntityAddressKey(1, LOCATION, COUNTY),
       getEntityAddressKey(1, LOCATION, US_STATE),
       getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME),
+      getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME),
     ]
   },
   [getPageSectionKey(1, 6)]: {

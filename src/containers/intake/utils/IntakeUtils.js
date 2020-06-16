@@ -377,6 +377,10 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
   const registeredCountyPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, COUNTY)];
   const registeredStatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, US_STATE)];
   const registeredDatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
+  const registryEndDatePath :string[] = [
+    getPageSectionKey(1, 5),
+    getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME)
+  ];
 
   if (isDefined(isSexOffenderValue) && isSexOffenderValue) {
     const clientAddressSection :any = get(formData, getPageSectionKey(1, 2));
@@ -405,11 +409,17 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
       const datetimeISO :string = DateTime.fromSQL(registeredDate.concat(' ', currentTime)).toISO();
       updatedFormData = updateFormData(updatedFormData, registeredDatePath, datetimeISO);
     }
+    const registryEndDate :any = getIn(formData, registryEndDatePath);
+    if (isDefined(registryEndDate)) {
+      const datetimeISO :string = DateTime.fromSQL(registryEndDate.concat(' ', currentTime)).toISO();
+      updatedFormData = updateFormData(updatedFormData, registryEndDatePath, datetimeISO);
+    }
   }
   if ((isDefined(isSexOffenderValue) && !isSexOffenderValue) || !isDefined(isSexOffenderPath)) {
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredCountyPath);
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredStatePath);
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredDatePath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, registryEndDatePath);
   }
   return updatedFormData;
 };
