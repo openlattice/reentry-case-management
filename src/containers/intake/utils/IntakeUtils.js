@@ -45,6 +45,7 @@ const {
   REPORTED,
   REPRESENTED_BY,
   SEX_OFFENDER,
+  STATE_ID,
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
@@ -52,7 +53,9 @@ const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   GENDER,
+  GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
+  OL_ID_FQN,
   LAST_NAME,
   MARITAL_STATUS,
   NAME,
@@ -114,7 +117,8 @@ const getClientContactInfoCount = (formData :Object) :number => {
 
     const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
     const propertyIsAboutPreferred :boolean = propertyTypeFQN.toString() === PREFERRED.toString()
-      || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString();
+      || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString()
+      || propertyTypeFQN.toString() === GENERAL_NOTES.toString();
 
     return entitySetName === CONTACT_INFO.toString()
       && isDefined(get(contactSection, entityAddressKey))
@@ -193,6 +197,31 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       [pageSectionKey, phoneAsPreferredKey],
       true
     );
+  }
+
+  return updatedFormData;
+};
+
+const setPreferredTimeOfContact = (formData :Object) :Object => {
+
+  const preferredTimeOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
+  const pageSectionKey :string = getPageSectionKey(1, 2);
+  const preferredTimeOfContactPath :string[] = [pageSectionKey, preferredTimeOfContactKey];
+  const preferredTimeOfContactValue :string = getIn(formData, preferredTimeOfContactPath);
+  const contactInfoCount :number = getClientContactInfoCount(formData);
+
+  let updatedFormData = formData;
+  updatedFormData = deleteKeyFromFormData(updatedFormData, preferredTimeOfContactPath);
+  if (!contactInfoCount) return updatedFormData;
+
+  let contactIndex :number = 0;
+  while (contactIndex < contactInfoCount) {
+    updatedFormData = updateFormData(
+      updatedFormData,
+      [pageSectionKey, getEntityAddressKey(contactIndex, CONTACT_INFO, GENERAL_NOTES)],
+      preferredTimeOfContactValue
+    );
+    contactIndex += 1;
   }
 
   return updatedFormData;
@@ -377,6 +406,10 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
   const registeredCountyPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, COUNTY)];
   const registeredStatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, US_STATE)];
   const registeredDatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
+  const registryEndDatePath :string[] = [
+    getPageSectionKey(1, 5),
+    getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME)
+  ];
 
   if (isDefined(isSexOffenderValue) && isSexOffenderValue) {
     const clientAddressSection :any = get(formData, getPageSectionKey(1, 2));
@@ -405,11 +438,17 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
       const datetimeISO :string = DateTime.fromSQL(registeredDate.concat(' ', currentTime)).toISO();
       updatedFormData = updateFormData(updatedFormData, registeredDatePath, datetimeISO);
     }
+    const registryEndDate :any = getIn(formData, registryEndDatePath);
+    if (isDefined(registryEndDate)) {
+      const datetimeISO :string = DateTime.fromSQL(registryEndDate.concat(' ', currentTime)).toISO();
+      updatedFormData = updateFormData(updatedFormData, registryEndDatePath, datetimeISO);
+    }
   }
   if ((isDefined(isSexOffenderValue) && !isSexOffenderValue) || !isDefined(isSexOffenderPath)) {
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredCountyPath);
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredStatePath);
     updatedFormData = deleteKeyFromFormData(updatedFormData, registeredDatePath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, registryEndDatePath);
   }
   return updatedFormData;
 };
@@ -620,6 +659,16 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
+const getStateIDAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const ids = get(formData, getPageSectionKey(1, 9));
+  if (!isDefined(ids) || !Object.values(ids).length) return associations;
+  if (isDefined(get(ids, getEntityAddressKey(0, STATE_ID, OL_ID_FQN)))) {
+    associations.push([HAS, 0, PEOPLE, 0, STATE_ID, {}]);
+  }
+  return associations;
+};
+
 export {
   getClientContactAndAddressAssociations,
   getClientContactInfoCount,
@@ -630,11 +679,13 @@ export {
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
+  getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
   setContactIndices,
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
+  setPreferredTimeOfContact,
   setProbationOrParoleValues,
   setRegisteredSexOffender,
 };

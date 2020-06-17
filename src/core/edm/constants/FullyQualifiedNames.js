@@ -63,6 +63,7 @@ const APP_TYPE_FQNS :Object = {
   REPORTED: new FullyQualifiedName('app.reported'),
   REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
   SEX_OFFENDER: new FullyQualifiedName('app.sexoffender'),
+  STATE_ID: new FullyQualifiedName('app.identification'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
 };
 
@@ -71,6 +72,7 @@ const PROPERTY_TYPE_FQNS = {
   CITY: new FullyQualifiedName('location.city'),
   COUNTRY: new FullyQualifiedName('ol.country'),
   COUNTY: new FullyQualifiedName('ol.county'),
+  COUNTY_ID: new FullyQualifiedName('nc.SubjectIdentification'),
   DATE: new FullyQualifiedName('general.date'),
   DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
