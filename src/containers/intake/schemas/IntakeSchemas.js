@@ -11,6 +11,7 @@ import {
   HEARING_TYPES,
   MARITAL_STATUSES,
   PREFERRED_COMMUNICATION_METHODS,
+  PREFERRED_COMMUNICATION_TIMES,
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
@@ -50,6 +51,7 @@ const {
   ETHNICITY,
   FIRST_NAME,
   GENDER,
+  GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
   MARITAL_STATUS,
@@ -79,7 +81,7 @@ const personInformationSchema :Object = {
   properties: {
     [getPageSectionKey(1, 1)]: {
       type: 'object',
-      title: 'Legal name',
+      title: '',
       properties: {
         [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
           type: 'string',
@@ -143,6 +145,24 @@ const personInformationSchema :Object = {
         },
       }
     },
+    [getPageSectionKey(1, 3)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+          type: 'string',
+          title: 'Marital status',
+          enum: MARITAL_STATUSES,
+          enumNames: MARITAL_STATUSES
+        },
+        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+          type: 'string',
+          title: 'Highest level of education completed',
+          enum: EDUCATION_LEVELS,
+          enumNames: EDUCATION_LEVELS
+        },
+      }
+    },
     [getPageSectionKey(1, 2)]: {
       type: 'object',
       title: 'Contact',
@@ -178,26 +198,14 @@ const personInformationSchema :Object = {
           title: 'Preferred communication method',
           enum: PREFERRED_COMMUNICATION_METHODS,
           enumNames: PREFERRED_COMMUNICATION_METHODS
-        }
+        },
+        [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
+          type: 'string',
+          title: 'Preferred time of contact',
+          enum: PREFERRED_COMMUNICATION_TIMES,
+          enumNames: PREFERRED_COMMUNICATION_TIMES
+        },
       },
-    },
-    [getPageSectionKey(1, 3)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-          type: 'string',
-          title: 'Marital status',
-          enum: MARITAL_STATUSES,
-          enumNames: MARITAL_STATUSES
-        },
-        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-          type: 'string',
-          title: 'Highest level of education completed',
-          enum: EDUCATION_LEVELS,
-          enumNames: EDUCATION_LEVELS
-        },
-      }
     },
     [getPageSectionKey(1, 4)]: {
       type: 'object',
@@ -308,7 +316,7 @@ const personInformationSchema :Object = {
     },
     [getPageSectionKey(1, 5)]: {
       type: 'object',
-      title: '',
+      title: 'Sex Offender Information',
       properties: {
         [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]: {
           type: 'boolean',
@@ -341,7 +349,7 @@ const personInformationSchema :Object = {
     },
     [getPageSectionKey(1, 6)]: {
       type: 'object',
-      title: '',
+      title: 'Court Hearings',
       properties: {
         [getEntityAddressKey(0, HEARINGS, DATE)]: {
           type: 'string',
@@ -410,6 +418,19 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
     ]
   },
+  [getPageSectionKey(1, 3)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
+      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
+    ]
+  },
   [getPageSectionKey(1, 2)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, LOCATION, STREET)]: {
@@ -433,6 +454,9 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: {
       classNames: 'column-span-4',
     },
+    [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
+      classNames: 'column-span-4',
+    },
     'ui:order': [
       getEntityAddressKey(0, LOCATION, STREET),
       getEntityAddressKey(0, LOCATION, CITY),
@@ -441,19 +465,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
       getEntityAddressKey(1, CONTACT_INFO, EMAIL),
       getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
-    ]
-  },
-  [getPageSectionKey(1, 3)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-      classNames: 'column-span-6',
-    },
-    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:order': [
-      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
-      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
+      getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
     ]
   },
   [getPageSectionKey(1, 4)]: {
