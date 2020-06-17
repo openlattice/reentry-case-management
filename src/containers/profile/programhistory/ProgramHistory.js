@@ -12,6 +12,7 @@ import {
 } from 'lattice-ui-kit';
 
 import Event from '../events/Event';
+import EditReleaseInfoModal from './EditReleaseInfoModal';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -100,6 +101,9 @@ const ProgramHistory = ({ contactNameByProviderEKID, participantNeighbors, provi
           </EventWrapper>
         </CardInnerWrapper>
       </CardSegment>
+      <EditReleaseInfoModal
+          isVisible={editModalVisible}
+          onClose={() => setEditModalVisibility(false)} />
     </EventsCard>
   );
 };
