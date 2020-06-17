@@ -53,6 +53,7 @@ const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   GENDER,
+  GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
   OL_ID_FQN,
   LAST_NAME,
@@ -116,7 +117,8 @@ const getClientContactInfoCount = (formData :Object) :number => {
 
     const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
     const propertyIsAboutPreferred :boolean = propertyTypeFQN.toString() === PREFERRED.toString()
-      || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString();
+      || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString()
+      || propertyTypeFQN.toString() === GENERAL_NOTES.toString();
 
     return entitySetName === CONTACT_INFO.toString()
       && isDefined(get(contactSection, entityAddressKey))
@@ -195,6 +197,31 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       [pageSectionKey, phoneAsPreferredKey],
       true
     );
+  }
+
+  return updatedFormData;
+};
+
+const setPreferredTimeOfContact = (formData :Object) :Object => {
+
+  const preferredTimeOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
+  const pageSectionKey :string = getPageSectionKey(1, 2);
+  const preferredTimeOfContactPath :string[] = [pageSectionKey, preferredTimeOfContactKey];
+  const preferredTimeOfContactValue :string = getIn(formData, preferredTimeOfContactPath);
+  const contactInfoCount :number = getClientContactInfoCount(formData);
+
+  let updatedFormData = formData;
+  updatedFormData = deleteKeyFromFormData(updatedFormData, preferredTimeOfContactPath);
+  if (!contactInfoCount) return updatedFormData;
+
+  let contactIndex :number = 0;
+  while (contactIndex < contactInfoCount) {
+    updatedFormData = updateFormData(
+      updatedFormData,
+      [pageSectionKey, getEntityAddressKey(contactIndex, CONTACT_INFO, GENERAL_NOTES)],
+      preferredTimeOfContactValue
+    );
+    contactIndex += 1;
   }
 
   return updatedFormData;
@@ -658,6 +685,7 @@ export {
   setContactIndices,
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
+  setPreferredTimeOfContact,
   setProbationOrParoleValues,
   setRegisteredSexOffender,
 };
