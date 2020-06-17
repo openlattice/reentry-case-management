@@ -38,6 +38,7 @@ import {
   setContactIndices,
   setDatesAsDateTimes,
   setPreferredMethodOfContact,
+  setPreferredTimeOfContact,
   setProbationOrParoleValues,
   setRegisteredSexOffender,
   getStateIDAssociations,
@@ -168,6 +169,7 @@ class IntakeForm extends Component<Props> {
     formDataToProcess = pipeValue(
       setClientContactInfoIndices,
       setPreferredMethodOfContact,
+      setPreferredTimeOfContact,
       setProbationOrParoleValues,
       setContactIndices,
       setDatesAsDateTimes,
