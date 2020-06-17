@@ -36,10 +36,12 @@ const {
   PROBATION_PAROLE,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
+  STATE_ID,
 } = APP_TYPE_FQNS;
 const {
   CITY,
   COUNTY,
+  COUNTY_ID,
   DATE,
   DATETIME_COMPLETED,
   DOB,
@@ -120,16 +122,26 @@ const personInformationSchema :Object = {
           enum: ETHNICITIES,
           enumNames: ETHNICITIES
         },
-        [getEntityAddressKey(0, PEOPLE, OL_ID_FQN)]: {
-          type: 'string',
-          title: 'Facility ID',
-        },
       },
       required: [
         getEntityAddressKey(0, PEOPLE, LAST_NAME),
         getEntityAddressKey(0, PEOPLE, FIRST_NAME),
         getEntityAddressKey(0, PEOPLE, DOB)
       ]
+    },
+    [getPageSectionKey(1, 9)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+          type: 'string',
+          title: 'County ID number',
+        },
+        [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+          type: 'string',
+          title: 'OPUS number',
+        },
+      }
     },
     [getPageSectionKey(1, 2)]: {
       type: 'object',
@@ -368,13 +380,10 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, PEOPLE, RACE)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
-      classNames: 'column-span-4',
-    },
-    [getEntityAddressKey(0, PEOPLE, OL_ID_FQN)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     'ui:order': [
       getEntityAddressKey(0, PEOPLE, LAST_NAME),
@@ -386,6 +395,19 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PEOPLE, RACE),
       getEntityAddressKey(0, PEOPLE, ETHNICITY),
       getEntityAddressKey(0, PEOPLE, OL_ID_FQN),
+    ]
+  },
+  [getPageSectionKey(1, 9)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
+      getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
     ]
   },
   [getPageSectionKey(1, 2)]: {
