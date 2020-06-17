@@ -11,6 +11,7 @@ import {
   HEARING_TYPES,
   MARITAL_STATUSES,
   PREFERRED_COMMUNICATION_METHODS,
+  PREFERRED_COMMUNICATION_TIMES,
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
@@ -50,6 +51,7 @@ const {
   ETHNICITY,
   FIRST_NAME,
   GENDER,
+  GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
   MARITAL_STATUS,
@@ -178,7 +180,13 @@ const personInformationSchema :Object = {
           title: 'Preferred communication method',
           enum: PREFERRED_COMMUNICATION_METHODS,
           enumNames: PREFERRED_COMMUNICATION_METHODS
-        }
+        },
+        [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
+          type: 'string',
+          title: 'Preferred time of contact',
+          enum: PREFERRED_COMMUNICATION_TIMES,
+          enumNames: PREFERRED_COMMUNICATION_TIMES
+        },
       },
     },
     [getPageSectionKey(1, 3)]: {
@@ -433,6 +441,9 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: {
       classNames: 'column-span-4',
     },
+    [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
+      classNames: 'column-span-4',
+    },
     'ui:order': [
       getEntityAddressKey(0, LOCATION, STREET),
       getEntityAddressKey(0, LOCATION, CITY),
@@ -441,6 +452,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
       getEntityAddressKey(1, CONTACT_INFO, EMAIL),
       getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
+      getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
     ]
   },
   [getPageSectionKey(1, 3)]: {
