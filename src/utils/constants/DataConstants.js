@@ -73,6 +73,12 @@ const PREFERRED_COMMUNICATION_METHODS :string[] = [
   'Email',
 ];
 
+const PREFERRED_COMMUNICATION_TIMES :string[] = [
+  'Morning',
+  'Afternoon',
+  'Evening',
+];
+
 // Jail
 
 const REFERRAL_SOURCES :string[] = [
@@ -547,6 +553,7 @@ export {
   NC_COUNTIES,
   PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
+  PREFERRED_COMMUNICATION_TIMES,
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
