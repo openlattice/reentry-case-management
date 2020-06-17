@@ -45,6 +45,7 @@ const {
   REPORTED,
   REPRESENTED_BY,
   SEX_OFFENDER,
+  STATE_ID,
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
@@ -53,6 +54,7 @@ const {
   FIRST_NAME,
   GENDER,
   HIGHEST_EDUCATION_LEVEL,
+  OL_ID_FQN,
   LAST_NAME,
   MARITAL_STATUS,
   NAME,
@@ -630,6 +632,16 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
+const getStateIDAssociations = (formData :Object) :Array<Array<*>> => {
+  const associations = [];
+  const ids = get(formData, getPageSectionKey(1, 9));
+  if (!isDefined(ids) || !Object.values(ids).length) return associations;
+  if (isDefined(get(ids, getEntityAddressKey(0, STATE_ID, OL_ID_FQN)))) {
+    associations.push([HAS, 0, PEOPLE, 0, STATE_ID, {}]);
+  }
+  return associations;
+};
+
 export {
   getClientContactAndAddressAssociations,
   getClientContactInfoCount,
@@ -640,6 +652,7 @@ export {
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
+  getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   setClientContactInfoIndices,
   setContactIndices,

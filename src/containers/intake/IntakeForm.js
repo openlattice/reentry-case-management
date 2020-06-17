@@ -40,6 +40,7 @@ import {
   setPreferredMethodOfContact,
   setProbationOrParoleValues,
   setRegisteredSexOffender,
+  getStateIDAssociations,
 } from './utils/IntakeUtils';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
@@ -181,7 +182,8 @@ class IntakeForm extends Component<Props> {
       getClientSexOffenderAssociations,
       getClientReleaseAssociations,
       getClientHearingAssociations,
-      getNeedsAssessmentAssociations
+      getNeedsAssessmentAssociations,
+      getStateIDAssociations
     )([]);
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
 
