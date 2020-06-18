@@ -61,13 +61,24 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   return participantData;
 };
 
-const getMostRecentReleaseDate = (jailStays :List) :string => {
-  if (jailStays.isEmpty()) return '';
+const getMostRecentReleaseDateFromNeighbors = (jailStays :List) :DateTime => {
   const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
   const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
     sortedJailStays.last(), [PROJECTED_RELEASE_DATETIME]
   );
-  return DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+  return DateTime.fromISO(releaseDateTime);
+};
+
+const getMostRecentReleaseDate = (jailStays :List) :string => {
+  const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
+  if (!releaseDateTime.isValid) return '';
+  return releaseDateTime.toLocaleString(DateTime.DATE_SHORT);
+};
+
+const getReleaseDateForFormData = (jailStays :List) :string => {
+  const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
+  if (!releaseDateTime.isValid) return '';
+  return releaseDateTime.toISODate();
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
@@ -84,4 +95,5 @@ export {
   getFormattedParticipantData,
   getMostRecentReleaseDate,
   getReentryEnrollmentDate,
+  getReleaseDateForFormData,
 };
