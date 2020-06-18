@@ -75,7 +75,7 @@ function* editReleaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       if (isValidUUID(key)) {
         entityDataToEdit[jailStaysESID] = jailStayData;
       }
-      else if (isNumber(key)) {
+      else if (isNumber(parseInt(key, 10))) {
         entityDataForFirstTimeSubmission[jailStaysESID] = [Object.values(jailStayData)[0]];
         associations.push([MANUAL_SUBJECT_OF, personEKID, PEOPLE, 0, MANUAL_JAIL_STAYS, {}]);
       }
@@ -87,7 +87,7 @@ function* editReleaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       if (isValidUUID(key)) {
         entityDataToEdit[referralESID] = referralData;
       }
-      else if (isNumber(key)) {
+      else if (isNumber(parseInt(key, 10))) {
         entityDataForFirstTimeSubmission[referralESID] = [Object.values(referralData)[0]];
         associations.push([MANUAL_SUBJECT_OF, personEKID, PEOPLE, 0, REFERRAL_REQUEST, {}]);
       }
@@ -117,7 +117,7 @@ function* editReleaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
         const newJailStayEKID :UUID = entityKeyIds[jailStaysESID][0];
         const newJailStay :Map = Map().withMutations((map :Map) => {
           map.set(ENTITY_KEY_ID, Set([newJailStayEKID]));
-          fromJS(entityDataForFirstTimeSubmission[jailStaysESID]).forEach((propertyValue :any, ptid :string) => {
+          fromJS(entityDataForFirstTimeSubmission[jailStaysESID][0]).forEach((propertyValue :any, ptid :string) => {
             const fqn = getPropertyFqnFromEDM(edm, ptid);
             map.set(fqn, propertyValue);
           });
@@ -128,7 +128,7 @@ function* editReleaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
         const newReferralEKID :UUID = entityKeyIds[referralESID][0];
         const newReferral :Map = Map().withMutations((map :Map) => {
           map.set(ENTITY_KEY_ID, Set([newReferralEKID]));
-          fromJS(entityDataForFirstTimeSubmission[referralESID]).forEach((propertyValue :any, ptid :string) => {
+          fromJS(entityDataForFirstTimeSubmission[referralESID][0]).forEach((propertyValue :any, ptid :string) => {
             const fqn = getPropertyFqnFromEDM(edm, ptid);
             map.set(fqn, propertyValue);
           });
