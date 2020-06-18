@@ -3,12 +3,10 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
-  Button,
   Card,
   CardSegment,
   Colors,
   EditButton,
-  Spinner,
 } from 'lattice-ui-kit';
 
 import Event from '../events/Event';
@@ -59,7 +57,11 @@ type Props = {
   providerByStatusEKID :Map;
 };
 
-const ProgramHistory = ({ contactNameByProviderEKID, participantNeighbors, providerByStatusEKID } :Props) => {
+const ProgramHistory = ({
+  contactNameByProviderEKID,
+  participantNeighbors,
+  providerByStatusEKID,
+} :Props) => {
   const [editModalVisible, setEditModalVisibility] = useState(false);
 
   const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
@@ -68,8 +70,7 @@ const ProgramHistory = ({ contactNameByProviderEKID, participantNeighbors, provi
 
   let enrollmentEvents :List = participantNeighbors.get(ENROLLMENT_STATUS, List());
   enrollmentEvents = sortEntitiesByDateProperty(enrollmentEvents, [EFFECTIVE_DATE]).reverse();
-
-  const releaseDate :string = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
+  const releaseDate = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
   const releaseText :string = `Released: ${releaseDate}`;
   return (
     <EventsCard>
@@ -103,7 +104,8 @@ const ProgramHistory = ({ contactNameByProviderEKID, participantNeighbors, provi
       </CardSegment>
       <EditReleaseInfoModal
           isVisible={editModalVisible}
-          onClose={() => setEditModalVisibility(false)} />
+          onClose={() => setEditModalVisibility(false)}
+          participantNeighbors={participantNeighbors} />
     </EventsCard>
   );
 };
