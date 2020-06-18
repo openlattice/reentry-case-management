@@ -68,8 +68,9 @@ const EditReleaseInfoModal = ({ isVisible, onClose, participantNeighbors } :Prop
   const dispatch = useDispatch();
 
   const closeModal = useCallback(() => {
+    updateFormData(originalFormData);
     onClose();
-  }, [onClose]);
+  }, [onClose, originalFormData]);
 
   const editReleaseInfoReqState = useSelector((store :Map) => store.getIn([
     PROFILE.PROFILE,
