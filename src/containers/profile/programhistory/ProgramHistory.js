@@ -9,7 +9,7 @@ import {
   EditButton,
 } from 'lattice-ui-kit';
 
-import Event from '../events/Event';
+import Event from './Event';
 import EditReleaseInfoModal from './EditReleaseInfoModal';
 import {
   CardInnerWrapper,
