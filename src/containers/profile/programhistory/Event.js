@@ -1,9 +1,9 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { CardSegment, Colors } from 'lattice-ui-kit';
+import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
 
 import {
   CardInnerWrapper,
@@ -35,6 +35,8 @@ const Event = ({
   providerByStatusEKID,
 } :Props) => {
 
+  const [editModalVisible, setEditModalVisibility] = useState(false);
+
   const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
     [EFFECTIVE_DATE, STATUS]
@@ -49,7 +51,7 @@ const Event = ({
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
-    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px">
+    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
       <CardInnerWrapper>
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
@@ -58,6 +60,7 @@ const Event = ({
           <EventText>{ pointofContact }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
+      <div><EditButton onClick={() => setEditModalVisibility(true)} /></div>
     </EventCardSegment>
   );
 };

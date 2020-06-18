@@ -62,7 +62,9 @@ const ProgramHistory = ({
   participantNeighbors,
   providerByStatusEKID,
 } :Props) => {
+
   const [editModalVisible, setEditModalVisibility] = useState(false);
+  const [editEventModalVisible, setEditEventModalVisibility] = useState(false);
 
   const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
   const referralSource :string = `Referred from: ${participantNeighbors
@@ -93,7 +95,7 @@ const ProgramHistory = ({
           ))
         )
       }
-      <CardSegment padding="25px 30px">
+      <CardSegment padding="25px 30px" vertical={false}>
         <CardInnerWrapper>
           <EventDateWrapper>{ enrollmentDate }</EventDateWrapper>
           <EventWrapper>
@@ -101,6 +103,7 @@ const ProgramHistory = ({
             <EventText>Re-entry Program</EventText>
           </EventWrapper>
         </CardInnerWrapper>
+        <div><EditButton onClick={() => setEditEventModalVisibility(true)} /></div>
       </CardSegment>
       <EditReleaseInfoModal
           isVisible={editModalVisible}
