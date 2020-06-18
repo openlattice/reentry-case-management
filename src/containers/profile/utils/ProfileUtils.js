@@ -2,7 +2,7 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
+import { getEntityProperties, getEKID } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -75,10 +75,12 @@ const getMostRecentReleaseDate = (jailStays :List) :string => {
   return releaseDateTime.toLocaleString(DateTime.DATE_SHORT);
 };
 
-const getReleaseDateForFormData = (jailStays :List) :string => {
+const getReleaseDateAndEKIDForForm = (jailStays :List) :Object => {
   const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
-  if (!releaseDateTime.isValid) return '';
-  return releaseDateTime.toISODate();
+  const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
+  const jailStayEKID :UUID = getEKID(sortedJailStays.last());
+  if (!releaseDateTime.isValid) return {};
+  return { jailStayEKID, releaseDate: releaseDateTime.toISODate() };
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
@@ -95,5 +97,5 @@ export {
   getFormattedParticipantData,
   getMostRecentReleaseDate,
   getReentryEnrollmentDate,
-  getReleaseDateForFormData,
+  getReleaseDateAndEKIDForForm,
 };
