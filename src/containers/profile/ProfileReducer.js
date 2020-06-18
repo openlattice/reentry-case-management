@@ -124,19 +124,16 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const newEntities :Map = seqAction.value;
-          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
-          console.log('participantNeighbors ', participantNeighbors.toJS());
           const newJailStay = newEntities.get(MANUAL_JAIL_STAYS);
           const newReferralRequest = newEntities.get(REFERRAL_REQUEST);
-          console.log('newEntities ', newEntities.toJS());
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+
           if (newJailStay) {
             if (participantNeighbors.get(MANUAL_JAIL_STAYS)) {
               participantNeighbors = participantNeighbors.setIn([MANUAL_JAIL_STAYS, 0], newJailStay);
             }
             else {
-              participantNeighbors = participantNeighbors
-                .set(MANUAL_JAIL_STAYS, List())
-                .updateIn([MANUAL_JAIL_STAYS], List(), (list) => list.concat(List[newJailStay]));
+              participantNeighbors = participantNeighbors.set(MANUAL_JAIL_STAYS, List([newJailStay]));
             }
           }
           if (newReferralRequest) {
@@ -144,9 +141,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
               participantNeighbors = participantNeighbors.setIn([REFERRAL_REQUEST, 0], newReferralRequest);
             }
             else {
-              participantNeighbors = participantNeighbors
-                .set(REFERRAL_REQUEST, List())
-                .updateIn([REFERRAL_REQUEST], List(), (list) => list.concat(List[newReferralRequest]));
+              participantNeighbors = participantNeighbors.set(REFERRAL_REQUEST, List([newReferralRequest]));
             }
           }
 
