@@ -10,6 +10,7 @@ import {
 } from 'lattice-ui-kit';
 
 import Event from './Event';
+import EditEventModal from './EditEventModal';
 import EditReleaseInfoModal from './EditReleaseInfoModal';
 import {
   CardInnerWrapper,
@@ -109,6 +110,7 @@ const ProgramHistory = ({
           isVisible={editModalVisible}
           onClose={() => setEditModalVisibility(false)}
           participantNeighbors={participantNeighbors} />
+      <EditEventModal isVisible={editEventModalVisible} onClose={() => setEditEventModalVisibility(false)} />
     </EventsCard>
   );
 };

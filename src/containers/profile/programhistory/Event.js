@@ -5,6 +5,7 @@ import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
 
+import EditEventModal from './EditEventModal';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -61,6 +62,7 @@ const Event = ({
         </EventWrapper>
       </CardInnerWrapper>
       <div><EditButton onClick={() => setEditModalVisibility(true)} /></div>
+      <EditEventModal isVisible={editModalVisible} onClose={() => setEditModalVisibility(false)} />
     </EventCardSegment>
   );
 };
