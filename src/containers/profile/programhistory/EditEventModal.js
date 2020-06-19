@@ -1,7 +1,13 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import {
+  List,
+  Map,
+  getIn,
+  removeIn,
+  setIn,
+} from 'immutable';
 import { DateTime } from 'luxon';
 import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
@@ -14,7 +20,12 @@ import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateU
 import { hydrateEventSchema } from '../events/utils/EventUtils';
 import { GET_PROVIDERS } from '../../providers/ProvidersActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PROVIDERS, SHARED } from '../../../utils/constants/ReduxStateConstants';
+import {
+  APP,
+  EDM,
+  PROVIDERS,
+  SHARED,
+} from '../../../utils/constants/ReduxStateConstants';
 
 const {
   findEntityAddressKeyFromMap,
@@ -32,6 +43,8 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PROVIDERS_LIST } = PROVIDERS;
+const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
+const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 
 const FormWrapper = styled.div`
   padding-top: 30px;
@@ -57,12 +70,24 @@ const EditEventModal = ({
   uiSchema,
 } :Props) => {
 
+  const selectedOrgId :string = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
+  const entitySetIds :Map = useSelector((store :Map) => store.getIn([
+    APP.APP,
+    ENTITY_SET_IDS_BY_ORG_ID,
+    selectedOrgId
+  ], Map()));
+  const propertyTypeIds :Map = useSelector((store :Map) => store.getIn([
+    EDM.EDM,
+    TYPE_IDS_BY_FQN,
+    PROPERTY_TYPES
+  ], Map()));
   const getProvidersReqState = useSelector((store) => store.getIn([
     PROVIDERS.PROVIDERS,
     ACTIONS,
     GET_PROVIDERS,
     REQUEST_STATE
   ]));
+
   const providersList = useSelector((store) => store.getIn([PROVIDERS.PROVIDERS, PROVIDERS_LIST]));
   const hydratedSchema = isDefined(needsAssessment) ? schema : hydrateEventSchema(schema, providersList);
 
@@ -91,13 +116,43 @@ const EditEventModal = ({
 
   const [formData, updateFormData] = useState(originalFormData);
 
+  const entityIndexToIdMap = Map({
+    [ENROLLMENT_STATUS]: List([getEKID(enrollmentStatus)]),
+    [NEEDS_ASSESSMENT]: List([getEKID(needsAssessment)]),
+    [PROVIDER]: List([getEKID(provider)]),
+  });
+
   const closeModal = useCallback(() => {
     onClose();
   }, [onClose]);
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
-  const onSubmit = () => {};
+  const onSubmit = () => {
+    let updatedFormData = formData;
+    const datePath = [getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)];
+    const effectiveDate = getIn(formData, datePath);
+    const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    updatedFormData = setIn(updatedFormData, datePath, DateTime.fromSQL(`${effectiveDate} ${currentTime}`).toISO());
+
+    const providerPath = [getPageSectionKey(1, 1), getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)];
+    const newProviderEKID = getIn(updatedFormData, providerPath) !== getEKID(provider)
+      ? getIn(updatedFormData, providerPath)
+      : undefined;
+    updatedFormData = removeIn(updatedFormData, providerPath);
+
+    const draftWithKeys :Object = replaceEntityAddressKeys(
+      updatedFormData,
+      findEntityAddressKeyFromMap(entityIndexToIdMap)
+    );
+    const entityData = processEntityDataForPartialReplace(
+      draftWithKeys,
+      replaceEntityAddressKeys(originalFormData, findEntityAddressKeyFromMap(entityIndexToIdMap)),
+      entitySetIds,
+      propertyTypeIds,
+    );
+    // dispatch(editEvent({ entityData, newProviderEKID, oldProviderEKID }));
+  };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Event" />);
   const renderFooter = () => {
