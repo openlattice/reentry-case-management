@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
+import { useDispatch } from 'react-redux';
 
 import EditEventModal from './EditEventModal';
 import {
@@ -15,6 +16,7 @@ import {
 } from '../styled/EventStyles';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
+import { getProviders } from '../../providers/ProvidersActions';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
@@ -38,6 +40,11 @@ const Event = ({
 } :Props) => {
 
   const [editModalVisible, setEditModalVisibility] = useState(false);
+  const dispatch = useDispatch();
+  const onOpenEditModal = () => {
+    dispatch(getProviders());
+    setEditModalVisibility(true);
+  };
 
   const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
@@ -62,7 +69,7 @@ const Event = ({
           <EventText>{ pointofContact }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
-      <div><EditButton onClick={() => setEditModalVisibility(true)} /></div>
+      <div><EditButton onClick={onOpenEditModal} /></div>
       <EditEventModal
           enrollmentStatus={enrollmentStatus}
           isVisible={editModalVisible}

@@ -1,16 +1,20 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { useDispatch, useSelector } from 'react-redux';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { isDefined } from '../../../utils/LangUtils';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import { hydrateEventSchema } from '../events/utils/EventUtils';
+import { GET_PROVIDERS } from '../../providers/ProvidersActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROVIDERS, SHARED } from '../../../utils/constants/ReduxStateConstants';
 
 const {
   findEntityAddressKeyFromMap,
@@ -26,6 +30,8 @@ const {
   EFFECTIVE_DATE,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { PROVIDERS_LIST } = PROVIDERS;
 
 const FormWrapper = styled.div`
   padding-top: 30px;
@@ -51,7 +57,15 @@ const EditEventModal = ({
   uiSchema,
 } :Props) => {
 
-  const [formData, updateFormData] = useState({});
+  const getProvidersReqState = useSelector((store) => store.getIn([
+    PROVIDERS.PROVIDERS,
+    ACTIONS,
+    GET_PROVIDERS,
+    REQUEST_STATE
+  ]));
+  const providersList = useSelector((store) => store.getIn([PROVIDERS.PROVIDERS, PROVIDERS_LIST]));
+  const hydratedSchema = isDefined(needsAssessment) ? schema : hydrateEventSchema(schema, providersList);
+
   let originalFormData = {};
   if (isDefined(needsAssessment)) {
     originalFormData = {
@@ -111,16 +125,24 @@ const EditEventModal = ({
         viewportScrolling
         withFooter={renderFooter}
         withHeader={renderHeader}>
-      <FormWrapper>
-        <Form
-            formData={formData}
-            hideSubmit
-            noPadding
-            onChange={onChange}
-            onSubmit={onSubmit}
-            schema={schema}
-            uiSchema={uiSchema} />
-      </FormWrapper>
+      {
+        requestIsPending(getProvidersReqState)
+          ? (
+            <Spinner size="2x" />
+          )
+          : (
+            <FormWrapper>
+              <Form
+                  formData={formData}
+                  hideSubmit
+                  noPadding
+                  onChange={onChange}
+                  onSubmit={onSubmit}
+                  schema={hydratedSchema}
+                  uiSchema={uiSchema} />
+            </FormWrapper>
+          )
+      }
     </Modal>
   );
 };
