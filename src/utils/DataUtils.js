@@ -16,6 +16,7 @@ const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const ASSOCIATION_ENTITY_SET :string = 'associationEntitySet';
+const ASSOCIATION_DETAILS :string = 'associationDetails';
 const NEIGHBOR_DETAILS :string = 'neighborDetails';
 const NEIGHBOR_ENTITY_SET :string = 'neighborEntitySet';
 const ID :string = 'id';
@@ -95,6 +96,7 @@ const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIG
 const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
 
 export {
+  ASSOCIATION_DETAILS,
   getAssociationESID,
   getEKID,
   getESIDFromApp,
