@@ -18,11 +18,14 @@ import { isDefined } from '../../../utils/LangUtils';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { hydrateEventSchema } from '../events/utils/EventUtils';
+import { clearEditRequestState } from '../needs/NeedsActions';
+import { EDIT_EVENT, editEvent } from './ProgramHistoryActions';
 import { GET_PROVIDERS } from '../../providers/ProvidersActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,
+  PROFILE,
   PROVIDERS,
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
@@ -115,10 +118,11 @@ const EditEventModal = ({
   }
 
   const [formData, updateFormData] = useState(originalFormData);
-
+  const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
+  const needsAssessmentEKID :UUID = getEKID(needsAssessment);
   const entityIndexToIdMap = Map({
-    [ENROLLMENT_STATUS]: List([getEKID(enrollmentStatus)]),
-    [NEEDS_ASSESSMENT]: List([getEKID(needsAssessment)]),
+    [ENROLLMENT_STATUS]: List([enrollmentStatusEKID]),
+    [NEEDS_ASSESSMENT]: List([needsAssessmentEKID]),
     [PROVIDER]: List([getEKID(provider)]),
   });
 
@@ -128,12 +132,30 @@ const EditEventModal = ({
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
+
+  const dispatch = useDispatch();
   const onSubmit = () => {
     let updatedFormData = formData;
-    const datePath = [getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)];
-    const effectiveDate = getIn(formData, datePath);
+    const eventDatePath = [getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)];
+    const enrollmentDatePath = [getPageSectionKey(1, 1), getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)];
     const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-    updatedFormData = setIn(updatedFormData, datePath, DateTime.fromSQL(`${effectiveDate} ${currentTime}`).toISO());
+
+    if (getIn(formData, eventDatePath)) {
+      const effectiveDate = getIn(formData, eventDatePath);
+      updatedFormData = setIn(
+        updatedFormData,
+        eventDatePath,
+        DateTime.fromSQL(`${effectiveDate} ${currentTime}`).toISO()
+      );
+    }
+    else if (getIn(formData, enrollmentDatePath)) {
+      const enrollmentDate = getIn(formData, enrollmentDatePath);
+      updatedFormData = setIn(
+        updatedFormData,
+        enrollmentDatePath,
+        DateTime.fromSQL(`${enrollmentDate} ${currentTime}`).toISO()
+      );
+    }
 
     const providerPath = [getPageSectionKey(1, 1), getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)];
     const newProviderEKID = getIn(updatedFormData, providerPath) !== getEKID(provider)
@@ -151,12 +173,31 @@ const EditEventModal = ({
       entitySetIds,
       propertyTypeIds,
     );
-    // dispatch(editEvent({ entityData, newProviderEKID, oldProviderEKID }));
+
+    dispatch(editEvent({
+      enrollmentStatusEKID,
+      entityData,
+      needsAssessmentEKID,
+      newProviderEKID,
+    }));
   };
+  const editEventReqState = useSelector((store) => store.getIn([
+    PROFILE.PROFILE,
+    ACTIONS,
+    EDIT_EVENT,
+    REQUEST_STATE
+  ]));
+
+  useEffect(() => {
+    if (requestIsSuccess(editEventReqState)) {
+      dispatch(clearEditRequestState());
+      closeModal();
+    }
+  }, [closeModal, dispatch, editEventReqState]);
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Event" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = false;
+    const isSubmitting :boolean = requestIsPending(editEventReqState);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}
