@@ -70,6 +70,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.loadProfileWatcher),
 
     // ProgramHistorySagas
+    fork(ProgramHistorySagas.editEventWatcher),
     fork(ProgramHistorySagas.editReleaseInfoWatcher),
 
     // ProvidersSagas
