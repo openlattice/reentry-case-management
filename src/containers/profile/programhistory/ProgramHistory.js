@@ -23,6 +23,7 @@ import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralPr
 import { getEKID } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { getMostRecentReleaseDate, getReentryEnrollmentDate } from '../utils/ProfileUtils';
+import { schema, uiSchema } from './schemas/EditEnrollmentDateSchemas';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
@@ -110,7 +111,11 @@ const ProgramHistory = ({
           isVisible={editModalVisible}
           onClose={() => setEditModalVisibility(false)}
           participantNeighbors={participantNeighbors} />
-      <EditEventModal isVisible={editEventModalVisible} onClose={() => setEditEventModalVisibility(false)} />
+      <EditEventModal
+          isVisible={editEventModalVisible}
+          onClose={() => setEditEventModalVisibility(false)}
+          schema={schema}
+          uiSchema={uiSchema} />
     </EventsCard>
   );
 };

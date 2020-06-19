@@ -14,6 +14,7 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
@@ -62,7 +63,11 @@ const Event = ({
         </EventWrapper>
       </CardInnerWrapper>
       <div><EditButton onClick={() => setEditModalVisibility(true)} /></div>
-      <EditEventModal isVisible={editModalVisible} onClose={() => setEditModalVisibility(false)} />
+      <EditEventModal
+          isVisible={editModalVisible}
+          onClose={() => setEditModalVisibility(false)}
+          schema={schema}
+          uiSchema={uiSchema} />
     </EventCardSegment>
   );
 };

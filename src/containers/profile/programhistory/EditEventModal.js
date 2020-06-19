@@ -15,17 +15,32 @@ const {
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
 
+const FormWrapper = styled.div`
+  padding-top: 30px;
+`;
+
 type Props = {
   isVisible :boolean;
   onClose :() => void;
+  schema :Object;
+  uiSchema :Object;
 };
 
-const EditEventModal = ({ isVisible, onClose } :Props) => {
+const EditEventModal = ({
+  isVisible,
+  onClose,
+  schema,
+  uiSchema,
+} :Props) => {
+
+  const [formData, updateFormData] = useState({});
 
   const closeModal = useCallback(() => {
     onClose();
   }, [onClose]);
-
+  const onChange = ({ formData: newFormData } :Object) => {
+    updateFormData(newFormData);
+  };
   const onSubmit = () => {};
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Event" />);
@@ -54,14 +69,16 @@ const EditEventModal = ({ isVisible, onClose } :Props) => {
         viewportScrolling
         withFooter={renderFooter}
         withHeader={renderHeader}>
-      {/* <Form
-          formData={formData}
-          hideSubmit
-          noPadding
-          onChange={onChange}
-          onSubmit={onSubmit}
-          schema={schema}
-          uiSchema={uiSchema} /> */}
+      <FormWrapper>
+        <Form
+            formData={formData}
+            hideSubmit
+            noPadding
+            onChange={onChange}
+            onSubmit={onSubmit}
+            schema={schema}
+            uiSchema={uiSchema} />
+      </FormWrapper>
     </Modal>
   );
 };
