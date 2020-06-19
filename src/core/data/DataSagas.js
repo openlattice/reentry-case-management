@@ -12,14 +12,18 @@ import { Models, Types } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { isDefined } from '../../utils/LangUtils';
 import {
+  CREATE_OR_REPLACE_ASSOCIATION,
   DELETE_ENTITIES,
   SUBMIT_DATA_GRAPH,
   SUBMIT_PARTIAL_REPLACE,
+  createOrReplaceAssociation,
   deleteEntities,
   submitDataGraph,
   submitPartialReplace,
 } from './DataActions';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 
 import Logger from '../../utils/Logger';
 
@@ -27,11 +31,13 @@ const LOG = new Logger('DataSagas');
 const { DataGraphBuilder } = Models;
 const { UpdateTypes } = Types;
 const {
+  createAssociations,
   createEntityAndAssociationData,
   deleteEntityData,
   updateEntityData,
 } = DataApiActions;
 const {
+  createAssociationsWorker,
   createEntityAndAssociationDataWorker,
   deleteEntityDataWorker,
   updateEntityDataWorker,
@@ -180,7 +186,62 @@ function* deleteEntitiesWatcher() :Generator<*, *, *> {
   yield takeEvery(DELETE_ENTITIES, deleteEntitiesWorker);
 }
 
+/*
+ *
+ * DataActions.createOrReplaceAssociation()
+ *
+ */
+
+function* createOrReplaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const workerResponse :Object = {};
+  const { id } = action;
+
+  try {
+    yield put(createOrReplaceAssociation.request(id));
+    const { value } = action;
+
+    if (!isDefined(value)) {
+      workerResponse.error = ERR_ACTION_VALUE_NOT_DEFINED;
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+
+    const { associations, associationsToDelete } = value;
+
+    if (associationsToDelete && associationsToDelete.length) {
+      const deleteResponse = yield call(deleteEntitiesWorker, deleteEntities(associationsToDelete));
+      if (deleteResponse.error) throw deleteResponse.error;
+    }
+
+    const createAssociationResponse = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (createAssociationResponse.error) throw createAssociationResponse.error;
+    workerResponse.data = createAssociationResponse.data;
+    yield put(createOrReplaceAssociation.success(action.id, createAssociationResponse));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(createOrReplaceAssociation.failure(action.id, error));
+  }
+  finally {
+    yield put(createOrReplaceAssociation.finally(action.id));
+  }
+
+  return workerResponse;
+}
+
+function* createOrReplaceAssociationWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_OR_REPLACE_ASSOCIATION, createOrReplaceAssociationWorker);
+}
+
 export {
+  createOrReplaceAssociationWatcher,
+  createOrReplaceAssociationWorker,
   deleteEntitiesWatcher,
   deleteEntitiesWorker,
   submitDataGraphWatcher,
