@@ -31,6 +31,7 @@ const { NEUTRALS } = Colors;
 const {
   ENROLLMENT_STATUS,
   MANUAL_JAIL_STAYS,
+  NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
 } = APP_TYPE_FQNS;
 const {
@@ -76,6 +77,7 @@ const ProgramHistory = ({
   enrollmentEvents = sortEntitiesByDateProperty(enrollmentEvents, [EFFECTIVE_DATE]).reverse();
   const releaseDate = getMostRecentReleaseDate(participantNeighbors.get(MANUAL_JAIL_STAYS, List()));
   const releaseText :string = `Released: ${releaseDate}`;
+  const needsAssessment :Map = participantNeighbors.getIn([NEEDS_ASSESSMENT, 0], Map());
   return (
     <EventsCard>
       <CardHeaderWithButtons padding="30px" vertical={false}>
@@ -113,6 +115,7 @@ const ProgramHistory = ({
           participantNeighbors={participantNeighbors} />
       <EditEventModal
           isVisible={editEventModalVisible}
+          needsAssessment={needsAssessment}
           onClose={() => setEditEventModalVisibility(false)}
           schema={schema}
           uiSchema={uiSchema} />

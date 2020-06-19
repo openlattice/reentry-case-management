@@ -64,8 +64,10 @@ const Event = ({
       </CardInnerWrapper>
       <div><EditButton onClick={() => setEditModalVisibility(true)} /></div>
       <EditEventModal
+          enrollmentStatus={enrollmentStatus}
           isVisible={editModalVisible}
           onClose={() => setEditModalVisibility(false)}
+          provider={provider}
           schema={schema}
           uiSchema={uiSchema} />
     </EventCardSegment>
