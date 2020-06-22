@@ -62,7 +62,7 @@ const {
 } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
-const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PARTICIPANT_NEIGHBORS } = PROFILE;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());

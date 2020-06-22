@@ -89,15 +89,13 @@ const ProgramHistory = ({
         { releaseDate && (<div>{ releaseText }</div>) }
       </GrayBar>
       {
-        !enrollmentEvents.isEmpty() && (
-          enrollmentEvents.map((enrollmentStatus :Map) => (
-            <Event
-                key={getEKID(enrollmentStatus)}
-                contactNameByProviderEKID={contactNameByProviderEKID}
-                enrollmentStatus={enrollmentStatus}
-                providerByStatusEKID={providerByStatusEKID} />
-          ))
-        )
+        enrollmentEvents.map((enrollmentStatus :Map) => (
+          <Event
+              contactNameByProviderEKID={contactNameByProviderEKID}
+              enrollmentStatus={enrollmentStatus}
+              key={getEKID(enrollmentStatus)}
+              providerByStatusEKID={providerByStatusEKID} />
+        ))
       }
       <CardSegment padding="25px 30px" vertical={false}>
         <CardInnerWrapper>

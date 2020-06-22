@@ -39,15 +39,15 @@ const {
 } = DataProcessingUtils;
 const { ENROLLMENT_STATUS, NEEDS_ASSESSMENT, PROVIDER } = APP_TYPE_FQNS;
 const {
-  ENTITY_KEY_ID,
   DATETIME_COMPLETED,
   EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PROVIDERS_LIST } = PROVIDERS;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
-const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 
 const FormWrapper = styled.div`
   padding-top: 30px;
@@ -129,6 +129,7 @@ const EditEventModal = ({
   const closeModal = useCallback(() => {
     onClose();
   }, [onClose]);
+
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
@@ -140,16 +141,16 @@ const EditEventModal = ({
     const enrollmentDatePath = [getPageSectionKey(1, 1), getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)];
     const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
 
-    if (getIn(formData, eventDatePath)) {
-      const effectiveDate = getIn(formData, eventDatePath);
+    const effectiveDate = getIn(formData, eventDatePath);
+    const enrollmentDate = getIn(formData, enrollmentDatePath);
+    if (effectiveDate) {
       updatedFormData = setIn(
         updatedFormData,
         eventDatePath,
         DateTime.fromSQL(`${effectiveDate} ${currentTime}`).toISO()
       );
     }
-    else if (getIn(formData, enrollmentDatePath)) {
-      const enrollmentDate = getIn(formData, enrollmentDatePath);
+    else if (enrollmentDate) {
       updatedFormData = setIn(
         updatedFormData,
         enrollmentDatePath,
