@@ -14,9 +14,9 @@ import { FOLLOW_UPS_STATUSES } from '../../profile/tasks/FollowUpsConstants';
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   ASSIGNED_TO,
+  MANUAL_SUBJECT_OF,
   PEOPLE,
   REPORTED,
-  SUBJECT_OF,
 } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -96,7 +96,7 @@ const formatTasksForTable = (
       [OL_TITLE]: title,
       [STATUS]: status
     } = getEntityProperties(task, [CATEGORY, DATETIME_COMPLETED, DESCRIPTION, GENERAL_DATETIME, OL_TITLE, STATUS]);
-    const person :Map = followUpNeighbors.getIn([taskEKID, SUBJECT_OF], Map());
+    const person :Map = followUpNeighbors.getIn([taskEKID, MANUAL_SUBJECT_OF], Map());
     const personName :string = getPersonFullName(person);
     const taskName :string = getTaskNameForTaskManager(category, title, personName);
     const dueDateString :string = `Due by: ${DateTime.fromISO(dueDateTime).toLocaleString(DateTime.DATE_SHORT)}`;
