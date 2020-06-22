@@ -19,7 +19,7 @@ import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../
 const { getEntityAddressKey, getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 const {
   APPEARS_IN,
-  ASSIGNED_TO,
+  MANUAL_ASSIGNED_TO,
   ATTORNEYS,
   CONTACTED_VIA,
   CONTACT_INFO,
@@ -576,7 +576,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   const officerFilledOutInForm = isDefined(get(probationData, getEntityAddressKey(0, OFFICERS, LAST_NAME)))
     || isDefined(get((probationData, getEntityAddressKey(0, OFFICERS, FIRST_NAME))));
   if (officerFilledOutInForm) {
-    associations.push([ASSIGNED_TO, 0, EMPLOYEE, 0, PEOPLE, {}]);
+    associations.push([MANUAL_ASSIGNED_TO, 0, EMPLOYEE, 0, PEOPLE, {}]);
     associations.push([IS, 0, OFFICERS, 0, EMPLOYEE, {}]);
   }
 
@@ -587,10 +587,10 @@ const getClientReleaseAssociations = (formData :Object) => {
 
   // Probation/Parole
   if (isDefined(get(probationData, getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)))) {
-    associations.push([ASSIGNED_TO, 0, PEOPLE, 0, PROBATION_PAROLE, {}]);
+    associations.push([MANUAL_ASSIGNED_TO, 0, PEOPLE, 0, PROBATION_PAROLE, {}]);
     if (officerFilledOutInForm) {
-      associations.push([ASSIGNED_TO, 0, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
-      associations.push([ASSIGNED_TO, 0, OFFICERS, 0, PROBATION_PAROLE, {}]);
+      associations.push([MANUAL_ASSIGNED_TO, 0, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
+      associations.push([MANUAL_ASSIGNED_TO, 0, OFFICERS, 0, PROBATION_PAROLE, {}]);
     }
   }
 

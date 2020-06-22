@@ -13,7 +13,7 @@ import { FOLLOW_UPS_STATUSES } from '../../profile/tasks/FollowUpsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
-  ASSIGNED_TO,
+  MANUAL_ASSIGNED_TO,
   MANUAL_SUBJECT_OF,
   PEOPLE,
   REPORTED,
@@ -69,7 +69,7 @@ const formatTasksForTable = (
   if (assigneeEKIDs.length) {
     filteredFollowUps = followUps.filter((task :Map) => {
       const taskEKID :UUID = getEKID(task);
-      const personAssignedTo :Map = followUpNeighbors.getIn([taskEKID, ASSIGNED_TO], Map());
+      const personAssignedTo :Map = followUpNeighbors.getIn([taskEKID, MANUAL_ASSIGNED_TO], Map());
       const personAssignedToEKID :UUID = getEKID(personAssignedTo);
       return assigneeEKIDs.includes(personAssignedToEKID);
     });

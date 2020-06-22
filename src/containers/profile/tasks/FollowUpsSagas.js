@@ -70,8 +70,8 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   APPEARS_IN,
-  ASSIGNED_TO,
   FOLLOW_UPS,
+  MANUAL_ASSIGNED_TO,
   MEETINGS,
   PEOPLE,
   PROVIDER,
@@ -110,7 +110,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
     const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const reportedESID :UUID = getESIDFromApp(app, REPORTED);
-    const assignedToESID :UUID = getESIDFromApp(app, ASSIGNED_TO);
+    const assignedToESID :UUID = getESIDFromApp(app, MANUAL_ASSIGNED_TO);
     const appearsInESID :UUID = getESIDFromApp(app, APPEARS_IN);
 
     const { data } = response;
@@ -150,7 +150,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
       const reentryStaffAssignedToEKID :UUID = assignedToAssociation.srcEntityKeyId;
       const staffMemberAssignedTo :Map = reentryStaffMembers
         .find((member :Map) => getEKID(member) === reentryStaffAssignedToEKID);
-      map.set(ASSIGNED_TO, staffMemberAssignedTo);
+      map.set(MANUAL_ASSIGNED_TO, staffMemberAssignedTo);
       if (isDefined(associationEntityData[reportedESID])) {
         const reportedAssociation :Object = associationEntityData[reportedESID][0];
         const reentryStaffReportedByEKID :Object = reportedAssociation.srcEntityKeyId;
