@@ -15,12 +15,12 @@ const {
   ASSIGNED_TO,
   FOLLOW_UPS,
   FULFILLS,
+  MANUAL_SUBJECT_OF,
   MEETINGS,
   PEOPLE,
   PROVIDER,
   REENTRY_STAFF,
   REPORTED,
-  SUBJECT_OF,
 } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -143,7 +143,7 @@ const getNewFollowUpAssociations = (formData :Object, personEKID :UUID) :Array<A
   const associations :Array<Array<*>> = [];
 
   // participant:
-  associations.push([SUBJECT_OF, personEKID, PEOPLE, 0, FOLLOW_UPS, {
+  associations.push([MANUAL_SUBJECT_OF, personEKID, PEOPLE, 0, FOLLOW_UPS, {
     [DATETIME_COMPLETED.toString()]: [nowISO]
   }]);
 
@@ -162,7 +162,7 @@ const getNewFollowUpAssociations = (formData :Object, personEKID :UUID) :Array<A
   // meetings:
   const category :any = getIn(formData, [pageSection, getEntityAddressKey(0, FOLLOW_UPS, CATEGORY)]);
   if (category === FOLLOW_UPS_CATEGORIES.MEETING) {
-    associations.push([SUBJECT_OF, personEKID, PEOPLE, 0, MEETINGS, {
+    associations.push([MANUAL_SUBJECT_OF, personEKID, PEOPLE, 0, MEETINGS, {
       [DATETIME_COMPLETED.toString()]: [nowISO]
     }]);
     associations.push([ASSIGNED_TO, assigneeEKID, REENTRY_STAFF, 0, MEETINGS, {
