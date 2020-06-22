@@ -10,9 +10,9 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constant
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
-  ASSIGNED_TO,
   ENROLLMENT_STATUS,
   HAS,
+  MANUAL_ASSIGNED_TO,
   PEOPLE,
   PROVIDER,
 } = APP_TYPE_FQNS;
@@ -66,7 +66,7 @@ const prepareFormDataForProcessing = (formData :Object, personEKID :UUID) :Objec
 
   const associations :Array<Array<*>> = [
     [HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}],
-    [ASSIGNED_TO, providerEKID, PROVIDER, 0, ENROLLMENT_STATUS, {}],
+    [MANUAL_ASSIGNED_TO, providerEKID, PROVIDER, 0, ENROLLMENT_STATUS, {}],
   ];
   return { entityDataToProcess, associations };
 };
