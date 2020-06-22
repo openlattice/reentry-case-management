@@ -29,7 +29,7 @@ const {
 } = Colors;
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
 const {
-  ASSIGNED_TO,
+  MANUAL_ASSIGNED_TO,
   MEETINGS,
   PROVIDER,
   REPORTED,
@@ -163,7 +163,7 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
 
   const neighbors :Map = followUpNeighborMap.get(id, Map());
   const meeting :any = neighbors.get(MEETINGS, Map());
-  const personAssignedTo :Map = neighbors.get(ASSIGNED_TO, Map());
+  const personAssignedTo :Map = neighbors.get(MANUAL_ASSIGNED_TO, Map());
   const personWhoReported :Map = neighbors.get(REPORTED, Map());
   const linkedProvider :Map = neighbors.get(PROVIDER, Map());
   const { [FIRST_NAME]: assignedFirstName, [LAST_NAME]: assignedLastName } = getEntityProperties(
