@@ -14,13 +14,17 @@ import { getEntityProperties } from '../../../utils/DataUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { CONTACT_INFO } = APP_TYPE_FQNS;
+const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
 const {
+  CITY,
   EMAIL,
   GENERAL_NOTES,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
+  STREET,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const labelMap = Map({
@@ -53,6 +57,22 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
     if (isDefined(phone)) map.set('phone', phone.getIn([PHONE_NUMBER, 0]));
   });
 
+  const addressList :List = participantNeighbors.get(LOCATION, List());
+  const address :Map = addressList.get(0);
+  let addressString :string = '';
+  if (isDefined(address)) {
+    const {
+      [CITY]: city,
+      [STREET]: street,
+      [US_STATE]: usState,
+      [ZIP]: zip
+    } = getEntityProperties(address, [CITY, STREET, US_STATE, ZIP]);
+    if (street.length) addressString = street;
+    if (city.length) addressString = `${addressString} ${city}`;
+    if (usState.length) addressString = `${addressString}${city.length ? ',' : ''} ${usState}`;
+    if (zip.length) addressString = `${addressString} ${zip}`;
+  }
+
   return (
     <Card>
       <CardHeaderWithButtons padding="30px" vertical={false}>
@@ -65,6 +85,7 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
             labelMap={labelMap}
             truncate />
         <Label subtle>Address</Label>
+        <div>{ addressString }</div>
       </CardSegment>
     </Card>
   );

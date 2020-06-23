@@ -55,6 +55,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
   ENROLLMENT_STATUS,
+  LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PEOPLE,
@@ -281,6 +282,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+    const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: needsAssessmentESID },
@@ -288,6 +290,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: enrollmentStatusESID },
       { direction: DST, neighborESID: manualJailStaysESID },
       { direction: DST, neighborESID: referralToReentryESID },
+      { direction: DST, neighborESID: addressESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
