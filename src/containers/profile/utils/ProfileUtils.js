@@ -38,15 +38,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
   let gender :string = '';
   if (!personDetails.isEmpty()) gender = personDetails.getIn([0, GENDER]);
-  const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-  let preferredContact :string = '';
-  const preferredContactEntity :Map = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
-  if (preferredContactEntity && preferredContactEntity.has(EMAIL)) {
-    preferredContact = preferredContactEntity.getIn([EMAIL, 0]);
-  }
-  if (preferredContactEntity && preferredContactEntity.has(PHONE_NUMBER)) {
-    preferredContact = preferredContactEntity.getIn([PHONE_NUMBER, 0]);
-  }
 
   const participantData = Map({
     lastName,
@@ -56,7 +47,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     gender,
     race,
     ethnicity,
-    preferredContact,
   });
   return participantData;
 };

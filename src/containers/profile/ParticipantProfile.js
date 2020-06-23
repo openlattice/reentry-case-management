@@ -59,7 +59,6 @@ const participantGridLabels = Map({
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
-  preferredContact: 'Pref. Contact',
 });
 
 const ProfileCardStack = styled(CardStack)`
