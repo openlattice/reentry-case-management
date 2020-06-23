@@ -3,6 +3,7 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { isDefined } from '../../utils/LangUtils';
 import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
@@ -21,6 +22,12 @@ import {
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
+import {
+  EDIT_EVENT,
+  EDIT_RELEASE_INFO,
+  editEvent,
+  editReleaseInfo,
+} from './programhistory/ProgramHistoryActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -32,11 +39,23 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
-const { ENROLLMENT_STATUS, FOLLOW_UPS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
+const {
+  ENROLLMENT_STATUS,
+  FOLLOW_UPS,
+  MANUAL_JAIL_STAYS,
+  NEEDS_ASSESSMENT,
+  REFERRAL_REQUEST,
+} = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
     [EDIT_NEEDS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_EVENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
@@ -64,7 +83,9 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
 
     case CLEAR_EDIT_REQUEST_STATE: {
       return state
-        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -88,6 +109,48 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editEvent.case(action.type): {
+      return editEvent.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_EVENT, action.id], action)
+          .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEnrollmentStatusData, newNeedsAssessmentData } = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+
+          if (newEnrollmentStatusData && !newEnrollmentStatusData.isEmpty()) {
+            const enrollmentStatusIndex = participantNeighbors.get(ENROLLMENT_STATUS, List())
+              .findIndex((status :Map) => getEKID(status) === getEKID(newEnrollmentStatusData));
+            if (isDefined(enrollmentStatusIndex)) {
+              newEnrollmentStatusData.forEach((newValue, propertyFqn) => {
+                participantNeighbors = participantNeighbors
+                  .setIn([ENROLLMENT_STATUS, enrollmentStatusIndex, propertyFqn], newValue);
+              });
+            }
+          }
+
+          if (newNeedsAssessmentData && !newNeedsAssessmentData.isEmpty()) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [NEEDS_ASSESSMENT, 0],
+              Map(),
+              (oldNeedsAssessment) => oldNeedsAssessment.mergeWith(
+                (oldVal, newVal) => newVal,
+                newNeedsAssessmentData
+              )
+            );
+          }
+
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_EVENT, action.id]),
+      });
+    }
+
     case editNeeds.case(action.type): {
       return editNeeds.reducer(state, action, {
         REQUEST: () => state
@@ -102,6 +165,45 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_NEEDS, action.id]),
+      });
+    }
+
+    case editReleaseInfo.case(action.type): {
+      return editReleaseInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newEntities :Map = seqAction.value;
+          const newJailStay = newEntities.get(MANUAL_JAIL_STAYS);
+          const newReferralRequest = newEntities.get(REFERRAL_REQUEST);
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+
+          if (newJailStay) {
+            if (participantNeighbors.get(MANUAL_JAIL_STAYS)) {
+              participantNeighbors = participantNeighbors.setIn([MANUAL_JAIL_STAYS, 0], newJailStay);
+            }
+            else {
+              participantNeighbors = participantNeighbors.set(MANUAL_JAIL_STAYS, List([newJailStay]));
+            }
+          }
+          if (newReferralRequest) {
+            if (participantNeighbors.get(REFERRAL_REQUEST)) {
+              participantNeighbors = participantNeighbors.setIn([REFERRAL_REQUEST, 0], newReferralRequest);
+            }
+            else {
+              participantNeighbors = participantNeighbors.set(REFERRAL_REQUEST, List([newReferralRequest]));
+            }
+          }
+
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
       });
     }
 

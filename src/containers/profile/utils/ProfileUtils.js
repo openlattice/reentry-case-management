@@ -2,7 +2,7 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
+import { getEntityProperties, getEKID } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -61,13 +61,26 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   return participantData;
 };
 
-const getMostRecentReleaseDate = (jailStays :List) :string => {
-  if (jailStays.isEmpty()) return '';
+const getMostRecentReleaseDateFromNeighbors = (jailStays :List) :DateTime => {
   const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
   const { [PROJECTED_RELEASE_DATETIME]: releaseDateTime } = getEntityProperties(
     sortedJailStays.last(), [PROJECTED_RELEASE_DATETIME]
   );
-  return DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+  return DateTime.fromISO(releaseDateTime);
+};
+
+const getMostRecentReleaseDate = (jailStays :List) :string => {
+  const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
+  if (!releaseDateTime.isValid) return '';
+  return releaseDateTime.toLocaleString(DateTime.DATE_SHORT);
+};
+
+const getReleaseDateAndEKIDForForm = (jailStays :List) :Object => {
+  const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
+  const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
+  const jailStayEKID :UUID = getEKID(sortedJailStays.last());
+  if (!releaseDateTime.isValid) return {};
+  return { jailStayEKID, releaseDate: releaseDateTime.toISODate() };
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
@@ -84,4 +97,5 @@ export {
   getFormattedParticipantData,
   getMostRecentReleaseDate,
   getReentryEnrollmentDate,
+  getReleaseDateAndEKIDForForm,
 };

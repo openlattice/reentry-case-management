@@ -1,10 +1,12 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { CardSegment, Colors } from 'lattice-ui-kit';
+import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
+import { useDispatch } from 'react-redux';
 
+import EditEventModal from './EditEventModal';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -13,6 +15,8 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
+import { getProviders } from '../../providers/ProvidersActions';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
@@ -35,6 +39,13 @@ const Event = ({
   providerByStatusEKID,
 } :Props) => {
 
+  const [editModalVisible, setEditModalVisibility] = useState(false);
+  const dispatch = useDispatch();
+  const onOpenEditModal = () => {
+    dispatch(getProviders());
+    setEditModalVisibility(true);
+  };
+
   const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
     [EFFECTIVE_DATE, STATUS]
@@ -49,7 +60,7 @@ const Event = ({
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
-    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px">
+    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
       <CardInnerWrapper>
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
@@ -58,6 +69,14 @@ const Event = ({
           <EventText>{ pointofContact }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
+      <div><EditButton onClick={onOpenEditModal} /></div>
+      <EditEventModal
+          enrollmentStatus={enrollmentStatus}
+          isVisible={editModalVisible}
+          onClose={() => setEditModalVisibility(false)}
+          provider={provider}
+          schema={schema}
+          uiSchema={uiSchema} />
     </EventCardSegment>
   );
 };
