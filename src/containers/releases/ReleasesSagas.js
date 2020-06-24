@@ -8,7 +8,7 @@ import {
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
-import { DataApiActions, DataApiSagas, SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -20,7 +20,6 @@ import {
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
-import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
@@ -40,10 +39,13 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { getEntitySetDataWorker } = DataApiSagas;
-const { getEntitySetData } = DataApiActions;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
-const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
+const {
+  FIRST_NAME,
+  LAST_NAME,
+  PROJECTED_RELEASE_DATETIME,
+  RELEASE_DATETIME,
+} = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -246,10 +248,7 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
         jailStayEKIDs.push(jailStayEKID);
       });
 
-      yield all([
-        call(searchPeopleByJailStayWorker, searchPeopleByJailStay({ jailStayEKIDs })),
-        call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ jailStayEKIDs })),
-      ]);
+      yield call(searchPeopleByJailStayWorker, searchPeopleByJailStay({ jailStayEKIDs }));
     }
 
     yield put(searchReleasesByDate.success(id, { jailStays, totalHits }));
@@ -314,8 +313,6 @@ function* searchJailStaysByPersonWorker(action :SequenceAction) :Generator<*, *,
         const jailStayEKID :UUID = getEKID(jailStay);
         jailStayEKIDs.push(jailStayEKID);
       });
-
-      yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ jailStayEKIDs }));
     }
 
     yield put(searchJailStaysByPerson.success(id, jailStaysByPersonEKID));
