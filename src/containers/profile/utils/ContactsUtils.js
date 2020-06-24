@@ -1,11 +1,13 @@
 // @flow
 import { List, Map } from 'immutable';
+import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { isDefined } from '../../../utils/LangUtils';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { CONTACT_INFO } = APP_TYPE_FQNS;
+const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
 const {
   CITY,
   EMAIL,
@@ -55,7 +57,57 @@ const getAddress = (address :Map) :string => {
   return addressString;
 };
 
+const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
+
+  const originalFormData = {
+    [getPageSectionKey(1, 1)]: {},
+    [getPageSectionKey(1, 2)]: {},
+  };
+
+  if (isDefined(address)) {
+    const {
+      [CITY]: city,
+      [STREET]: street,
+      [US_STATE]: usState,
+      [ZIP]: zip
+    } = getEntityProperties(address, [CITY, STREET, US_STATE, ZIP]);
+
+    originalFormData[getPageSectionKey(1, 2)] = {
+      [getEntityAddressKey(0, LOCATION, STREET)]: street,
+      [getEntityAddressKey(0, LOCATION, CITY)]: city,
+      [getEntityAddressKey(0, LOCATION, US_STATE)]: usState,
+      [getEntityAddressKey(0, LOCATION, ZIP)]: zip,
+    };
+  }
+
+  const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
+  if (isDefined(preferredContact)) {
+    const {
+      [GENERAL_NOTES]: preferredTime,
+      [PREFERRED_METHOD_OF_CONTACT]: preferredMethod
+    } = getEntityProperties(preferredContact, [GENERAL_NOTES, PREFERRED_METHOD_OF_CONTACT]);
+
+    originalFormData[getPageSectionKey(1, 1)] = {
+      [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: preferredMethod,
+      [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: preferredTime,
+    };
+  }
+
+  const emailEntity = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
+  let email;
+  if (isDefined(emailEntity)) email = emailEntity.getIn([EMAIL, 0]);
+  const phoneEntity = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
+  let phone;
+  if (isDefined(phoneEntity)) phone = phoneEntity.getIn([PHONE_NUMBER, 0]);
+
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = phone;
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, EMAIL)] = email;
+
+  return originalFormData;
+};
+
 export {
   getAddress,
+  getOriginalFormData,
   getPersonContactData,
 };
