@@ -8,7 +8,7 @@ import {
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { DataApiActions, DataApiSagas, SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -40,6 +40,8 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getEntitySetDataWorker } = DataApiSagas;
+const { getEntitySetData } = DataApiActions;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
 const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 
@@ -171,7 +173,6 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :Object = {};
   let jailStays :List = List();
   let totalHits :number = 0;
 
@@ -361,7 +362,8 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
     const edm = yield select(getEdmFromState);
 
     const inmatesESID :UUID = getESIDFromApp(app, INMATES);
-
+    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
+    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
     const searchOptions = {
       entitySetIds: [inmatesESID],
       start,
@@ -369,36 +371,49 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
       constraints: []
     };
 
-    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
-    if (firstName.length) {
-      const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+    if (firstName === '*' && lastName === '*') {
       searchOptions.constraints.push({
-        min: 1,
         constraints: [{
-          searchTerm: firstNameConstraint,
-          fuzzy: true
+          type: 'advanced',
+          searchFields: [
+            { searchTerm: '*', property: firstNamePTID, exact: true },
+            { searchTerm: '*', property: lastNamePTID, exact: true }
+          ],
         }]
       });
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      people = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
+    else {
+      if (firstName.length) {
+        const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: firstNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
 
-    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
-    if (lastName.length) {
-      const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameConstraint,
-          fuzzy: true
-        }]
-      });
-    }
+      if (lastName.length) {
+        const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: lastNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
 
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      people = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
-    people = fromJS(response.data.hits);
-    totalHits = response.data.numHits;
 
     if (!people.isEmpty()) {
       const peopleEKIDs :UUID[] = [];
