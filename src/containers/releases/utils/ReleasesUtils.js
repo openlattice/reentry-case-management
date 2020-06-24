@@ -22,7 +22,7 @@ const formatDataForReleasesByDateList = (searchedJailStays :List, peopleByJailSt
       [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
       [RELEASE_DATETIME]: releaseDateTime
     } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDate :string = releaseDateTime.length
+    const releaseDate :string = (releaseDateTime && releaseDateTime.length)
       ? DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT)
       : DateTime.fromISO(projectedReleaseDateTime).toLocaleString(DateTime.DATE_SHORT);
     release = release.set('releaseDate', releaseDate);
@@ -56,7 +56,7 @@ const formatDataForReleasesByPersonList = (searchedPeople :List, jailStaysByPers
       [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
       [RELEASE_DATETIME]: releaseDateTime
     } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDate :string = releaseDateTime.length
+    const releaseDate :string = (releaseDateTime && releaseDateTime.length)
       ? DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT)
       : DateTime.fromISO(projectedReleaseDateTime).toLocaleString(DateTime.DATE_SHORT);
     release = release.set('releaseDate', releaseDate);
