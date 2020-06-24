@@ -1,13 +1,15 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import { List, Map } from 'immutable';
 import {
   Card,
   CardSegment,
   DataGrid,
+  EditButton,
   Label,
 } from 'lattice-ui-kit';
 
+import EditContactInfoModal from './EditContactInfoModal';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { getAddress, getPersonContactData } from '../utils/ContactsUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
@@ -28,6 +30,7 @@ type Props = {
 
 const ContactInfoCard = ({ participantNeighbors } :Props) => {
 
+  const [editModalVisible, setEditModalVisibility] = useState(false);
   const contactData :Map = getPersonContactData(participantNeighbors);
   const addressList :List = participantNeighbors.get(LOCATION, List());
   const address :Map = addressList.get(0);
@@ -37,6 +40,7 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
     <Card>
       <CardHeaderWithButtons padding="30px" vertical={false}>
         <SmallCardHeaderTitle>Contacts</SmallCardHeaderTitle>
+        <EditButton onClick={() => setEditModalVisibility(true)}>Edit</EditButton>
       </CardHeaderWithButtons>
       <CardSegment>
         <DataGrid
@@ -47,6 +51,10 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
         <Label subtle>Address</Label>
         <div>{ addressString }</div>
       </CardSegment>
+      <EditContactInfoModal
+          isVisible={editModalVisible}
+          onClose={() => setEditModalVisibility(false)}
+          participantNeighbors={participantNeighbors} />
     </Card>
   );
 };
