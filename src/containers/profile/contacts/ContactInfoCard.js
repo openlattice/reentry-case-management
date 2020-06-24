@@ -9,23 +9,11 @@ import {
 } from 'lattice-ui-kit';
 
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
-import { isDefined } from '../../../utils/LangUtils';
-import { getEntityProperties } from '../../../utils/DataUtils';
+import { getAddress, getPersonContactData } from '../utils/ContactsUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
-const {
-  CITY,
-  EMAIL,
-  GENERAL_NOTES,
-  PHONE_NUMBER,
-  PREFERRED,
-  PREFERRED_METHOD_OF_CONTACT,
-  STREET,
-  US_STATE,
-  ZIP,
-} = PROPERTY_TYPE_FQNS;
+const { LOCATION } = APP_TYPE_FQNS;
 
 const labelMap = Map({
   phone: 'Phone number',
@@ -40,38 +28,10 @@ type Props = {
 
 const ContactInfoCard = ({ participantNeighbors } :Props) => {
 
-  const contactData :Map = Map().withMutations((map :Map) => {
-    const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-    const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
-    if (isDefined(preferredContact)) {
-      const {
-        [PREFERRED_METHOD_OF_CONTACT]: preferredMethod,
-        [GENERAL_NOTES]: preferredTime
-      } = getEntityProperties(preferredContact, [GENERAL_NOTES, PREFERRED_METHOD_OF_CONTACT]);
-      map.set('preferredMethod', preferredMethod);
-      map.set('preferredTime', preferredTime);
-    }
-    const email = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
-    if (isDefined(email)) map.set('email', email.getIn([EMAIL, 0]));
-    const phone = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
-    if (isDefined(phone)) map.set('phone', phone.getIn([PHONE_NUMBER, 0]));
-  });
-
+  const contactData :Map = getPersonContactData(participantNeighbors);
   const addressList :List = participantNeighbors.get(LOCATION, List());
   const address :Map = addressList.get(0);
-  let addressString :string = '';
-  if (isDefined(address)) {
-    const {
-      [CITY]: city,
-      [STREET]: street,
-      [US_STATE]: usState,
-      [ZIP]: zip
-    } = getEntityProperties(address, [CITY, STREET, US_STATE, ZIP]);
-    if (street.length) addressString = street;
-    if (city.length) addressString = `${addressString} ${city}`;
-    if (usState.length) addressString = `${addressString}${city.length ? ',' : ''} ${usState}`;
-    if (zip.length) addressString = `${addressString} ${zip}`;
-  }
+  const addressString :string = getAddress(address);
 
   return (
     <Card>
