@@ -65,7 +65,7 @@ const {
 const labels = Map({
   name: 'Name',
   releaseDate: 'Release date',
-  releasedFrom: 'Released from',
+  dataSource: 'Data source',
 });
 
 const MAX_HITS :number = 10;
@@ -264,7 +264,7 @@ class Releases extends Component<Props, State> {
     const { searchingByPerson, searchingByDate } = this.state;
     let releasesData :List = List();
     if (searchingByDate) {
-      releasesData = formatDataForReleasesByDateList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
+      releasesData = formatDataForReleasesByDateList(searchedJailStays, peopleByJailStayEKID);
     }
     if (searchingByPerson) {
       releasesData = formatDataForReleasesByPersonList(searchedPeople, jailStaysByPersonEKID, jailsByJailStayEKID);
