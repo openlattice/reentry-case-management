@@ -5,6 +5,7 @@ import { DateTime } from 'luxon';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
   DATA_SOURCE,
@@ -56,9 +57,12 @@ const formatDataForReleasesByPersonList = (searchedPeople :List, jailStaysByPers
       [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
       [RELEASE_DATETIME]: releaseDateTime
     } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDate :string = (releaseDateTime && releaseDateTime.length)
-      ? DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT)
-      : DateTime.fromISO(projectedReleaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
+      ? DateTime.fromISO(releaseDateTime)
+      : DateTime.fromISO(projectedReleaseDateTime);
+    const releaseDate :string = releaseDateAsDateTime.isValid
+      ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
+      : EMPTY_FIELD;
     release = release.set('releaseDate', releaseDate);
     releasesData = releasesData.push(release);
   });
