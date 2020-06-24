@@ -41,7 +41,7 @@ const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
-const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
+const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -177,9 +177,8 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
 
   try {
     yield put(searchReleasesByDate.request(id, value));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
     const {
       endDate,
       maxHits,
@@ -191,58 +190,53 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
     const edm = yield select(getEdmFromState);
 
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
-    const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const releaseDateTimePTID :UUID = getPTIDFromEDM(edm, RELEASE_DATETIME);
 
-    const searchOptions = {
+    const startDateAsDateTime :DateTime = DateTime.fromISO(startDate);
+    let endDateAsDateTime;
+    if (isNonEmptyString(endDate)) {
+      endDateAsDateTime = DateTime.fromISO(endDate);
+    }
+    const releaseDTSearchTerm = getUTCDateRangeSearchString(
+      releaseDateTimePTID,
+      'day',
+      startDateAsDateTime,
+      endDateAsDateTime
+    );
+    const releaseDTSearchOptions = {
       entitySetIds: [jailStaysESID],
       start,
       maxHits,
-      constraints: []
+      constraints: [{
+        min: 1,
+        constraints: [{ searchTerm: releaseDTSearchTerm, fuzzy: false }]
+      }]
     };
-    let searchTerm :string = '';
 
-    if (checkIfDatesAreEqual(startDate, endDate)) {
-      searchTerm = getSearchTerm(projectedReleaseDateTimePTID, startDate);
-      searchOptions.constraints.push({
+    const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const projectedDTSearchTerm = getUTCDateRangeSearchString(
+      projectedReleaseDateTimePTID,
+      'day',
+      startDateAsDateTime,
+      endDateAsDateTime
+    );
+    const projectedDTSearchOptions = {
+      entitySetIds: [jailStaysESID],
+      start,
+      maxHits,
+      constraints: [{
         min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    else {
-      const startDateAsDateTime :DateTime = DateTime.fromISO(startDate);
-      if (isNonEmptyString(endDate)) {
-        const endDateAsDateTime :DateTime = DateTime.fromISO(endDate);
-        searchTerm = getUTCDateRangeSearchString(
-          projectedReleaseDateTimePTID,
-          'day',
-          startDateAsDateTime,
-          endDateAsDateTime
-        );
-      }
-      else {
-        searchTerm = getUTCDateRangeSearchString(
-          projectedReleaseDateTimePTID,
-          'day',
-          startDateAsDateTime
-        );
-      }
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
-    }
-    jailStays = fromJS(response.data.hits);
-    totalHits = response.data.numHits;
+        constraints: [{ searchTerm: projectedDTSearchTerm, fuzzy: false }]
+      }]
+    };
+    const [releaseDTResponse, projectedDTResponse] = yield all([
+      call(executeSearchWorker, executeSearch({ searchOptions: releaseDTSearchOptions })),
+      call(executeSearchWorker, executeSearch({ searchOptions: projectedDTSearchOptions }))
+    ]);
+    if (releaseDTResponse.error) throw releaseDTResponse.error;
+    if (projectedDTResponse.error) throw projectedDTResponse.error;
+    jailStays = (fromJS(releaseDTResponse.data.hits)).concat(fromJS(projectedDTResponse.data.hits));
+    totalHits = releaseDTResponse.data.numHits + projectedDTResponse.data.numHits;
 
     if (!jailStays.isEmpty()) {
       const jailStayEKIDs :UUID[] = [];
