@@ -8,17 +8,14 @@ import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
-const { CONTACT_INFO, NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
+const { NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
 const {
   DATETIME_COMPLETED,
   DOB,
-  EMAIL,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
   LAST_NAME,
-  PHONE_NUMBER,
-  PREFERRED,
   PROJECTED_RELEASE_DATETIME,
   RACE,
 } = PROPERTY_TYPE_FQNS;
