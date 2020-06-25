@@ -28,6 +28,7 @@ import {
   editEvent,
   editReleaseInfo,
 } from './programhistory/ProgramHistoryActions';
+import { EDIT_CONTACT_INFO, editContactInfo } from './contacts/ContactInfoActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -40,8 +41,10 @@ const {
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
 const {
+  CONTACT_INFO,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
+  LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
@@ -49,6 +52,9 @@ const {
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [EDIT_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_NEEDS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -85,7 +91,8 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       return state
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -106,6 +113,24 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
+
+    case editContactInfo.case(action.type): {
+      return editContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { newAddress, newContacts } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, LOCATION, 0], newAddress)
+            .setIn([PARTICIPANT_NEIGHBORS, CONTACT_INFO], newContacts)
+            .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_CONTACT_INFO, action.id]),
       });
     }
 
