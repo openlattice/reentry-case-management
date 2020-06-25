@@ -3,8 +3,9 @@ import { List, Map } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { isDefined } from '../../../utils/LangUtils';
-import { getEntityProperties } from '../../../utils/DataUtils';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
@@ -23,7 +24,8 @@ const {
 const getPersonContactData = (participantNeighbors :Map) :Map => {
   const contactData :Map = Map().withMutations((map :Map) => {
     const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-    const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
+    const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED)
+      && contact.getIn([PREFERRED, 0]) === true);
     if (isDefined(preferredContact)) {
       const {
         [PREFERRED_METHOD_OF_CONTACT]: preferredMethod,
@@ -80,7 +82,8 @@ const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
     };
   }
 
-  const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
+  const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED)
+    && contact.getIn([PREFERRED, 0]) === true);
   if (isDefined(preferredContact)) {
     const {
       [GENERAL_NOTES]: preferredTime,
@@ -106,8 +109,66 @@ const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
   return originalFormData;
 };
 
+const getEntityIndexToIdMap = (contactInfoEntities :List, address :Map) :Map => {
+
+  const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+    map.set(LOCATION, List());
+    if (isDefined(address) && !address.isEmpty()) {
+      const addressEKID :UUID = getEKID(address);
+      map.setIn([LOCATION, 0], addressEKID);
+    }
+    map.set(CONTACT_INFO, List());
+    if (isDefined(contactInfoEntities) && !contactInfoEntities.isEmpty()) {
+      const phoneEntity = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
+      if (isDefined(phoneEntity)) map.setIn([CONTACT_INFO, 0], getEKID(phoneEntity));
+
+      const emailEntity = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
+      if (isDefined(emailEntity)) map.setIn([CONTACT_INFO, 1], getEKID(emailEntity));
+    }
+  });
+
+  return entityIndexToIdMap;
+};
+
+const preprocessContactFormData = (formData :Object, originalFormData :Object) :Map => {
+  const updatedFormData = formData;
+
+  const pageSection1 = getPageSectionKey(1, 1);
+  const preferredMethodKey = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+  const preferredMethod = updatedFormData[pageSection1][preferredMethodKey];
+  const originalPreferredMethod = originalFormData[pageSection1][preferredMethodKey];
+
+  if (originalPreferredMethod !== preferredMethod && isDefined(preferredMethod)) {
+    if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[2]) {
+      const emailAsPreferredMethodKey :string = getEntityAddressKey(1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+      updatedFormData[pageSection1][emailAsPreferredMethodKey] = preferredMethod;
+      updatedFormData[pageSection1][getEntityAddressKey(1, CONTACT_INFO, PREFERRED)] = true;
+      updatedFormData[pageSection1][getEntityAddressKey(0, CONTACT_INFO, PREFERRED)] = false;
+    }
+    else {
+      const phoneAsPreferredMethodKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+      updatedFormData[pageSection1][phoneAsPreferredMethodKey] = preferredMethod;
+      updatedFormData[pageSection1][getEntityAddressKey(0, CONTACT_INFO, PREFERRED)] = true;
+      updatedFormData[pageSection1][getEntityAddressKey(1, CONTACT_INFO, PREFERRED)] = false;
+    }
+  }
+  delete updatedFormData[pageSection1][preferredMethodKey];
+
+  const preferredTimeKey = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
+  const preferredTime = updatedFormData[pageSection1][preferredTimeKey];
+  if (isDefined(preferredTime)) {
+    updatedFormData[pageSection1][getEntityAddressKey(0, CONTACT_INFO, GENERAL_NOTES)] = preferredTime;
+    updatedFormData[pageSection1][getEntityAddressKey(1, CONTACT_INFO, GENERAL_NOTES)] = preferredTime;
+  }
+  delete updatedFormData[pageSection1][preferredTimeKey];
+
+  return updatedFormData;
+};
+
 export {
   getAddress,
+  getEntityIndexToIdMap,
   getOriginalFormData,
   getPersonContactData,
+  preprocessContactFormData,
 };
