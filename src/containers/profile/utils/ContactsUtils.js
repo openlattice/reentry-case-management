@@ -4,11 +4,17 @@ import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { isDefined } from '../../../utils/LangUtils';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
+const {
+  CONTACT_INFO,
+  EMERGENCY_CONTACT,
+  IS_EMERGENCY_CONTACT_FOR,
+  LOCATION,
+} = APP_TYPE_FQNS;
 const {
   CITY,
   EMAIL,
@@ -16,10 +22,13 @@ const {
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
+  RELATIONSHIP,
   STREET,
   US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
+
+// Participant Contact Info:
 
 const getPersonContactData = (participantNeighbors :Map) :Map => {
   const contactData :Map = Map().withMutations((map :Map) => {
@@ -165,7 +174,47 @@ const preprocessContactFormData = (formData :Object, originalFormData :Object) :
   return updatedFormData;
 };
 
+// Emergency Contacts:
+
+const formatEmergencyContactData = (emergencyContactInfoByContact :Map, participantNeighbors :Map) => {
+  if (!participantNeighbors.has(EMERGENCY_CONTACT)) return List();
+
+  const emergencyContactData :List = List().withMutations((list :List) => {
+    const emergencyContacts :List = participantNeighbors.get(EMERGENCY_CONTACT, List());
+    emergencyContacts.forEach((contactPerson :Map) => {
+      const contactPersonEKID :UUID = getEKID(contactPerson);
+      const relationship :string = participantNeighbors.getIn([
+        IS_EMERGENCY_CONTACT_FOR,
+        contactPersonEKID,
+        RELATIONSHIP,
+        0
+      ], '');
+      const contactPersonName :string = getPersonFullName(contactPerson);
+      const contactInfo :List = emergencyContactInfoByContact.get(contactPersonEKID, List());
+
+      const emergencyContactRow :Map = Map().withMutations((map :Map) => {
+        map.set('name', contactPersonName);
+        map.set('relationship', relationship);
+
+        contactInfo.forEach((contact :Map) => {
+          if (contact.has(PHONE_NUMBER)) {
+            const { [PHONE_NUMBER]: phone } = getEntityProperties(contact, [PHONE_NUMBER]);
+            map.set('phone', phone);
+          }
+          if (contact.has(EMAIL)) {
+            const { [EMAIL]: email } = getEntityProperties(contact, [EMAIL]);
+            map.set('email', email);
+          }
+        });
+      });
+      list.push(emergencyContactRow);
+    });
+  });
+  return emergencyContactData;
+};
+
 export {
+  formatEmergencyContactData,
   getAddress,
   getEntityIndexToIdMap,
   getOriginalFormData,
