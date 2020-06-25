@@ -9,9 +9,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { schema, uiSchema } from './schemas/EditContactInfoSchemas';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEKID } from '../../../utils/DataUtils';
-import { getOriginalFormData } from '../utils/ContactsUtils';
-// import { EDIT_NEEDS, clearEditRequestState, editNeeds } from './NeedsActions';
+import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData } from '../utils/ContactsUtils';
+import { EDIT_CONTACT_INFO, editContactInfo } from './ContactInfoActions';
+import { clearEditRequestState } from '../needs/NeedsActions';
 import {
   APP,
   EDM,
@@ -48,21 +48,18 @@ const EditContactInfoModal = ({
 
   const addressList :List = participantNeighbors.get(LOCATION, List());
   const address :Map = addressList.get(0);
-  const addressEKID :UUID = getEKID(address);
   const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-  const entityIndexToIdMap :Map = Map({
-    [CONTACT_INFO]: List([contactInfoEntities.map((entity :Map) => getEKID(entity))]),
-    [LOCATION]: List([addressEKID]),
-  });
+
+  const entityIndexToIdMap :Map = getEntityIndexToIdMap(contactInfoEntities, address);
 
   const originalFormData = getOriginalFormData(contactInfoEntities, address);
   const [formData, updateFormData] = useState(originalFormData);
   const dispatch = useDispatch();
 
-  const editNeedsReqState = useSelector((store :Map) => store.getIn([
+  const editContactInfoReqState = useSelector((store :Map) => store.getIn([
     PROFILE.PROFILE,
     ACTIONS,
-    // EDIT_NEEDS,
+    EDIT_CONTACT_INFO,
     REQUEST_STATE
   ]));
   const selectedOrgId :string = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
@@ -78,22 +75,23 @@ const EditContactInfoModal = ({
   ], Map()));
 
   const closeModal = useCallback(() => {
-    // dispatch(clearEditRequestState());
+    dispatch(clearEditRequestState());
     onClose();
   }, [dispatch, onClose]);
 
   useEffect(() => {
-    if (requestIsSuccess(editNeedsReqState)) {
+    if (requestIsSuccess(editContactInfoReqState)) {
       closeModal();
     }
-  }, [closeModal, editNeedsReqState]);
+  }, [closeModal, editContactInfoReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
   const onSubmit = () => {
+    const preprocessedFormData = preprocessContactFormData(formData, originalFormData);
     const draftWithKeys :Object = replaceEntityAddressKeys(
-      formData,
+      preprocessedFormData,
       findEntityAddressKeyFromMap(entityIndexToIdMap)
     );
     const entityData = processEntityDataForPartialReplace(
@@ -102,8 +100,9 @@ const EditContactInfoModal = ({
       entitySetIds,
       propertyTypeIds,
     );
+
     if (Object.values(entityData).length) {
-      // dispatch(editNeeds({ entityData, needsAssessmentEKID }));
+      dispatch(editContactInfo({ address, contactInfoEntities, entityData }));
     }
     else {
       onClose();
@@ -112,7 +111,7 @@ const EditContactInfoModal = ({
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Contact Info" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = requestIsPending(editNeedsReqState);
+    const isSubmitting :boolean = requestIsPending(editContactInfoReqState);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}
