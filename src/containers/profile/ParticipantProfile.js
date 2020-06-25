@@ -46,6 +46,7 @@ const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
@@ -88,6 +89,7 @@ type Props = {
     loadProfile :RequestSequence;
   };
   contactNameByProviderEKID :Map;
+  emergencyContactInfoByContact :Map;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
@@ -142,6 +144,7 @@ class ParticipantProfile extends Component<Props, State> {
   render() {
     const {
       contactNameByProviderEKID,
+      emergencyContactInfoByContact,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -193,7 +196,9 @@ class ParticipantProfile extends Component<Props, State> {
               </CardInnerWrapper>
             </CardSegment>
           </Card>
-          <ContactInfoCard participantNeighbors={participantNeighbors} />
+          <ContactInfoCard
+              emergencyContactInfoByContact={emergencyContactInfoByContact}
+              participantNeighbors={participantNeighbors} />
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
@@ -213,6 +218,7 @@ const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
+    [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),

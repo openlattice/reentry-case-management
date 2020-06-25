@@ -19,7 +19,7 @@ import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 import EditContactInfoModal from './EditContactInfoModal';
 import EditEmergencyContactsModal from './EditEmergencyContactsModal';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
-import { getAddress, getPersonContactData } from '../utils/ContactsUtils';
+import { formatEmergencyContactData, getAddress, getPersonContactData } from '../utils/ContactsUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
@@ -36,7 +36,7 @@ const AddressWrapper = styled.div`
   margin: 30px 0;
 `;
 
-const LabelRow = styled.div`
+const EmergencyContactsGrid = styled.div`
   display: grid;
   flex: 1;
   grid-auto-flow: row;
@@ -51,10 +51,11 @@ const ButtonRow = styled.div`
 `;
 
 type Props = {
+  emergencyContactInfoByContact :Map;
   participantNeighbors :Map;
 };
 
-const ContactInfoCard = ({ participantNeighbors } :Props) => {
+const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors } :Props) => {
 
   const [editModalVisible, setEditModalVisibility] = useState(false);
   const [editEmergencyModalVisible, setEditEmergencyVisibility] = useState(false);
@@ -62,6 +63,8 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
   const addressList :List = participantNeighbors.get(LOCATION, List());
   const address :Map = addressList.get(0);
   const addressString :string = getAddress(address);
+
+  const emergencyContactData :List = formatEmergencyContactData(emergencyContactInfoByContact, participantNeighbors);
 
   return (
     <Card>
@@ -86,12 +89,22 @@ const ContactInfoCard = ({ participantNeighbors } :Props) => {
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <CardSegment padding="0">
-                <LabelRow>
+                <EmergencyContactsGrid>
                   <Label subtle>Name</Label>
                   <Label subtle>Phone</Label>
                   <Label subtle>Email</Label>
                   <Label subtle>Relationship</Label>
-                </LabelRow>
+                  {
+                    emergencyContactData.map((row :Map, index :number) => (
+                      <div key={index.toString()}>
+                        <div>{ row.get('name') }</div>
+                        <div>{ row.get('phone') }</div>
+                        <div>{ row.get('email') }</div>
+                        <div>{ row.get('relationship') }</div>
+                      </div>
+                    ))
+                  }
+                </EmergencyContactsGrid>
                 <ButtonRow>
                   <Button onClick={() => setEditEmergencyVisibility(true)}>Edit</Button>
                 </ButtonRow>
