@@ -28,7 +28,12 @@ import {
   editEvent,
   editReleaseInfo,
 } from './programhistory/ProgramHistoryActions';
-import { EDIT_CONTACT_INFO, editContactInfo } from './contacts/ContactInfoActions';
+import {
+  EDIT_CONTACT_INFO,
+  GET_EMERGENCY_CONTACT_INFO,
+  editContactInfo,
+  getEmergencyContactInfo,
+} from './contacts/ContactInfoActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -36,6 +41,7 @@ import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
@@ -64,6 +70,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_EMERGENCY_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -78,6 +87,7 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [CONTACT_NAME_BY_PROVIDER_EKID]: Map(),
+  [EMERGENCY_CONTACT_INFO_BY_CONTACT]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
   [PROVIDER_BY_STATUS_EKID]: Map(),
@@ -229,6 +239,23 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
+      });
+    }
+
+    case getEmergencyContactInfo.case(action.type): {
+
+      return getEmergencyContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          return state
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, seqAction.value)
+            .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, action.id]),
       });
     }
 

@@ -5,19 +5,37 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { List, Map, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { isDefined } from '../../../utils/LangUtils';
-import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
+import {
+  getEKID,
+  getESIDFromApp,
+  getNeighborDetails,
+  getPropertyFqnFromEDM,
+} from '../../../utils/DataUtils';
 import { submitPartialReplace } from '../../../core/data/DataActions';
 import { submitPartialReplaceWorker } from '../../../core/data/DataSagas';
-import { EDIT_CONTACT_INFO, editContactInfo } from './ContactInfoActions';
+import {
+  EDIT_CONTACT_INFO,
+  GET_EMERGENCY_CONTACT_INFO,
+  editContactInfo,
+  getEmergencyContactInfo,
+} from './ContactInfoActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
-const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const {
+  CONTACT_INFO,
+  EMERGENCY_CONTACT,
+  EMERGENCY_CONTACT_INFO,
+  LOCATION,
+} = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -96,7 +114,63 @@ function* editContactInfoWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_CONTACT_INFO, editContactInfoWorker);
 }
 
+/*
+ *
+ * ContactInfoActions.getEmergencyContactInfo()
+ *
+ */
+
+function* getEmergencyContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(getEmergencyContactInfo.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { emergencyContactEKIDs } = value;
+
+    const app = yield select(getAppFromState);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const emergencyContactInfoESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT_INFO);
+
+    const filter = {
+      entityKeyIds: emergencyContactEKIDs,
+      sourceEntitySetIds: [],
+      destinationEntitySetIds: [emergencyContactInfoESID],
+    };
+
+    const response :Object = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: emergencyContactESID, filter })
+    );
+    if (response.error) throw response.error;
+    const neighbors = fromJS(response.data);
+    const emergencyContactInfoByContact :Map = Map().withMutations((map :Map) => {
+      neighbors.forEach((neighborsList :List, emergencyContactEKID :UUID) => {
+        const contactInfoList :List = neighborsList.map((neighbor :Map) => getNeighborDetails(neighbor));
+        map.set(emergencyContactEKID, contactInfoList);
+      });
+    });
+
+    yield put(getEmergencyContactInfo.success(id, emergencyContactInfoByContact));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getEmergencyContactInfo.failure(id, error));
+  }
+  finally {
+    yield put(getEmergencyContactInfo.finally(id));
+  }
+}
+
+function* getEmergencyContactInfoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_EMERGENCY_CONTACT_INFO, getEmergencyContactInfoWorker);
+}
+
 export {
   editContactInfoWatcher,
   editContactInfoWorker,
+  getEmergencyContactInfoWatcher,
+  getEmergencyContactInfoWorker,
 };
