@@ -14,6 +14,7 @@ import * as NeedsSagas from '../../containers/profile/needs/NeedsSagas';
 import * as ParticipantFollowUpsSagas from '../../containers/profile/tasks/FollowUpsSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as ProfileSagas from '../../containers/profile/ProfileSagas';
+import * as ProgramHistorySagas from '../../containers/profile/programhistory/ProgramHistorySagas';
 import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as ReportsSagas from '../../containers/reports/ReportsSagas';
@@ -67,6 +68,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),
     fork(ProfileSagas.loadProfileWatcher),
+
+    // ProgramHistorySagas
+    fork(ProgramHistorySagas.editEventWatcher),
+    fork(ProgramHistorySagas.editReleaseInfoWatcher),
 
     // ProvidersSagas
     fork(ProvidersSagas.addNewProviderContactsWatcher),

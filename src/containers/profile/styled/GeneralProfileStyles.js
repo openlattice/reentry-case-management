@@ -1,6 +1,6 @@
 // @flow
 import styled from 'styled-components';
-import { Button, Colors } from 'lattice-ui-kit';
+import { Button, CardHeader, Colors } from 'lattice-ui-kit';
 import { NavLink } from 'react-router-dom';
 
 import COLORS from '../../../core/style/Colors';
@@ -38,8 +38,14 @@ const SmallCardHeaderTitle = styled(CardHeaderTitle)`
   font-size: 20px;
 `;
 
+const CardHeaderWithButtons = styled(CardHeader)`
+  align-items: center;
+  justify-content: space-between;
+`;
+
 export {
   CardHeaderTitle,
+  CardHeaderWithButtons,
   GrayerButton,
   Header,
   NameHeader,
