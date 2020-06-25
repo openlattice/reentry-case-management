@@ -95,8 +95,17 @@ const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIG
 
 const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
 
+const getAssociationDetails = (neighborObj :Map) :Map => {
+  let associationDetails :Map = Map();
+  if (isImmutable(neighborObj)) {
+    associationDetails = neighborObj.get(ASSOCIATION_DETAILS, neighborObj);
+  }
+  return associationDetails;
+};
+
 export {
   ASSOCIATION_DETAILS,
+  getAssociationDetails,
   getAssociationESID,
   getEKID,
   getESIDFromApp,
