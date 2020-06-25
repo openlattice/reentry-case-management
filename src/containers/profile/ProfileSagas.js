@@ -24,6 +24,8 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  getAssociationDetails,
+  getAssociationESID,
   getEKID,
   getESIDFromApp,
   getFqnFromApp,
@@ -41,6 +43,8 @@ import {
   getParticipantNeighbors,
   loadProfile,
 } from './ProfileActions';
+import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
+import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -54,7 +58,9 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
+  EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
+  IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
@@ -173,14 +179,19 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: participantsESID, filter: searchFilter })
     );
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
+
     let personNeighborMap :Map = Map();
     const neighbors :Map = fromJS(response.data);
     if (!neighbors.isEmpty()) {
       neighbors.forEach((neighborList :List) => {
         neighborList.forEach((neighbor :Map) => {
+          const associationESID :UUID = getAssociationESID(neighbor);
+          if (associationESID === getESIDFromApp(app, IS_EMERGENCY_CONTACT_FOR)) {
+            personNeighborMap = personNeighborMap
+              .setIn([IS_EMERGENCY_CONTACT_FOR, getEKID(neighbor), getAssociationDetails(neighbor)]);
+          }
+
           const neighborESID :UUID = getNeighborESID(neighbor);
           const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
           const entity :Map = getNeighborDetails(neighbor);
@@ -196,6 +207,12 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .map((statusEntity :Map) => getEKID(statusEntity))
         .toJS();
       yield call(getEnrollmentStatusNeighborsWorker, getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs }));
+    }
+    if (isDefined(get(personNeighborMap, EMERGENCY_CONTACT))) {
+      const emergencyContactEKIDs :UUID[] = personNeighborMap.get(EMERGENCY_CONTACT)
+        .map((emergencyContact :Map) => getEKID(emergencyContact))
+        .toJS();
+      yield call(getEmergencyContactInfoWorker, getEmergencyContactInfo({ emergencyContactEKIDs }));
     }
 
     workerResponse.data = personNeighborMap;
@@ -283,6 +300,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: needsAssessmentESID },
@@ -291,6 +309,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: manualJailStaysESID },
       { direction: DST, neighborESID: referralToReentryESID },
       { direction: DST, neighborESID: addressESID },
+      { direction: SRC, neighborESID: emergencyContactESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
