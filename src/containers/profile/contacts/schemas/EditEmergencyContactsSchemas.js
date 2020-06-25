@@ -46,7 +46,12 @@ const schema :Object = {
             enum: CONTACT_RELATIONSHIPS,
             enumNames: CONTACT_RELATIONSHIPS,
           },
-        }
+        },
+        required: [
+          getEntityAddressKey(-1, EMERGENCY_CONTACT, FIRST_NAME),
+          getEntityAddressKey(-1, EMERGENCY_CONTACT, LAST_NAME),
+          getEntityAddressKey(-1, IS_EMERGENCY_CONTACT_FOR, RELATIONSHIP),
+        ]
       },
       default: [{}]
     },
