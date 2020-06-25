@@ -188,8 +188,10 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         neighborList.forEach((neighbor :Map) => {
           const associationESID :UUID = getAssociationESID(neighbor);
           if (associationESID === getESIDFromApp(app, IS_EMERGENCY_CONTACT_FOR)) {
-            personNeighborMap = personNeighborMap
-              .setIn([IS_EMERGENCY_CONTACT_FOR, getEKID(neighbor), getAssociationDetails(neighbor)]);
+            personNeighborMap = personNeighborMap.setIn(
+              [IS_EMERGENCY_CONTACT_FOR, getEKID(getNeighborDetails(neighbor))],
+              getAssociationDetails(neighbor)
+            );
           }
 
           const neighborESID :UUID = getNeighborESID(neighbor);
