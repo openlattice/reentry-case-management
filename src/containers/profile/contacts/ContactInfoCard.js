@@ -69,7 +69,7 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors }
   return (
     <Card>
       <CardHeaderWithButtons padding="30px" vertical={false}>
-        <SmallCardHeaderTitle>Contacts</SmallCardHeaderTitle>
+        <SmallCardHeaderTitle>Contact Information</SmallCardHeaderTitle>
         <EditButton onClick={() => setEditModalVisibility(true)}>Edit</EditButton>
       </CardHeaderWithButtons>
       <CardSegment>
@@ -89,22 +89,28 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors }
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <CardSegment padding="0">
-                <EmergencyContactsGrid>
-                  <Label subtle>Name</Label>
-                  <Label subtle>Phone</Label>
-                  <Label subtle>Email</Label>
-                  <Label subtle>Relationship</Label>
-                  {
-                    emergencyContactData.map((row :Map, index :number) => (
-                      <div key={index.toString()}>
-                        <div>{ row.get('name') }</div>
-                        <div>{ row.get('phone') }</div>
-                        <div>{ row.get('email') }</div>
-                        <div>{ row.get('relationship') }</div>
-                      </div>
-                    ))
-                  }
-                </EmergencyContactsGrid>
+                {
+                  !emergencyContactData.isEmpty() && (
+                    <>
+                      <EmergencyContactsGrid>
+                        <Label subtle>Name</Label>
+                        <Label subtle>Phone</Label>
+                        <Label subtle>Email</Label>
+                        <Label subtle>Relationship</Label>
+                      </EmergencyContactsGrid>
+                      {
+                        emergencyContactData.map((row :Map, index :number) => (
+                          <EmergencyContactsGrid key={index.toString()}>
+                            <div>{ row.get('name') }</div>
+                            <div>{ row.get('phone') }</div>
+                            <div>{ row.get('email') }</div>
+                            <div>{ row.get('relationship') }</div>
+                          </EmergencyContactsGrid>
+                        ))
+                      }
+                    </>
+                  )
+                }
                 <ButtonRow>
                   <Button onClick={() => setEditEmergencyVisibility(true)}>Edit</Button>
                 </ButtonRow>
@@ -118,6 +124,7 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors }
           onClose={() => setEditModalVisibility(false)}
           participantNeighbors={participantNeighbors} />
       <EditEmergencyContactsModal
+          emergencyContactInfoByContact={emergencyContactInfoByContact}
           isVisible={editEmergencyModalVisible}
           onClose={() => setEditEmergencyVisibility(false)}
           participantNeighbors={participantNeighbors} />
