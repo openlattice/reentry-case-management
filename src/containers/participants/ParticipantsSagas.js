@@ -205,6 +205,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let searchedParticipants :List = List();
   let totalHits :number = 0;
+  let response :Object = {};
 
   try {
     yield put(searchParticipants.request(id, value));
@@ -219,6 +220,9 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
     const participantsESID :UUID = getESIDFromApp(app, PEOPLE);
+    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
+    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
+    const dobPTID :UUID = getPTIDFromEDM(edm, DOB);
 
     const searchOptions = {
       entitySetIds: [participantsESID],
@@ -227,51 +231,61 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       constraints: []
     };
 
-    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
-    if (isNonEmptyString(firstName)) {
-      const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+    if (firstName === '*' && lastName === '*') {
       searchOptions.constraints.push({
-        min: 1,
         constraints: [{
-          searchTerm: firstNameConstraint,
-          fuzzy: true
+          type: 'advanced',
+          searchFields: [
+            { searchTerm: '*', property: firstNamePTID, exact: true },
+            { searchTerm: '*', property: lastNamePTID, exact: true }
+          ],
         }]
       });
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      searchedParticipants = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
+    else {
+      if (isNonEmptyString(firstName)) {
+        const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: firstNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
+      if (isNonEmptyString(lastName)) {
+        const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: lastNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
+      if (DateTime.fromISO(dob).isValid) {
+        const lastNameConstraint = getSearchTerm(dobPTID, dob);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: lastNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
 
-    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
-    if (isNonEmptyString(lastName)) {
-      const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameConstraint,
-          fuzzy: true
-        }]
-      });
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      searchedParticipants = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
-
-    const dobPTID :UUID = getPTIDFromEDM(edm, DOB);
-    if (DateTime.fromISO(dob).isValid) {
-      const lastNameConstraint = getSearchTerm(dobPTID, dob);
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameConstraint,
-          fuzzy: true
-        }]
-      });
-    }
-
-    const response :Object = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
-    }
-    searchedParticipants = fromJS(response.data.hits);
-    totalHits = response.data.numHits;
 
     if (totalHits) {
-      const participantEKIDs :UUID[] = response.data.hits.map((person :Object) => getEKID(person));
+      const participantEKIDs :UUID[] = searchedParticipants.map((person :Object) => getEKID(person)).toJS();
       const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
       const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
       const neighborsToGet = [
