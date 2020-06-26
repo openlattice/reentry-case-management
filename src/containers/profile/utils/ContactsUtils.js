@@ -1,24 +1,31 @@
 // @flow
-import { List, Map } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { isDefined } from '../../../utils/LangUtils';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
+import { preprocessContactsData } from '../../providers/utils/ProvidersUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
-const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const { INDEX_MAPPERS, getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
+  CONTACTED_VIA,
   CONTACT_INFO,
   EMERGENCY_CONTACT,
+  EMERGENCY_CONTACT_INFO,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
+  PEOPLE,
 } = APP_TYPE_FQNS;
 const {
   CITY,
   EMAIL,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
   GENERAL_NOTES,
+  LAST_NAME,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
@@ -176,7 +183,7 @@ const preprocessContactFormData = (formData :Object, originalFormData :Object) :
 
 // Emergency Contacts:
 
-const formatEmergencyContactData = (emergencyContactInfoByContact :Map, participantNeighbors :Map) => {
+const formatEmergencyContactData = (emergencyContactInfoByContact :Map, participantNeighbors :Map) :List => {
   if (!participantNeighbors.has(EMERGENCY_CONTACT)) return List();
 
   const emergencyContactData :List = List().withMutations((list :List) => {
@@ -213,11 +220,175 @@ const formatEmergencyContactData = (emergencyContactInfoByContact :Map, particip
   return emergencyContactData;
 };
 
+const getOriginalEmergencyFormData = (emergencyContactInfoByContact :Map, participantNeighbors :Map) :Object => {
+
+  const pageSection1 = getPageSectionKey(1, 1);
+  const originalFormData = {
+    [pageSection1]: []
+  };
+  const emergencyContacts :List = participantNeighbors.get(EMERGENCY_CONTACT, List());
+  emergencyContacts.forEach((contactPerson :Map) => {
+    const contactObj :Object = {};
+
+    const contactPersonEKID :UUID = getEKID(contactPerson);
+    const relationship :string = participantNeighbors.getIn([
+      IS_EMERGENCY_CONTACT_FOR,
+      contactPersonEKID,
+      RELATIONSHIP,
+      0
+    ], '');
+    contactObj[getEntityAddressKey(-1, IS_EMERGENCY_CONTACT_FOR, RELATIONSHIP)] = relationship;
+
+    const {
+      [FIRST_NAME]: firstName,
+      [LAST_NAME]: lastName
+    } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
+    contactObj[getEntityAddressKey(-1, EMERGENCY_CONTACT, FIRST_NAME)] = firstName;
+    contactObj[getEntityAddressKey(-1, EMERGENCY_CONTACT, LAST_NAME)] = lastName;
+
+    const contactInfo :List = emergencyContactInfoByContact.get(contactPersonEKID, List());
+    contactInfo.forEach((contact :Map) => {
+      if (contact.has(PHONE_NUMBER)) {
+        const { [PHONE_NUMBER]: phone } = getEntityProperties(contact, [PHONE_NUMBER]);
+        contactObj[getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER)] = phone;
+      }
+      if (contact.has(EMAIL)) {
+        const { [EMAIL]: email } = getEntityProperties(contact, [EMAIL]);
+        contactObj[getEntityAddressKey(-2, EMERGENCY_CONTACT_INFO, EMAIL)] = email;
+      }
+    });
+
+    originalFormData[pageSection1].push(contactObj);
+
+  });
+
+  return originalFormData;
+};
+
+const getEmergencyEntityIndexToIdMap = (emergencyContactInfoByContact :Map, participantNeighbors :Map) => {
+  const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+    const emergencyContactPeople :List = participantNeighbors.get(EMERGENCY_CONTACT, List());
+    emergencyContactPeople.forEach((person :Map, index :number) => {
+      const personEKID :UUID = getEKID(person);
+      map.setIn([EMERGENCY_CONTACT, -1, index], personEKID);
+
+      const isEmergencyContactForEKID :UUID = participantNeighbors.getIn([
+        IS_EMERGENCY_CONTACT_FOR,
+        personEKID,
+        ENTITY_KEY_ID,
+        0], '');
+      map.setIn([IS_EMERGENCY_CONTACT_FOR, -1, index], isEmergencyContactForEKID);
+
+      const contactInfo :List = emergencyContactInfoByContact.get(personEKID, List());
+      contactInfo.forEach((contact :Map) => {
+        if (contact.has(PHONE_NUMBER)) {
+          map.setIn([EMERGENCY_CONTACT_INFO, -1, index], getEKID(contact));
+        }
+        if (contact.has(EMAIL)) {
+          map.setIn([EMERGENCY_CONTACT_INFO, -2, index], getEKID(contact));
+        }
+      });
+    });
+  });
+  return entityIndexToIdMap;
+};
+
+const preprocessNewEmergencyContactData = (formData :Object, originalFormData :Object) :Object => {
+
+  const originalNumberOfContacts :number = originalFormData[getPageSectionKey(1, 1)].length;
+  const contactsWereAdded :boolean = formData[getPageSectionKey(1, 1)].length
+    > originalNumberOfContacts;
+  if (!contactsWereAdded) return { formDataWithNewContactsOnly: {}, mappers: Map() };
+
+  const mappers :Map = Map().withMutations((map :Map) => {
+    const indexMappers :Map = Map().withMutations((indexMap :Map) => {
+      indexMap.set(getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER), (i) => i * 2);
+      indexMap.set(getEntityAddressKey(-2, EMERGENCY_CONTACT_INFO, EMAIL), (i) => i * 2 + 1);
+    });
+    map.set(INDEX_MAPPERS, indexMappers);
+  });
+
+  const newContactsInFormData = formData[getPageSectionKey(1, 1)].slice(originalNumberOfContacts);
+  const formDataWithNewContactsOnly = preprocessContactsData(
+    { [getPageSectionKey(1, 1)]: newContactsInFormData },
+    EMERGENCY_CONTACT_INFO
+  );
+
+  return { formDataWithNewContactsOnly, mappers };
+};
+
+const getAssociationsForNewEmergencyContacts = (formData :Object, personEKID :UUID) => {
+  const associations :Array<Array<*>> = [];
+  const contacts :Object[] = formData[getPageSectionKey(1, 1)];
+
+  if (!isDefined(contacts) || !contacts.length) return associations;
+
+  contacts.forEach((contactObj :Object, index :number) => {
+    associations.push([IS_EMERGENCY_CONTACT_FOR, index, EMERGENCY_CONTACT, personEKID, PEOPLE, {
+      // $FlowFixMe
+      [RELATIONSHIP]: [contactObj[getEntityAddressKey(-1, IS_EMERGENCY_CONTACT_FOR, RELATIONSHIP)]],
+    }]);
+
+    associations.push([CONTACTED_VIA, index, EMERGENCY_CONTACT, index * 2, EMERGENCY_CONTACT_INFO]);
+    associations.push([CONTACTED_VIA, index, EMERGENCY_CONTACT, index * 2 + 1, EMERGENCY_CONTACT_INFO]);
+  });
+  return associations;
+};
+
+const removeRelationshipFromFormData = (formData :Object) => {
+  const updatedFormData = formData;
+  const pageSection1 = [getPageSectionKey(1, 1)];
+  const contacts = formData[pageSection1];
+  if (!isDefined(contacts) || !contacts.length) return updatedFormData;
+
+  contacts.forEach((contactObj :Object, index :number) => {
+    delete updatedFormData[pageSection1][index][getEntityAddressKey(-1, IS_EMERGENCY_CONTACT_FOR, RELATIONSHIP)];
+  });
+  return updatedFormData;
+};
+
+const preprocessEditedEmergencyContactData = (
+  formData :Object,
+  originalFormData :Object,
+  formDataWithNewContactsOnly :Object
+) :Object => {
+
+  const pageSection1 = getPageSectionKey(1, 1);
+  const defaultReturnObject :Object = { editedContactsAsImmutable: Map(), originalFormContactsAsImmutable: Map() };
+  if ((!formData[pageSection1].length && !originalFormData[pageSection1].length)) {
+    return defaultReturnObject;
+  }
+
+  const allContactsInFormData :Object[] = formData[pageSection1];
+  const numberOfNewContacts :number = formDataWithNewContactsOnly[pageSection1]
+    ? formDataWithNewContactsOnly[pageSection1].length
+    : 0;
+  const editedContacts :Object[] = numberOfNewContacts
+    ? allContactsInFormData.slice(0, allContactsInFormData.length - numberOfNewContacts)
+    : allContactsInFormData;
+
+  if (!Object.values(editedContacts).length) {
+    return defaultReturnObject;
+  }
+  const editedContactsAsImmutable :List = fromJS(editedContacts);
+  const originalFormContactsAsImmutable :List = fromJS(originalFormData[pageSection1]);
+
+  const contactsHaveChanged :boolean = !originalFormContactsAsImmutable.equals(editedContactsAsImmutable);
+  if (!contactsHaveChanged) return { editedContactsAsImmutable: Map(), originalFormContactsAsImmutable: Map() };
+  return { editedContactsAsImmutable, originalFormContactsAsImmutable };
+};
+
 export {
   formatEmergencyContactData,
   getAddress,
+  getAssociationsForNewEmergencyContacts,
+  getEmergencyEntityIndexToIdMap,
   getEntityIndexToIdMap,
+  getOriginalEmergencyFormData,
   getOriginalFormData,
   getPersonContactData,
   preprocessContactFormData,
+  preprocessEditedEmergencyContactData,
+  preprocessNewEmergencyContactData,
+  removeRelationshipFromFormData,
 };
