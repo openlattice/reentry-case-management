@@ -20,7 +20,6 @@ import {
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
 import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
-import { checkIfDatesAreEqual } from '../../utils/DateTimeUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
@@ -41,7 +40,12 @@ const LOG = new Logger('ReleasesSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
-const { FIRST_NAME, LAST_NAME, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
+const {
+  FIRST_NAME,
+  LAST_NAME,
+  PROJECTED_RELEASE_DATETIME,
+  RELEASE_DATETIME,
+} = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -171,15 +175,13 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :Object = {};
   let jailStays :List = List();
   let totalHits :number = 0;
 
   try {
     yield put(searchReleasesByDate.request(id, value));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
     const {
       endDate,
       maxHits,
@@ -191,58 +193,53 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
     const edm = yield select(getEdmFromState);
 
     const jailStaysESID :UUID = getESIDFromApp(app, JAIL_STAYS);
-    const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const releaseDateTimePTID :UUID = getPTIDFromEDM(edm, RELEASE_DATETIME);
 
-    const searchOptions = {
+    const startDateAsDateTime :DateTime = DateTime.fromISO(startDate);
+    let endDateAsDateTime;
+    if (isNonEmptyString(endDate)) {
+      endDateAsDateTime = DateTime.fromISO(endDate);
+    }
+    const releaseDTSearchTerm = getUTCDateRangeSearchString(
+      releaseDateTimePTID,
+      'day',
+      startDateAsDateTime,
+      endDateAsDateTime
+    );
+    const releaseDTSearchOptions = {
       entitySetIds: [jailStaysESID],
       start,
       maxHits,
-      constraints: []
+      constraints: [{
+        min: 1,
+        constraints: [{ searchTerm: releaseDTSearchTerm, fuzzy: false }]
+      }]
     };
-    let searchTerm :string = '';
 
-    if (checkIfDatesAreEqual(startDate, endDate)) {
-      searchTerm = getSearchTerm(projectedReleaseDateTimePTID, startDate);
-      searchOptions.constraints.push({
+    const projectedReleaseDateTimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+    const projectedDTSearchTerm = getUTCDateRangeSearchString(
+      projectedReleaseDateTimePTID,
+      'day',
+      startDateAsDateTime,
+      endDateAsDateTime
+    );
+    const projectedDTSearchOptions = {
+      entitySetIds: [jailStaysESID],
+      start,
+      maxHits,
+      constraints: [{
         min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    else {
-      const startDateAsDateTime :DateTime = DateTime.fromISO(startDate);
-      if (isNonEmptyString(endDate)) {
-        const endDateAsDateTime :DateTime = DateTime.fromISO(endDate);
-        searchTerm = getUTCDateRangeSearchString(
-          projectedReleaseDateTimePTID,
-          'day',
-          startDateAsDateTime,
-          endDateAsDateTime
-        );
-      }
-      else {
-        searchTerm = getUTCDateRangeSearchString(
-          projectedReleaseDateTimePTID,
-          'day',
-          startDateAsDateTime
-        );
-      }
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm,
-          fuzzy: false
-        }]
-      });
-    }
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
-    }
-    jailStays = fromJS(response.data.hits);
-    totalHits = response.data.numHits;
+        constraints: [{ searchTerm: projectedDTSearchTerm, fuzzy: false }]
+      }]
+    };
+    const [releaseDTResponse, projectedDTResponse] = yield all([
+      call(executeSearchWorker, executeSearch({ searchOptions: releaseDTSearchOptions })),
+      call(executeSearchWorker, executeSearch({ searchOptions: projectedDTSearchOptions }))
+    ]);
+    if (releaseDTResponse.error) throw releaseDTResponse.error;
+    if (projectedDTResponse.error) throw projectedDTResponse.error;
+    jailStays = (fromJS(releaseDTResponse.data.hits)).concat(fromJS(projectedDTResponse.data.hits));
+    totalHits = releaseDTResponse.data.numHits + projectedDTResponse.data.numHits;
 
     if (!jailStays.isEmpty()) {
       const jailStayEKIDs :UUID[] = [];
@@ -251,10 +248,7 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
         jailStayEKIDs.push(jailStayEKID);
       });
 
-      yield all([
-        call(searchPeopleByJailStayWorker, searchPeopleByJailStay({ jailStayEKIDs })),
-        call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ jailStayEKIDs })),
-      ]);
+      yield call(searchPeopleByJailStayWorker, searchPeopleByJailStay({ jailStayEKIDs }));
     }
 
     yield put(searchReleasesByDate.success(id, { jailStays, totalHits }));
@@ -319,8 +313,6 @@ function* searchJailStaysByPersonWorker(action :SequenceAction) :Generator<*, *,
         const jailStayEKID :UUID = getEKID(jailStay);
         jailStayEKIDs.push(jailStayEKID);
       });
-
-      yield call(getJailsByJailStayEKIDWorker, getJailsByJailStayEKID({ jailStayEKIDs }));
     }
 
     yield put(searchJailStaysByPerson.success(id, jailStaysByPersonEKID));
@@ -367,7 +359,8 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
     const edm = yield select(getEdmFromState);
 
     const inmatesESID :UUID = getESIDFromApp(app, INMATES);
-
+    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
+    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
     const searchOptions = {
       entitySetIds: [inmatesESID],
       start,
@@ -375,36 +368,49 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
       constraints: []
     };
 
-    const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
-    if (firstName.length) {
-      const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+    if (firstName === '*' && lastName === '*') {
       searchOptions.constraints.push({
-        min: 1,
         constraints: [{
-          searchTerm: firstNameConstraint,
-          fuzzy: true
+          type: 'advanced',
+          searchFields: [
+            { searchTerm: '*', property: firstNamePTID, exact: true },
+            { searchTerm: '*', property: lastNamePTID, exact: true }
+          ],
         }]
       });
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      people = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
+    else {
+      if (firstName.length) {
+        const firstNameConstraint = getSearchTerm(firstNamePTID, firstName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: firstNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
 
-    const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
-    if (lastName.length) {
-      const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
-      searchOptions.constraints.push({
-        min: 1,
-        constraints: [{
-          searchTerm: lastNameConstraint,
-          fuzzy: true
-        }]
-      });
-    }
+      if (lastName.length) {
+        const lastNameConstraint = getSearchTerm(lastNamePTID, lastName);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: lastNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
 
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      people = fromJS(response.data.hits);
+      totalHits = response.data.numHits;
     }
-    people = fromJS(response.data.hits);
-    totalHits = response.data.numHits;
 
     if (!people.isEmpty()) {
       const peopleEKIDs :UUID[] = [];

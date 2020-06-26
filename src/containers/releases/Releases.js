@@ -55,7 +55,6 @@ const NoReleasesFound = () => (
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
 const {
-  JAILS_BY_JAIL_STAY_EKID,
   JAIL_STAYS_BY_PERSON_EKID,
   PEOPLE_BY_JAIL_STAY_EKID,
   SEARCHED_JAIL_STAYS,
@@ -65,7 +64,7 @@ const {
 const labels = Map({
   name: 'Name',
   releaseDate: 'Release date',
-  releasedFrom: 'Released from',
+  dataSource: 'Data source',
 });
 
 const MAX_HITS :number = 10;
@@ -117,7 +116,6 @@ type Props = {
     searchReleasesByDate :RequestSequence;
     searchReleasesByPersonName :RequestSequence;
   };
-  jailsByJailStayEKID :Map;
   jailStaysByPersonEKID :Map;
   peopleByJailStayEKID :Map;
   requestStates:{
@@ -255,7 +253,6 @@ class Releases extends Component<Props, State> {
 
   getReleasesData = () => {
     const {
-      jailsByJailStayEKID,
       jailStaysByPersonEKID,
       peopleByJailStayEKID,
       searchedJailStays,
@@ -264,10 +261,10 @@ class Releases extends Component<Props, State> {
     const { searchingByPerson, searchingByDate } = this.state;
     let releasesData :List = List();
     if (searchingByDate) {
-      releasesData = formatDataForReleasesByDateList(searchedJailStays, peopleByJailStayEKID, jailsByJailStayEKID);
+      releasesData = formatDataForReleasesByDateList(searchedJailStays, peopleByJailStayEKID);
     }
     if (searchingByPerson) {
-      releasesData = formatDataForReleasesByPersonList(searchedPeople, jailStaysByPersonEKID, jailsByJailStayEKID);
+      releasesData = formatDataForReleasesByPersonList(searchedPeople, jailStaysByPersonEKID);
     }
     return releasesData;
   }
@@ -383,7 +380,6 @@ class Releases extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const releases = state.get(RELEASES.RELEASES);
   return {
-    [JAILS_BY_JAIL_STAY_EKID]: releases.get(JAILS_BY_JAIL_STAY_EKID),
     [JAIL_STAYS_BY_PERSON_EKID]: releases.get(JAIL_STAYS_BY_PERSON_EKID),
     [PEOPLE_BY_JAIL_STAY_EKID]: releases.get(PEOPLE_BY_JAIL_STAY_EKID),
     [SEARCHED_JAIL_STAYS]: releases.get(SEARCHED_JAIL_STAYS),
