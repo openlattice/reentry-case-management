@@ -22,6 +22,7 @@ import type { Match } from 'react-router';
 
 import * as Routes from '../../core/router/Routes';
 import ContactInfoCard from './contacts/ContactInfoCard';
+import CourtDatesCard from './court/CourtDatesCard';
 import RecordEventModal from './events/RecordEventModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
@@ -204,6 +205,7 @@ class ParticipantProfile extends Component<Props, State> {
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <CourtDatesCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
         <RecordEventModal
             isVisible={eventModalIsOpen}
