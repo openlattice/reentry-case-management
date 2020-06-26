@@ -41,7 +41,7 @@ const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 const { PARTICIPANT } = PROFILE;
 
 const InnerWrapper = styled.div`
-  width: 600px;
+  max-width: 600px;
 `;
 
 type Props = {
@@ -114,7 +114,7 @@ const EditEmergencyContactsModal = ({
         mappers
       );
       contactsAssociations = processAssociationEntityData(
-        fromJS(associations),
+        associations,
         entitySetIds,
         propertyTypeIds,
       );
@@ -165,20 +165,17 @@ const EditEmergencyContactsModal = ({
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Emergency Contacts" />);
-  const renderFooter = () => {
-    const isSubmitting :boolean = requestIsPending(editEmergencyContactsReqState);
-    return (
-      <ModalFooter
-          isPendingPrimary={isSubmitting}
-          onClickPrimary={onSubmit}
-          onClickSecondary={closeModal}
-          shouldStretchButtons
-          textPrimary="Save"
-          textSecondary="Discard" />
-    );
-  };
+  const withFooter = (
+    <ModalFooter
+        isPendingPrimary={requestIsPending(editEmergencyContactsReqState)}
+        onClickPrimary={onSubmit}
+        onClickSecondary={closeModal}
+        shouldStretchButtons
+        textPrimary="Save"
+        textSecondary="Discard" />
+  );
 
-  const formContext :Object = {
+  const formContext = {
     deleteAction: onDelete,
     entityIndexToIdMap,
     entitySetIds,
@@ -195,7 +192,7 @@ const EditEmergencyContactsModal = ({
         textPrimary="Save"
         textSecondary="Discard"
         viewportScrolling
-        withFooter={renderFooter}
+        withFooter={withFooter}
         withHeader={renderHeader}>
       <InnerWrapper>
         <Form
