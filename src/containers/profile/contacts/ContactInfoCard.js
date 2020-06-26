@@ -44,6 +44,13 @@ const EmergencyContactsGrid = styled.div`
   grid-gap: 20px 30px;
 `;
 
+const EmergencyContactText = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+`;
+
 const ButtonRow = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -101,10 +108,10 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors }
                       {
                         emergencyContactData.map((row :Map, index :number) => (
                           <EmergencyContactsGrid key={index.toString()}>
-                            <div>{ row.get('name') }</div>
-                            <div>{ row.get('phone') }</div>
-                            <div>{ row.get('email') }</div>
-                            <div>{ row.get('relationship') }</div>
+                            <EmergencyContactText>{ row.get('name') }</EmergencyContactText>
+                            <EmergencyContactText>{ row.get('phone') }</EmergencyContactText>
+                            <EmergencyContactText>{ row.get('email') }</EmergencyContactText>
+                            <EmergencyContactText>{ row.get('relationship') }</EmergencyContactText>
                           </EmergencyContactsGrid>
                         ))
                       }
