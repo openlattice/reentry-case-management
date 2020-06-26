@@ -172,7 +172,7 @@ const preprocessSexOffenderData = (
   const sexOffenderRegistrationLocation = participantNeighbors.get(SEX_OFFENDER_REGISTRATION_LOCATION);
   const sexOffenderEKID :UUID = getEKID(participantNeighbors.getIn([SEX_OFFENDER, 0], Map()));
 
-  if (!isDefined(sexOffenderRegistrationLocation)) {
+  if (!isDefined(sexOffenderRegistrationLocation) || sexOffenderRegistrationLocation.isEmpty()) {
     const county = get(sexOffenderData, countyKey);
     if (isDefined(county) && county.length) {
       newData = setIn(newData, [pageSection1, countyKey], county);
