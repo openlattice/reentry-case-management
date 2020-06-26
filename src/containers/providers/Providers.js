@@ -84,9 +84,8 @@ const Providers = ({
       const selectedValues = selectedTypes.map((type :Object) => type.value);
       const providerTypes = provider.get(TYPE);
       let include :boolean = false;
-      providerTypes.forEach((type :string) => {
-        if (selectedValues.includes(type)) include = true;
-      });
+      const typeFound = providerTypes.find((type :string) => selectedValues.includes(type));
+      if (typeFound) include = true;
       return include;
     });
 
