@@ -18,12 +18,12 @@ const schema :Object = {
       items: {
         type: 'object',
         properties: {
-          [getEntityAddressKey(0, HEARINGS, DATE)]: {
+          [getEntityAddressKey(-1, HEARINGS, DATE)]: {
             type: 'string',
             title: 'Court date',
             format: 'date'
           },
-          [getEntityAddressKey(0, HEARINGS, TYPE)]: {
+          [getEntityAddressKey(-1, HEARINGS, TYPE)]: {
             type: 'string',
             title: 'Hearing type',
             enum: HEARING_TYPES,
@@ -44,10 +44,10 @@ const uiSchema = {
     },
     items: {
       classNames: 'grid-container',
-      [getEntityAddressKey(0, HEARINGS, DATE)]: {
+      [getEntityAddressKey(-1, HEARINGS, DATE)]: {
         classNames: 'column-span-6',
       },
-      [getEntityAddressKey(0, HEARINGS, TYPE)]: {
+      [getEntityAddressKey(-1, HEARINGS, TYPE)]: {
         classNames: 'column-span-6',
       },
     },
