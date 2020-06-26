@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
   Button,
@@ -52,7 +52,7 @@ const {
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
 
-const participantGridLabels = Map({
+const participantGridLabels = OrderedMap({
   lastName: 'Last name',
   firstName: 'First name',
   dob: 'Date of birth',
@@ -60,6 +60,8 @@ const participantGridLabels = Map({
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
+  countyID: 'County ID number',
+  opusNumber: 'OPUS number',
 });
 
 const ProfileCardStack = styled(CardStack)`

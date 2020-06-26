@@ -69,6 +69,7 @@ const {
   PROVIDER,
   PROVIDER_STAFF,
   REFERRAL_REQUEST,
+  STATE_ID,
 } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
@@ -303,6 +304,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: needsAssessmentESID },
@@ -312,6 +314,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: referralToReentryESID },
       { direction: DST, neighborESID: addressESID },
       { direction: SRC, neighborESID: emergencyContactESID },
+      { direction: DST, neighborESID: stateIdESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),

@@ -49,7 +49,8 @@ const getFirstEntityValue = (
 
 const getEntityProperties = (
   entityObj :Map,
-  propertyList :FullyQualifiedName[]
+  propertyList :FullyQualifiedName[],
+  defaultValue ? :string = ''
 ) :{ [FullyQualifiedName]:any } => {
 
   let returnPropertyFields = {};
@@ -60,7 +61,7 @@ const getEntityProperties = (
         returnPropertyFields = set(returnPropertyFields, propertyType, value.toJS());
       }
       else {
-        const property = getFirstEntityValue(entityObj, propertyType, '');
+        const property = getFirstEntityValue(entityObj, propertyType, defaultValue);
         returnPropertyFields = set(returnPropertyFields, propertyType, property);
       }
     });
