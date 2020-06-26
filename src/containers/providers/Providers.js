@@ -14,11 +14,12 @@ import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { getEKID } from '../../utils/DataUtils';
 import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PROVIDER } = APP_TYPE_FQNS;
+const { NAME } = PROPERTY_TYPE_FQNS;
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -62,6 +63,8 @@ const Providers = ({
     if (providerESIDLoaded) actions.getProviders({ fetchNeighbors: true });
   }, [actions, providerESIDLoaded]);
 
+  const sortedProvidersList = providersList.sortBy((provider :Map) => provider.getIn([NAME, 0]));
+
   return (
     <>
       <HeaderRow>
@@ -76,7 +79,7 @@ const Providers = ({
           : (
             <CardStack>
               {
-                providersList.map((provider :Map) => (
+                sortedProvidersList.map((provider :Map) => (
                   <ProviderCard
                       key={getEKID(provider)}
                       contactInfoByContactPersonEKID={contactInfoByContactPersonEKID}
