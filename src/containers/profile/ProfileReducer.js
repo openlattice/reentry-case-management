@@ -28,6 +28,7 @@ import {
   editEvent,
   editReleaseInfo,
 } from './programhistory/ProgramHistoryActions';
+import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -45,6 +46,8 @@ const {
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
+  SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
 } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
@@ -56,6 +59,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_RELEASE_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_SEX_OFFENDER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
@@ -85,7 +91,8 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       return state
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -204,6 +211,24 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
+      });
+    }
+
+    case editSexOffender.case(action.type): {
+      return editSexOffender.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, action.id], action)
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { updatedSexOffenderList, updatedLocationList } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, SEX_OFFENDER], updatedSexOffenderList)
+            .setIn([PARTICIPANT_NEIGHBORS, SEX_OFFENDER_REGISTRATION_LOCATION], updatedLocationList)
+            .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SEX_OFFENDER, action.id]),
       });
     }
 
