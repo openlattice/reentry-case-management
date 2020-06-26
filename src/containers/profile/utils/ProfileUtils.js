@@ -8,8 +8,14 @@ import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
-const { CONTACT_INFO, NEEDS_ASSESSMENT, PERSON_DETAILS } = APP_TYPE_FQNS;
 const {
+  CONTACT_INFO,
+  NEEDS_ASSESSMENT,
+  PERSON_DETAILS,
+  STATE_ID,
+} = APP_TYPE_FQNS;
+const {
+  COUNTY_ID,
   DATETIME_COMPLETED,
   DOB,
   EMAIL,
@@ -17,6 +23,7 @@ const {
   FIRST_NAME,
   GENDER,
   LAST_NAME,
+  OL_ID_FQN,
   PHONE_NUMBER,
   PREFERRED,
   PROJECTED_RELEASE_DATETIME,
@@ -27,12 +34,13 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
 
   const age = getPersonAge(participant);
   const {
+    [COUNTY_ID]: countyID,
     [DOB]: dobISO,
     [ETHNICITY]: ethnicity,
     [FIRST_NAME]: firstName,
     [LAST_NAME]: lastName,
-    [RACE]: race
-  } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE]);
+    [RACE]: race,
+  } = getEntityProperties(participant, [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE], EMPTY_FIELD);
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
   const dob :string = dobAsDateTime.toLocaleString(DateTime.DATE_SHORT);
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
@@ -47,6 +55,8 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   if (preferredContactEntity && preferredContactEntity.has(PHONE_NUMBER)) {
     preferredContact = preferredContactEntity.getIn([PHONE_NUMBER, 0]);
   }
+  const stateIDEntity :List = participantNeighbors.get(STATE_ID, List());
+  const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : EMPTY_FIELD;
 
   const participantData = Map({
     lastName,
@@ -57,6 +67,8 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     race,
     ethnicity,
     preferredContact,
+    countyID,
+    opusNumber,
   });
   return participantData;
 };
