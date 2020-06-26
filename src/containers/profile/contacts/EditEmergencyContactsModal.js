@@ -18,7 +18,7 @@ import {
   preprocessNewEmergencyContactData,
   removeRelationshipFromFormData,
 } from '../utils/ContactsUtils';
-import { EDIT_EMERGENCY_CONTACTS, editEmergencyContacts } from './ContactInfoActions';
+import { EDIT_EMERGENCY_CONTACTS, deleteEmergencyContact, editEmergencyContacts } from './ContactInfoActions';
 import { clearEditRequestState } from '../needs/NeedsActions';
 import {
   APP,
@@ -160,6 +160,10 @@ const EditEmergencyContactsModal = ({
     }
   };
 
+  const onDelete = (deleteValue) => {
+    dispatch(deleteEmergencyContact({ deleteValue }));
+  };
+
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Emergency Contacts" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(editEmergencyContactsReqState);
@@ -172,6 +176,13 @@ const EditEmergencyContactsModal = ({
           textPrimary="Save"
           textSecondary="Discard" />
     );
+  };
+
+  const formContext :Object = {
+    deleteAction: onDelete,
+    entityIndexToIdMap,
+    entitySetIds,
+    propertyTypeIds,
   };
 
   return (
@@ -188,6 +199,7 @@ const EditEmergencyContactsModal = ({
         withHeader={renderHeader}>
       <InnerWrapper>
         <Form
+            formContext={formContext}
             formData={formData}
             hideSubmit
             noPadding

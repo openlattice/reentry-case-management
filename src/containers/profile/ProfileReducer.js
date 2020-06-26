@@ -29,9 +29,11 @@ import {
   editReleaseInfo,
 } from './programhistory/ProgramHistoryActions';
 import {
+  DELETE_EMERGENCY_CONTACT,
   EDIT_CONTACT_INFO,
   EDIT_EMERGENCY_CONTACTS,
   GET_EMERGENCY_CONTACT_INFO,
+  deleteEmergencyContact,
   editContactInfo,
   editEmergencyContacts,
   getEmergencyContactInfo,
@@ -131,6 +133,33 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
+
+    case deleteEmergencyContact.case(action.type): {
+      return deleteEmergencyContact.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, action.id], action)
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const emergencyContactEKID = action.value;
+          const emergencyContactInfoByContact = state.get(EMERGENCY_CONTACT_INFO_BY_CONTACT)
+            .delete(emergencyContactEKID);
+          let participantNeighbors = state.get(PARTICIPANT_NEIGHBORS)
+            .deleteIn([IS_EMERGENCY_CONTACT_FOR, emergencyContactEKID]);
+          const emergencyContactIndex = participantNeighbors.get(EMERGENCY_CONTACT)
+            .findIndex((contact) => getEKID(contact) === emergencyContactEKID);
+          if (emergencyContactIndex !== -1) {
+            participantNeighbors = participantNeighbors.deleteIn([EMERGENCY_CONTACT, emergencyContactIndex]);
+          }
+          return state
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, emergencyContactInfoByContact)
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_EMERGENCY_CONTACT, action.id]),
       });
     }
 

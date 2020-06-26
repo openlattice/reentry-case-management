@@ -17,12 +17,14 @@ import {
   getPTIDFromEDM,
   getPropertyFqnFromEDM,
 } from '../../../utils/DataUtils';
-import { submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import {
+  DELETE_EMERGENCY_CONTACT,
   EDIT_CONTACT_INFO,
   EDIT_EMERGENCY_CONTACTS,
   GET_EMERGENCY_CONTACT_INFO,
+  deleteEmergencyContact,
   editContactInfo,
   editEmergencyContacts,
   getEmergencyContactInfo,
@@ -352,7 +354,61 @@ function* getEmergencyContactInfoWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_EMERGENCY_CONTACT_INFO, getEmergencyContactInfoWorker);
 }
 
+/*
+ *
+ * ContactInfoActions.deleteEmergencyContact()
+ *
+ */
+
+function* deleteEmergencyContactWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(deleteEmergencyContact.request(id, value));
+    const { deleteValue } = value;
+    const { entityData } = deleteValue;
+
+    const app = yield select(getAppFromState);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const emergencyContactInfoESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT_INFO);
+
+    const emergencyContactIterator = entityData[emergencyContactESID].values();
+    const emergencyContactEKID :UUID = emergencyContactIterator.next().value;
+
+    const contactInfoEKIDs :UUID[] = [];
+    entityData[emergencyContactInfoESID].forEach((contactInfoEKID :UUID) => {
+      contactInfoEKIDs.push(contactInfoEKID);
+    });
+
+    const dataToDelete = [
+      { entitySetId: emergencyContactESID, entityKeyIds: [emergencyContactEKID] },
+      { entitySetId: emergencyContactInfoESID, entityKeyIds: contactInfoEKIDs },
+    ];
+
+    const response = yield call(deleteEntitiesWorker, deleteEntities(dataToDelete));
+    if (response.error) throw response.error;
+
+    yield put(deleteEmergencyContact.success(id, emergencyContactEKID));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(deleteEmergencyContact.failure(id, error));
+  }
+  finally {
+    yield put(deleteEmergencyContact.finally(id));
+  }
+}
+
+function* deleteEmergencyContactWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_EMERGENCY_CONTACT, deleteEmergencyContactWorker);
+}
+
 export {
+  deleteEmergencyContactWatcher,
+  deleteEmergencyContactWorker,
   editContactInfoWatcher,
   editContactInfoWorker,
   editEmergencyContactsWatcher,

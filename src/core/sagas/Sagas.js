@@ -40,6 +40,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.switchOrganizationWatcher),
 
     // ContactInfoSagas
+    fork(ContactInfoSagas.deleteEmergencyContactWatcher),
     fork(ContactInfoSagas.editContactInfoWatcher),
     fork(ContactInfoSagas.editEmergencyContactsWatcher),
     fork(ContactInfoSagas.getEmergencyContactInfoWatcher),
