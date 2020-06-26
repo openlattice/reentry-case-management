@@ -64,6 +64,7 @@ const APP_TYPE_FQNS :Object = {
   REPORTED: new FullyQualifiedName('app.reported'),
   REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
   SEX_OFFENDER: new FullyQualifiedName('app.sexoffender'),
+  SEX_OFFENDER_REGISTRATION_LOCATION: new FullyQualifiedName('app.sexoffenderregistrationlocation'), // ol.location
   STATE_ID: new FullyQualifiedName('app.identification'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
 };
