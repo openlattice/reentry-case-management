@@ -40,7 +40,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [FIRST_NAME]: firstName,
     [LAST_NAME]: lastName,
     [RACE]: race,
-  } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE]);
+  } = getEntityProperties(participant, [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE], EMPTY_FIELD);
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
   const dob :string = dobAsDateTime.toLocaleString(DateTime.DATE_SHORT);
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
@@ -56,7 +56,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     preferredContact = preferredContactEntity.getIn([PHONE_NUMBER, 0]);
   }
   const stateIDEntity :List = participantNeighbors.get(STATE_ID, List());
-  const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : '';
+  const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : EMPTY_FIELD;
 
   const participantData = Map({
     lastName,
