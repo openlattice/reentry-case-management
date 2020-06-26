@@ -2,6 +2,7 @@
 import {
   List,
   Map,
+  get,
   getIn,
   isImmutable,
   set
@@ -96,13 +97,7 @@ const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIG
 
 const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
 
-const getAssociationDetails = (neighborObj :Map) :Map => {
-  let associationDetails :Map = Map();
-  if (isImmutable(neighborObj)) {
-    associationDetails = neighborObj.get(ASSOCIATION_DETAILS, neighborObj);
-  }
-  return associationDetails;
-};
+const getAssociationDetails = (neighborObj :Map | Object) :Map => get(neighborObj, ASSOCIATION_DETAILS, Map());
 
 export {
   ASSOCIATION_DETAILS,
