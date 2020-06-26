@@ -149,7 +149,7 @@ const EditSexOffenderModal = ({ isVisible, onClose, participantNeighbors } :Prop
     }
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Release Info" />);
+  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Sex Offender Registration" />);
   const withFooter = (
     <ModalFooter
         isPendingPrimary={requestIsPending(editSexOffenderReqState)}
