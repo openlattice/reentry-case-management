@@ -12,17 +12,15 @@ import {
   Label,
 } from 'lattice-ui-kit';
 
+import EditCourtDatesModal from './EditCourtDatesModal';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { getEKID } from '../../../utils/DataUtils';
+import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { HEARINGS } = APP_TYPE_FQNS;
 const { DATE, TYPE } = PROPERTY_TYPE_FQNS;
-const labelMap = Map({
-  courtDate: ' ',
-  hearingType: ' ',
-});
 
 const CourtDatesGrid = styled.div`
   display: grid;
@@ -39,6 +37,7 @@ type Props = {
 const CourtDatesCard = ({ participantNeighbors } :Props) => {
   const [editModalVisible, setEditModalVisibility] = useState(false);
   const hearings :List = participantNeighbors.get(HEARINGS, List());
+  const sortedHearings :List = sortEntitiesByDateProperty(hearings, [DATE]);
   return (
     <Card>
       <CardHeaderWithButtons padding="30px" vertical={false}>
@@ -51,7 +50,7 @@ const CourtDatesCard = ({ participantNeighbors } :Props) => {
           <Label subtle>Hearing type</Label>
         </CourtDatesGrid>
         {
-          hearings.map((hearing :Map) => (
+          sortedHearings.map((hearing :Map) => (
             <CourtDatesGrid key={getEKID(hearing)}>
               <div>{ DateTime.fromISO(hearing.getIn([DATE, 0])).toLocaleString(DateTime.DATE_SHORT) }</div>
               <div>{ hearing.getIn([TYPE, 0]) }</div>
@@ -59,6 +58,10 @@ const CourtDatesCard = ({ participantNeighbors } :Props) => {
           ))
         }
       </CardSegment>
+      <EditCourtDatesModal
+          isVisible={editModalVisible}
+          onClose={() => setEditModalVisibility(false)}
+          participantNeighbors={participantNeighbors} />
     </Card>
   );
 };
