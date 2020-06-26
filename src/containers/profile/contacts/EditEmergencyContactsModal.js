@@ -1,7 +1,7 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
+import { Map, fromJS, mergeDeep } from 'immutable';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,8 +9,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { schema, uiSchema } from './schemas/EditEmergencyContactsSchemas';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData } from '../utils/ContactsUtils';
-import { EDIT_CONTACT_INFO, editContactInfo } from './ContactInfoActions';
+import { getEKID } from '../../../utils/DataUtils';
+import {
+  getAssociationsForNewEmergencyContacts,
+  getEmergencyEntityIndexToIdMap,
+  getOriginalEmergencyFormData,
+  preprocessEditedEmergencyContactData,
+  preprocessNewEmergencyContactData,
+  removeRelationshipFromFormData,
+} from '../utils/ContactsUtils';
+import { EDIT_EMERGENCY_CONTACTS, editEmergencyContacts } from './ContactInfoActions';
 import { clearEditRequestState } from '../needs/NeedsActions';
 import {
   APP,
@@ -18,48 +26,48 @@ import {
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   findEntityAddressKeyFromMap,
+  processAssociationEntityData,
+  processEntityData,
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
+  wrapFormDataInPageSection,
 } = DataProcessingUtils;
-const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
+const { PARTICIPANT } = PROFILE;
 
 const InnerWrapper = styled.div`
   width: 600px;
 `;
 
 type Props = {
+  emergencyContactInfoByContact :Map;
   isVisible :boolean;
   onClose :() => void;
   participantNeighbors :Map;
 };
 
 const EditEmergencyContactsModal = ({
+  emergencyContactInfoByContact,
   isVisible,
   onClose,
   participantNeighbors,
 } :Props) => {
 
-  const addressList :List = participantNeighbors.get(LOCATION, List());
-  const address :Map = addressList.get(0);
-  const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
+  const entityIndexToIdMap :Map = getEmergencyEntityIndexToIdMap(emergencyContactInfoByContact, participantNeighbors);
 
-  const entityIndexToIdMap :Map = getEntityIndexToIdMap(contactInfoEntities, address);
-
-  const originalFormData = getOriginalFormData(contactInfoEntities, address);
-  const [formData, updateFormData] = useState({});
+  const originalFormData = getOriginalEmergencyFormData(emergencyContactInfoByContact, participantNeighbors);
+  const [formData, updateFormData] = useState(originalFormData);
   const dispatch = useDispatch();
 
-  const editContactInfoReqState = useSelector((store :Map) => store.getIn([
+  const editEmergencyContactsReqState = useSelector((store :Map) => store.getIn([
     PROFILE.PROFILE,
     ACTIONS,
-    EDIT_CONTACT_INFO,
+    EDIT_EMERGENCY_CONTACTS,
     REQUEST_STATE
   ]));
   const selectedOrgId :string = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
@@ -73,6 +81,7 @@ const EditEmergencyContactsModal = ({
     TYPE_IDS_BY_FQN,
     PROPERTY_TYPES
   ], Map()));
+  const participant :Map = useSelector((store :Map) => store.getIn([PROFILE.PROFILE, PARTICIPANT], Map()));
 
   const closeModal = useCallback(() => {
     dispatch(clearEditRequestState());
@@ -80,29 +89,71 @@ const EditEmergencyContactsModal = ({
   }, [dispatch, onClose]);
 
   useEffect(() => {
-    if (requestIsSuccess(editContactInfoReqState)) {
+    if (requestIsSuccess(editEmergencyContactsReqState)) {
       closeModal();
     }
-  }, [closeModal, editContactInfoReqState]);
+  }, [closeModal, editEmergencyContactsReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
+
   const onSubmit = () => {
-    const preprocessedFormData = preprocessContactFormData(formData, originalFormData);
-    const draftWithKeys :Object = replaceEntityAddressKeys(
-      preprocessedFormData,
-      findEntityAddressKeyFromMap(entityIndexToIdMap)
-    );
-    const entityData = processEntityDataForPartialReplace(
-      draftWithKeys,
-      replaceEntityAddressKeys(originalFormData, findEntityAddressKeyFromMap(entityIndexToIdMap)),
-      entitySetIds,
-      propertyTypeIds,
+    let contactsDataToSubmit :Object = {};
+    let contactsAssociations :Object = {};
+
+    const { formDataWithNewContactsOnly, mappers } = preprocessNewEmergencyContactData(formData, originalFormData);
+
+    if (Object.values(formDataWithNewContactsOnly).length && !mappers.isEmpty()) {
+      const associations = getAssociationsForNewEmergencyContacts(formDataWithNewContactsOnly, getEKID(participant));
+      const formDataWithoutRelationship = removeRelationshipFromFormData(formDataWithNewContactsOnly);
+      contactsDataToSubmit = processEntityData(
+        formDataWithoutRelationship,
+        entitySetIds,
+        propertyTypeIds,
+        mappers
+      );
+      contactsAssociations = processAssociationEntityData(
+        fromJS(associations),
+        entitySetIds,
+        propertyTypeIds,
+      );
+    }
+
+    const { editedContactsAsImmutable, originalFormContactsAsImmutable } = preprocessEditedEmergencyContactData(
+      formData,
+      originalFormData,
+      formDataWithNewContactsOnly
     );
 
-    if (Object.values(entityData).length) {
-      dispatch(editContactInfo({ address, contactInfoEntities, entityData }));
+    let contactsDataToEdit :Object = {};
+    editedContactsAsImmutable.forEach((contact :Map, index :number) => {
+      const contactDraftWithKeys :Map = replaceEntityAddressKeys(
+        contact,
+        findEntityAddressKeyFromMap(entityIndexToIdMap, index)
+      );
+      const originalContactWithKeys :Map = replaceEntityAddressKeys(
+        originalFormContactsAsImmutable.get(index),
+        findEntityAddressKeyFromMap(entityIndexToIdMap, index)
+      );
+      const contactsDataDiff = processEntityDataForPartialReplace(
+        wrapFormDataInPageSection(contactDraftWithKeys),
+        wrapFormDataInPageSection(originalContactWithKeys),
+        entitySetIds,
+        propertyTypeIds,
+        {}
+      );
+      contactsDataToEdit = mergeDeep(contactsDataToEdit, contactsDataDiff);
+    });
+
+    if (Object.values(contactsDataToSubmit).length || Object.values(contactsDataToEdit).length) {
+      dispatch(editEmergencyContacts({
+        contactsAssociations,
+        contactsDataToEdit,
+        contactsDataToSubmit,
+        emergencyContactInfoByContact,
+        participantNeighbors,
+      }));
     }
     else {
       onClose();
@@ -111,7 +162,7 @@ const EditEmergencyContactsModal = ({
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Emergency Contacts" />);
   const renderFooter = () => {
-    const isSubmitting :boolean = requestIsPending(editContactInfoReqState);
+    const isSubmitting :boolean = requestIsPending(editEmergencyContactsReqState);
     return (
       <ModalFooter
           isPendingPrimary={isSubmitting}
