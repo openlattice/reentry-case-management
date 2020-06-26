@@ -22,7 +22,7 @@ import {
   preprocessNewCourtData,
 } from '../utils/CourtUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { EDIT_COURT_HEARINGS, editCourtHearings } from './CourtActions';
+import { EDIT_COURT_HEARINGS, deleteCourtHearing, editCourtHearings } from './CourtActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
@@ -180,6 +180,10 @@ const EditCourtDatesModal = ({
     }
   };
 
+  const onDelete = (deleteValue) => {
+    dispatch(deleteCourtHearing({ deleteValue }));
+  };
+
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Court Hearings" />);
   const withFooter = (
     <ModalFooter
@@ -190,6 +194,13 @@ const EditCourtDatesModal = ({
         textPrimary="Save"
         textSecondary="Discard" />
   );
+
+  const formContext :Object = {
+    deleteAction: onDelete,
+    entityIndexToIdMap,
+    entitySetIds,
+    propertyTypeIds,
+  };
 
   return (
     <Modal
@@ -205,6 +216,7 @@ const EditCourtDatesModal = ({
         withHeader={renderHeader}>
       <InnerWrapper>
         <Form
+            formContext={formContext}
             formData={formData}
             hideSubmit
             noPadding

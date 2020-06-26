@@ -47,6 +47,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ContactInfoSagas.getEmergencyContactInfoWatcher),
 
     // CourtSagas
+    fork(CourtSagas.deleteCourtHearingWatcher),
     fork(CourtSagas.editCourtHearingsWatcher),
 
     // EDMSagas

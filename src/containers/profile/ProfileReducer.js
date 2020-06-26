@@ -147,6 +147,29 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case deleteCourtHearing.case(action.type): {
+      return deleteCourtHearing.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_COURT_HEARING, action.id], action)
+          .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const hearingEKID = action.value;
+          let participantNeighbors = state.get(PARTICIPANT_NEIGHBORS);
+          const hearingIndex = participantNeighbors.get(HEARINGS)
+            .findIndex((hearing) => getEKID(hearing) === hearingEKID);
+          if (hearingIndex !== -1) {
+            participantNeighbors = participantNeighbors.deleteIn([HEARINGS, hearingIndex]);
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_COURT_HEARING, action.id]),
+      });
+    }
+
     case deleteEmergencyContact.case(action.type): {
       return deleteEmergencyContact.reducer(state, action, {
         REQUEST: () => state

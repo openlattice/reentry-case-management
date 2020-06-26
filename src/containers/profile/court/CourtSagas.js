@@ -13,8 +13,6 @@ import { isDefined } from '../../../utils/LangUtils';
 import {
   getEKID,
   getESIDFromApp,
-  getNeighborDetails,
-  getPTIDFromEDM,
   getPropertyFqnFromEDM,
 } from '../../../utils/DataUtils';
 import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
@@ -97,7 +95,6 @@ function* editCourtHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
         submitDataGraph({ associationEntityData: hearingsAssociations, entityData: hearingsDataToSubmit })
       );
       if (response.error) throw response.error;
-      console.log('response ', response);
       const { entityKeyIds } = response.data;
 
       entityKeyIds[hearingsESID].forEach((hearingEKID :UUID, index :number) => {
@@ -113,7 +110,6 @@ function* editCourtHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
         newHearings.push(newHearingEntity);
       });
     }
-    console.log('newHearings ', newHearings.toJS());
 
     newHearings = newHearings.asImmutable();
     editedHearings = editedHearings.concat(newHearings);
@@ -134,7 +130,54 @@ function* editCourtHearingsWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_COURT_HEARINGS, editCourtHearingsWorker);
 }
 
+/*
+ *
+ * CourtActions.deleteCourtHearing()
+ *
+ */
+
+function* deleteCourtHearingWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(deleteCourtHearing.request(id, value));
+    const { deleteValue } = value;
+    const { entityData } = deleteValue;
+
+    const app = yield select(getAppFromState);
+    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
+
+    const hearingIterator = entityData[hearingsESID].values();
+    const hearingEKID :UUID = hearingIterator.next().value;
+
+    const dataToDelete = [
+      { entitySetId: hearingsESID, entityKeyIds: [hearingEKID] },
+    ];
+
+    const response = yield call(deleteEntitiesWorker, deleteEntities(dataToDelete));
+    if (response.error) throw response.error;
+
+    yield put(deleteCourtHearing.success(id, hearingEKID));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(deleteCourtHearing.failure(id, error));
+  }
+  finally {
+    yield put(deleteCourtHearing.finally(id));
+  }
+}
+
+function* deleteCourtHearingWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_COURT_HEARING, deleteCourtHearingWorker);
+}
+
 export {
+  deleteCourtHearingWatcher,
+  deleteCourtHearingWorker,
   editCourtHearingsWatcher,
   editCourtHearingsWorker,
 };
