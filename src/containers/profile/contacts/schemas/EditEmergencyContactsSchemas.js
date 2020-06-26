@@ -53,7 +53,6 @@ const schema :Object = {
           getEntityAddressKey(-1, IS_EMERGENCY_CONTACT_FOR, RELATIONSHIP),
         ]
       },
-      default: [{}]
     },
   }
 };
