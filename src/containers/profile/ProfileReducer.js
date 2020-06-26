@@ -30,8 +30,10 @@ import {
 } from './programhistory/ProgramHistoryActions';
 import {
   EDIT_CONTACT_INFO,
+  EDIT_EMERGENCY_CONTACTS,
   GET_EMERGENCY_CONTACT_INFO,
   editContactInfo,
+  editEmergencyContacts,
   getEmergencyContactInfo,
 } from './contacts/ContactInfoActions';
 import { getEKID } from '../../utils/DataUtils';
@@ -48,8 +50,10 @@ const {
 } = PROFILE;
 const {
   CONTACT_INFO,
+  EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
+  IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
@@ -59,6 +63,9 @@ const {
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
     [EDIT_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_EMERGENCY_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_NEEDS]: {
@@ -102,7 +109,8 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -141,6 +149,25 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_CONTACT_INFO, action.id]),
+      });
+    }
+
+    case editEmergencyContacts.case(action.type): {
+      return editEmergencyContacts.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, action.id], action)
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { editedAssociationMap, editedContactInfo, editedContactPeople } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, EMERGENCY_CONTACT], editedContactPeople)
+            .setIn([PARTICIPANT_NEIGHBORS, IS_EMERGENCY_CONTACT_FOR], editedAssociationMap)
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, editedContactInfo)
+            .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, action.id]),
       });
     }
 

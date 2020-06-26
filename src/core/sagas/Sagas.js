@@ -41,6 +41,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ContactInfoSagas
     fork(ContactInfoSagas.editContactInfoWatcher),
+    fork(ContactInfoSagas.editEmergencyContactsWatcher),
     fork(ContactInfoSagas.getEmergencyContactInfoWatcher),
 
     // EDMSagas
