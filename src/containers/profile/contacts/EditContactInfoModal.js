@@ -1,24 +1,26 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
-import { schema, uiSchema } from './schemas/EditContactInfoSchemas';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData } from '../utils/ContactsUtils';
 import { EDIT_CONTACT_INFO, editContactInfo } from './ContactInfoActions';
-import { clearEditRequestState } from '../needs/NeedsActions';
+import { schema, uiSchema } from './schemas/EditContactInfoSchemas';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { clearEditRequestState } from '../needs/NeedsActions';
+import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData } from '../utils/ContactsUtils';
 
 const {
   findEntityAddressKeyFromMap,

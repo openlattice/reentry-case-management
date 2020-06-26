@@ -1,15 +1,25 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
-import { Map, fromJS, mergeDeep } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
+import { Map, mergeDeep } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
+import { EDIT_EMERGENCY_CONTACTS, deleteEmergencyContact, editEmergencyContacts } from './ContactInfoActions';
 import { schema, uiSchema } from './schemas/EditEmergencyContactsSchemas';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import {
+  APP,
+  EDM,
+  PROFILE,
+  SHARED
+} from '../../../utils/constants/ReduxStateConstants';
+import { clearEditRequestState } from '../needs/NeedsActions';
 import {
   getAssociationsForNewEmergencyContacts,
   getEmergencyEntityIndexToIdMap,
@@ -18,14 +28,6 @@ import {
   preprocessNewEmergencyContactData,
   removeRelationshipFromFormData,
 } from '../utils/ContactsUtils';
-import { EDIT_EMERGENCY_CONTACTS, deleteEmergencyContact, editEmergencyContacts } from './ContactInfoActions';
-import { clearEditRequestState } from '../needs/NeedsActions';
-import {
-  APP,
-  EDM,
-  PROFILE,
-  SHARED
-} from '../../../utils/constants/ReduxStateConstants';
 
 const {
   findEntityAddressKeyFromMap,

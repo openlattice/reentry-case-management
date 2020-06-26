@@ -10,8 +10,9 @@ import {
 import { Models } from 'lattice';
 
 import { isDefined } from './LangUtils';
-import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from './constants/ReduxStateConstants';
+
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;

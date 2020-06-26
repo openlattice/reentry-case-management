@@ -1,27 +1,29 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   DataGrid,
+  EditButton,
   ExpansionPanel,
   ExpansionPanelDetails,
   ExpansionPanelSummary,
-  EditButton,
   Label,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 
 import EditContactInfoModal from './EditContactInfoModal';
 import EditEmergencyContactsModal from './EditEmergencyContactsModal';
+
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { formatEmergencyContactData, getAddress, getPersonContactData } from '../utils/ContactsUtils';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { LOCATION } = APP_TYPE_FQNS;
 const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
