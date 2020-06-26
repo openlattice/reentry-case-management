@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import { List, Map } from 'immutable';
 import {
   Card,
@@ -9,6 +9,7 @@ import {
   Label,
 } from 'lattice-ui-kit';
 
+import EditSexOffenderModal from './EditSexOffenderModal';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { checkWhetherIsSexOffender, formatSexOffenderData } from '../utils/SexOffenderUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
@@ -29,6 +30,7 @@ type Props = {
 };
 
 const SexOffenderCard = ({ participantNeighbors } :Props) => {
+  const [editModalVisibility, setModalVisibility] = useState(false);
   const sexOffender :List = participantNeighbors.get(SEX_OFFENDER, List());
   const isSexOffender :boolean = checkWhetherIsSexOffender(sexOffender);
   const sexOffenderRegistrationLocation :List = participantNeighbors.get(SEX_OFFENDER_REGISTRATION_LOCATION, List());
@@ -37,7 +39,7 @@ const SexOffenderCard = ({ participantNeighbors } :Props) => {
     <Card>
       <CardHeaderWithButtons padding="30px" vertical={false}>
         <SmallCardHeaderTitle>Sex Offender Registration</SmallCardHeaderTitle>
-        <EditButton onClick={() => {}}>Edit</EditButton>
+        <EditButton onClick={() => setModalVisibility(true)}>Edit</EditButton>
       </CardHeaderWithButtons>
       <CardSegment>
         {
@@ -58,6 +60,10 @@ const SexOffenderCard = ({ participantNeighbors } :Props) => {
             )
         }
       </CardSegment>
+      <EditSexOffenderModal
+          isVisible={editModalVisibility}
+          onClose={() => setModalVisibility(false)}
+          participantNeighbors={participantNeighbors} />
     </Card>
   );
 };
