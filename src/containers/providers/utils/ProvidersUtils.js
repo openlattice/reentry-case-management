@@ -6,6 +6,7 @@ import {
   getIn,
   has,
 } from 'immutable';
+import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { EMPTY_FIELD, getPersonFullName } from '../../../utils/FormattingUtils';
@@ -13,6 +14,7 @@ import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
+const { FullyQualifiedName } = Models;
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   CONTACTED_VIA,
@@ -148,20 +150,20 @@ const formatEntityIndexToIdMap = (
 };
 
 // create all entities for each object in array
-const preprocessContactsData = (contactsFormData :Object) :Object => {
+const preprocessContactsData = (contactsFormData :Object, entitySetFqn :FullyQualifiedName) :Object => {
   const newContactsFormData :Object = contactsFormData;
   contactsFormData[getPageSectionKey(1, 1)].forEach((contact :Object, index :number) => {
-    if (!has(contact, getEntityAddressKey(-1, PROVIDER_CONTACT_INFO, PHONE_NUMBER))) {
+    if (!has(contact, getEntityAddressKey(-1, entitySetFqn, PHONE_NUMBER))) {
       newContactsFormData[getPageSectionKey(1, 1)][index][getEntityAddressKey(
         -1,
-        PROVIDER_CONTACT_INFO,
+        entitySetFqn,
         PHONE_NUMBER
       )] = '';
     }
-    if (!has(contact, getEntityAddressKey(-2, PROVIDER_CONTACT_INFO, EMAIL))) {
+    if (!has(contact, getEntityAddressKey(-2, entitySetFqn, EMAIL))) {
       newContactsFormData[getPageSectionKey(1, 1)][index][getEntityAddressKey(
         -2,
-        PROVIDER_CONTACT_INFO,
+        entitySetFqn,
         EMAIL
       )] = '';
     }
