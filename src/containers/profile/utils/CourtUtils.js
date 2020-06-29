@@ -2,8 +2,8 @@
 import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { getEKID } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
 
 const { APPEARS_IN, HEARINGS, PEOPLE } = APP_TYPE_FQNS;
 
@@ -33,9 +33,9 @@ const preprocessNewCourtData = (formData :Object, originalFormData :Object) :Obj
   return { [getPageSectionKey(1, 1)]: newCourtFormData };
 };
 
-const getCourtHearingAssociations = (formData :Object, personEKID :UUID) :Array<Array<*>> => {
+const getCourtHearingAssociations = (formData :Object, personEKID :UUID) :any[][] => {
 
-  const associations :Array<Array<*>> = [];
+  const associations :any[][] = [];
   const courtHearings :Object[] = formData[getPageSectionKey(1, 1)];
 
   courtHearings.forEach((hearingObj :Object, index :number) => {
