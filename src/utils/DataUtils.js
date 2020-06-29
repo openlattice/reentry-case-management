@@ -2,6 +2,7 @@
 import {
   List,
   Map,
+  get,
   getIn,
   isImmutable,
   set
@@ -9,8 +10,9 @@ import {
 import { Models } from 'lattice';
 
 import { isDefined } from './LangUtils';
-import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from './constants/ReduxStateConstants';
+
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
@@ -96,13 +98,7 @@ const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIG
 
 const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
 
-const getAssociationDetails = (neighborObj :Map) :Map => {
-  let associationDetails :Map = Map();
-  if (isImmutable(neighborObj)) {
-    associationDetails = neighborObj.get(ASSOCIATION_DETAILS, neighborObj);
-  }
-  return associationDetails;
-};
+const getAssociationDetails = (neighborObj :Map | Object) :Map => get(neighborObj, ASSOCIATION_DETAILS, Map());
 
 export {
   ASSOCIATION_DETAILS,

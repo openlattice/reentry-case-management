@@ -12,27 +12,15 @@ import {
   fromJS,
   get,
 } from 'immutable';
+import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { Models } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
-import {
-  getAssociationDetails,
-  getAssociationESID,
-  getEKID,
-  getESIDFromApp,
-  getFqnFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-} from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
 import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
@@ -45,10 +33,23 @@ import {
 } from './ProfileActions';
 import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
 import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP } from '../../utils/constants/ReduxStateConstants';
+
+import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getAssociationDetails,
+  getAssociationESID,
+  getEKID,
+  getESIDFromApp,
+  getFqnFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
+import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const LOG = new Logger('ProfileSagas');
 const { FullyQualifiedName } = Models;

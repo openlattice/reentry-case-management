@@ -1,15 +1,25 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
-import { Map, fromJS, mergeDeep } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
+import { Map, mergeDeep } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
+import { EDIT_EMERGENCY_CONTACTS, deleteEmergencyContact, editEmergencyContacts } from './ContactInfoActions';
 import { schema, uiSchema } from './schemas/EditEmergencyContactsSchemas';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import {
+  APP,
+  EDM,
+  PROFILE,
+  SHARED
+} from '../../../utils/constants/ReduxStateConstants';
+import { clearEditRequestState } from '../needs/NeedsActions';
 import {
   getAssociationsForNewEmergencyContacts,
   getEmergencyEntityIndexToIdMap,
@@ -18,14 +28,6 @@ import {
   preprocessNewEmergencyContactData,
   removeRelationshipFromFormData,
 } from '../utils/ContactsUtils';
-import { EDIT_EMERGENCY_CONTACTS, deleteEmergencyContact, editEmergencyContacts } from './ContactInfoActions';
-import { clearEditRequestState } from '../needs/NeedsActions';
-import {
-  APP,
-  EDM,
-  PROFILE,
-  SHARED
-} from '../../../utils/constants/ReduxStateConstants';
 
 const {
   findEntityAddressKeyFromMap,
@@ -41,7 +43,7 @@ const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 const { PARTICIPANT } = PROFILE;
 
 const InnerWrapper = styled.div`
-  width: 600px;
+  max-width: 600px;
 `;
 
 type Props = {
@@ -114,7 +116,7 @@ const EditEmergencyContactsModal = ({
         mappers
       );
       contactsAssociations = processAssociationEntityData(
-        fromJS(associations),
+        associations,
         entitySetIds,
         propertyTypeIds,
       );
@@ -165,20 +167,17 @@ const EditEmergencyContactsModal = ({
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Emergency Contacts" />);
-  const renderFooter = () => {
-    const isSubmitting :boolean = requestIsPending(editEmergencyContactsReqState);
-    return (
-      <ModalFooter
-          isPendingPrimary={isSubmitting}
-          onClickPrimary={onSubmit}
-          onClickSecondary={closeModal}
-          shouldStretchButtons
-          textPrimary="Save"
-          textSecondary="Discard" />
-    );
-  };
+  const withFooter = (
+    <ModalFooter
+        isPendingPrimary={requestIsPending(editEmergencyContactsReqState)}
+        onClickPrimary={onSubmit}
+        onClickSecondary={closeModal}
+        shouldStretchButtons
+        textPrimary="Save"
+        textSecondary="Discard" />
+  );
 
-  const formContext :Object = {
+  const formContext = {
     deleteAction: onDelete,
     entityIndexToIdMap,
     entitySetIds,
@@ -195,7 +194,7 @@ const EditEmergencyContactsModal = ({
         textPrimary="Save"
         textSecondary="Discard"
         viewportScrolling
-        withFooter={renderFooter}
+        withFooter={withFooter}
         withHeader={renderHeader}>
       <InnerWrapper>
         <Form
