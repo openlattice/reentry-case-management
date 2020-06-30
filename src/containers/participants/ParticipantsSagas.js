@@ -286,7 +286,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     if (totalHits) {
-      const participantEKIDs :UUID[] = searchedParticipants.map((person :Object) => getEKID(person)).toJS();
+      const participantEKIDs :UUID[] = response.data.hits.map((person :Object) => getEKID(person));
       const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
       const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
       const neighborsToGet = [
