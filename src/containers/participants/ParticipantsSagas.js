@@ -5,14 +5,23 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { Models } from 'lattice';
 import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
+import { Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
+import {
+  GET_JAIL_NAMES_FOR_JAIL_STAYS,
+  GET_PARTICIPANT_NEIGHBORS,
+  SEARCH_PARTICIPANTS,
+  getJailNamesForJailStays,
+  getParticipantNeighbors,
+  searchParticipants,
+} from './ParticipantsActions';
+
 import Logger from '../../utils/Logger';
-import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   getEKID,
   getESIDFromApp,
@@ -22,19 +31,11 @@ import {
   getNeighborESID,
   getPTIDFromEDM,
 } from '../../utils/DataUtils';
-import { getSearchTerm } from '../../utils/SearchUtils';
-import {
-  GET_JAIL_NAMES_FOR_JAIL_STAYS,
-  GET_PARTICIPANT_NEIGHBORS,
-  SEARCH_PARTICIPANTS,
-  getJailNamesForJailStays,
-  getParticipantNeighbors,
-  searchParticipants,
-} from './ParticipantsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
+import { getSearchTerm } from '../../utils/SearchUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 
 const LOG = new Logger('ParticipantsSagas');
 const { FullyQualifiedName } = Models;
@@ -268,11 +269,11 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       }
       if (DateTime.fromISO(dob).isValid) {
-        const lastNameConstraint = getSearchTerm(dobPTID, dob);
+        const dobConstraint = getSearchTerm(dobPTID, dob);
         searchOptions.constraints.push({
           min: 1,
           constraints: [{
-            searchTerm: lastNameConstraint,
+            searchTerm: dobConstraint,
             fuzzy: true
           }]
         });
