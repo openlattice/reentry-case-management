@@ -28,6 +28,16 @@ import {
   editEvent,
   editReleaseInfo,
 } from './programhistory/ProgramHistoryActions';
+import {
+  DELETE_EMERGENCY_CONTACT,
+  EDIT_CONTACT_INFO,
+  EDIT_EMERGENCY_CONTACTS,
+  GET_EMERGENCY_CONTACT_INFO,
+  deleteEmergencyContact,
+  editContactInfo,
+  editEmergencyContacts,
+  getEmergencyContactInfo,
+} from './contacts/ContactInfoActions';
 import { getEKID } from '../../utils/DataUtils';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -35,13 +45,18 @@ import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
 const {
+  CONTACT_INFO,
+  EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
+  IS_EMERGENCY_CONTACT_FOR,
+  LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
@@ -49,6 +64,12 @@ const {
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [EDIT_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_EMERGENCY_CONTACTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_NEEDS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -56,6 +77,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_RELEASE_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_EMERGENCY_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS_NEIGHBORS]: {
@@ -72,6 +96,7 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [CONTACT_NAME_BY_PROVIDER_EKID]: Map(),
+  [EMERGENCY_CONTACT_INFO_BY_CONTACT]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
   [PROVIDER_BY_STATUS_EKID]: Map(),
@@ -85,7 +110,9 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       return state
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -106,6 +133,70 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
+
+    case deleteEmergencyContact.case(action.type): {
+      return deleteEmergencyContact.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, action.id], action)
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const emergencyContactEKID = action.value;
+          const emergencyContactInfoByContact = state.get(EMERGENCY_CONTACT_INFO_BY_CONTACT)
+            .delete(emergencyContactEKID);
+          let participantNeighbors = state.get(PARTICIPANT_NEIGHBORS)
+            .deleteIn([IS_EMERGENCY_CONTACT_FOR, emergencyContactEKID]);
+          const emergencyContactIndex = participantNeighbors.get(EMERGENCY_CONTACT)
+            .findIndex((contact) => getEKID(contact) === emergencyContactEKID);
+          if (emergencyContactIndex !== -1) {
+            participantNeighbors = participantNeighbors.deleteIn([EMERGENCY_CONTACT, emergencyContactIndex]);
+          }
+          return state
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, emergencyContactInfoByContact)
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_EMERGENCY_CONTACT, action.id]),
+      });
+    }
+
+    case editContactInfo.case(action.type): {
+      return editContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { newAddress, newContacts } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, LOCATION, 0], newAddress)
+            .setIn([PARTICIPANT_NEIGHBORS, CONTACT_INFO], newContacts)
+            .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_CONTACT_INFO, action.id]),
+      });
+    }
+
+    case editEmergencyContacts.case(action.type): {
+      return editEmergencyContacts.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, action.id], action)
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { editedAssociationMap, editedContactInfo, editedContactPeople } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, EMERGENCY_CONTACT], editedContactPeople)
+            .setIn([PARTICIPANT_NEIGHBORS, IS_EMERGENCY_CONTACT_FOR], editedAssociationMap)
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, editedContactInfo)
+            .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, action.id]),
       });
     }
 
@@ -204,6 +295,23 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
+      });
+    }
+
+    case getEmergencyContactInfo.case(action.type): {
+
+      return getEmergencyContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          return state
+            .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, seqAction.value)
+            .setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_EMERGENCY_CONTACT_INFO, action.id]),
       });
     }
 
