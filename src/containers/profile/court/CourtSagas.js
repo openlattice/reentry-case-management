@@ -8,23 +8,24 @@ import {
 import { List, Map, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getPropertyFqnFromEDM,
-} from '../../../utils/DataUtils';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
-import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import {
   DELETE_COURT_HEARING,
   EDIT_COURT_HEARINGS,
   deleteCourtHearing,
   editCourtHearings,
 } from './CourtActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+
+import Logger from '../../../utils/Logger';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEKID,
+  getESIDFromApp,
+  getPropertyFqnFromEDM,
+} from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
 const { HEARINGS } = APP_TYPE_FQNS;
@@ -139,18 +140,16 @@ function* editCourtHearingsWatcher() :Generator<*, *, *> {
 function* deleteCourtHearingWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
   try {
     yield put(deleteCourtHearing.request(id, value));
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
     const { deleteValue } = value;
     const { entityData } = deleteValue;
 
     const app = yield select(getAppFromState);
     const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
-
-    const hearingIterator = entityData[hearingsESID].values();
-    const hearingEKID :UUID = hearingIterator.next().value;
+    const hearingEKID :UUID = entityData[hearingsESID].values().first();
 
     const dataToDelete = [
       { entitySetId: hearingsESID, entityKeyIds: [hearingEKID] },

@@ -1,21 +1,25 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Card,
   CardSegment,
   EditButton,
   Label,
 } from 'lattice-ui-kit';
+import { DateTimeUtils } from 'lattice-utils';
 
 import EditCourtDatesModal from './EditCourtDatesModal';
-import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
+import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 
+const { formatAsDate } = DateTimeUtils;
 const { HEARINGS } = APP_TYPE_FQNS;
 const { DATE, TYPE } = PROPERTY_TYPE_FQNS;
 
@@ -23,7 +27,7 @@ const CourtDatesGrid = styled.div`
   display: grid;
   flex: 1;
   grid-auto-flow: row;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr 1fr;
   grid-gap: 20px 30px;
 `;
 
@@ -49,7 +53,7 @@ const CourtDatesCard = ({ participantNeighbors } :Props) => {
         {
           sortedHearings.map((hearing :Map) => (
             <CourtDatesGrid key={getEKID(hearing)}>
-              <div>{ DateTime.fromISO(hearing.getIn([DATE, 0])).toLocaleString(DateTime.DATE_SHORT) }</div>
+              <div>{ formatAsDate(hearing.getIn([DATE, 0]), EMPTY_FIELD) }</div>
               <div>{ hearing.getIn([TYPE, 0]) }</div>
             </CourtDatesGrid>
           ))

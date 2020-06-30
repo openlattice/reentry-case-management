@@ -1,5 +1,6 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import {
   List,
@@ -7,29 +8,30 @@ import {
   mergeDeep,
   setIn,
 } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
-import { getEKID } from '../../../utils/DataUtils';
-import { clearEditRequestState } from '../needs/NeedsActions';
-import { schema, uiSchema } from './schemas/EditCourtDatesSchemas';
-import {
-  getCourtHearingAssociations,
-  getHearingsEntityIndexToIdMap,
-  preprocessEditedCourtData,
-  preprocessNewCourtData,
-} from '../utils/CourtUtils';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { EDIT_COURT_HEARINGS, deleteCourtHearing, editCourtHearings } from './CourtActions';
+import { schema, uiSchema } from './schemas/EditCourtDatesSchemas';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
+import { clearEditRequestState } from '../needs/NeedsActions';
+import {
+  getCourtHearingAssociations,
+  getHearingsEntityIndexToIdMap,
+  preprocessEditedCourtData,
+  preprocessNewCourtData,
+} from '../utils/CourtUtils';
 
 const {
   findEntityAddressKeyFromMap,
@@ -184,7 +186,9 @@ const EditCourtDatesModal = ({
     dispatch(deleteCourtHearing({ deleteValue }));
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Court Hearings" />);
+  const withHeader = (
+    <ModalHeader onClose={onClose} title="Edit Court Hearings" />
+  );
   const withFooter = (
     <ModalFooter
         isPendingPrimary={requestIsPending(editCourtHearingsReqState)}
@@ -195,7 +199,7 @@ const EditCourtDatesModal = ({
         textSecondary="Discard" />
   );
 
-  const formContext :Object = {
+  const formContext = {
     deleteAction: onDelete,
     entityIndexToIdMap,
     entitySetIds,
@@ -213,7 +217,7 @@ const EditCourtDatesModal = ({
         textSecondary="Discard"
         viewportScrolling
         withFooter={withFooter}
-        withHeader={renderHeader}>
+        withHeader={withHeader}>
       <InnerWrapper>
         <Form
             formContext={formContext}
