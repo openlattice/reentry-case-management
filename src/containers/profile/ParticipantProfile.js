@@ -25,6 +25,7 @@ import ContactInfoCard from './contacts/ContactInfoCard';
 import RecordEventModal from './events/RecordEventModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
+import SexOffenderCard from './sexoffender/SexOffenderCard';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
@@ -206,6 +207,7 @@ class ParticipantProfile extends Component<Props, State> {
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
         <RecordEventModal
             isVisible={eventModalIsOpen}

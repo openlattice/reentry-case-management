@@ -3,7 +3,6 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { isDefined } from '../../utils/LangUtils';
 import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
@@ -14,20 +13,6 @@ import {
   getParticipantNeighbors,
   loadProfile,
 } from './ProfileActions';
-import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
-import {
-  CREATE_NEW_FOLLOW_UP,
-  MARK_FOLLOW_UP_AS_COMPLETE,
-  createNewFollowUp,
-  markFollowUpAsComplete,
-} from './tasks/FollowUpsActions';
-import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
-import {
-  EDIT_EVENT,
-  EDIT_RELEASE_INFO,
-  editEvent,
-  editReleaseInfo,
-} from './programhistory/ProgramHistoryActions';
 import {
   DELETE_EMERGENCY_CONTACT,
   EDIT_CONTACT_INFO,
@@ -38,9 +23,26 @@ import {
   editEmergencyContacts,
   getEmergencyContactInfo,
 } from './contacts/ContactInfoActions';
-import { getEKID } from '../../utils/DataUtils';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
+import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
+import {
+  EDIT_EVENT,
+  EDIT_RELEASE_INFO,
+  editEvent,
+  editReleaseInfo,
+} from './programhistory/ProgramHistoryActions';
+import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
+import {
+  CREATE_NEW_FOLLOW_UP,
+  MARK_FOLLOW_UP_AS_COMPLETE,
+  createNewFollowUp,
+  markFollowUpAsComplete,
+} from './tasks/FollowUpsActions';
+
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
@@ -60,6 +62,8 @@ const {
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   REFERRAL_REQUEST,
+  SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
 } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
@@ -77,6 +81,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_RELEASE_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_SEX_OFFENDER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_EMERGENCY_CONTACT_INFO]: {
@@ -111,6 +118,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
     }
@@ -295,6 +303,24 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
+      });
+    }
+
+    case editSexOffender.case(action.type): {
+      return editSexOffender.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, action.id], action)
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { updatedSexOffenderList, updatedLocationList } = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, SEX_OFFENDER], updatedSexOffenderList)
+            .setIn([PARTICIPANT_NEIGHBORS, SEX_OFFENDER_REGISTRATION_LOCATION], updatedLocationList)
+            .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SEX_OFFENDER, action.id]),
       });
     }
 
