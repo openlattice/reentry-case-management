@@ -1,46 +1,49 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faUser } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
   Button,
   Card,
-  CardHeader,
   CardSegment,
   CardStack,
   Colors,
   DataGrid,
+  EditButton,
   Spinner,
 } from 'lattice-ui-kit';
-import { faUser } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as Routes from '../../core/router/Routes';
 import ContactInfoCard from './contacts/ContactInfoCard';
-import RecordEventModal from './events/RecordEventModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
+import RecordEventModal from './events/RecordEventModal';
 import SexOffenderCard from './sexoffender/SexOffenderCard';
+import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
+  CardHeaderWithButtons,
   GrayerButton,
   Header,
   NameHeader,
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
-import { getEKID } from '../../utils/DataUtils';
+
+import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { LOAD_PROFILE, loadProfile } from './ProfileActions';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { getEKID } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
@@ -134,6 +137,16 @@ class ParticipantProfile extends Component<Props, State> {
     this.setState({ eventModalIsOpen: false });
   }
 
+  goToEditPersonPage = () => {
+    const {
+      actions,
+      match: {
+        params: { participantId }
+      }
+    } = this.props;
+    if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':participantId', participantId));
+  };
+
   goToTaskManager = () => {
     const {
       actions,
@@ -183,9 +196,10 @@ class ParticipantProfile extends Component<Props, State> {
         </HeaderWrapper>
         <ProfileCardStack>
           <Card>
-            <CardHeader padding="30px">
+            <CardHeaderWithButtons padding="30px" vertical={false}>
               <CardHeaderTitle>Person Profile</CardHeaderTitle>
-            </CardHeader>
+              <EditButton onClick={this.goToEditPersonPage}>Edit</EditButton>
+            </CardHeaderWithButtons>
             <CardSegment padding="30px">
               <CardInnerWrapper>
                 <PictureWrapper>

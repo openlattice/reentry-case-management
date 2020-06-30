@@ -14,8 +14,10 @@ const TASKS :string = '/tasks';
 
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
+const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
 
 export {
+  EDIT_PARTICIPANT,
   LOGIN,
   NEW_INTAKE,
   PARTICIPANTS,
