@@ -45,6 +45,7 @@ const {
   REPORTED,
   REPRESENTED_BY,
   SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
   STATE_ID,
 } = APP_TYPE_FQNS;
 const {
@@ -403,8 +404,14 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
 
   const isSexOffenderPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)];
   const isSexOffenderValue :any = getIn(formData, isSexOffenderPath);
-  const registeredCountyPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, COUNTY)];
-  const registeredStatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(1, LOCATION, US_STATE)];
+  const registeredCountyPath :string[] = [
+    getPageSectionKey(1, 5),
+    getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY)
+  ];
+  const registeredStatePath :string[] = [
+    getPageSectionKey(1, 5),
+    getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE)
+  ];
   const registeredDatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
   const registryEndDatePath :string[] = [
     getPageSectionKey(1, 5),
@@ -412,27 +419,6 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
   ];
 
   if (isDefined(isSexOffenderValue) && isSexOffenderValue) {
-    const clientAddressSection :any = get(formData, getPageSectionKey(1, 2));
-    const clientAddressInForm :boolean = Object.keys(clientAddressSection)
-      .filter((entityAddressKey :string) => {
-        const { entitySetName } = parseEntityAddressKey(entityAddressKey);
-        return entitySetName === LOCATION.toString();
-      }).length > 0;
-    if (!clientAddressInForm) {
-      updatedFormData = resetKey(
-        updatedFormData,
-        registeredCountyPath,
-        0,
-        { appTypeFqn: LOCATION, propertyTypeFQN: COUNTY }
-      );
-      updatedFormData = resetKey(
-        updatedFormData,
-        registeredStatePath,
-        0,
-        { appTypeFqn: LOCATION, propertyTypeFQN: US_STATE }
-      );
-    }
-
     const registeredDate :any = getIn(formData, registeredDatePath);
     if (isDefined(registeredDate)) {
       const datetimeISO :string = DateTime.fromSQL(registeredDate.concat(' ', currentTime)).toISO();
@@ -513,12 +499,12 @@ const getClientSexOffenderAssociations = (formData :Object) :Array<Array<*>> => 
   const sexOffenderSection :Object = get(formData, getPageSectionKey(1, 5));
   const countyKey = Object.keys(sexOffenderSection).find((key :string) => {
     const { entitySetName } = parseEntityAddressKey(key);
-    return entitySetName === LOCATION.toString();
+    return entitySetName === SEX_OFFENDER_REGISTRATION_LOCATION.toString();
   });
   if (isDefined(countyKey)) {
     const { entityIndex } = parseEntityAddressKey(countyKey);
-    associations.push([REGISTERED_FOR, 0, SEX_OFFENDER, entityIndex, LOCATION, {}]);
-    associations.push([IS_REGISTERED_SEX_OFFENDER_IN, 0, PEOPLE, entityIndex, LOCATION, {}]);
+    associations.push([REGISTERED_FOR, 0, SEX_OFFENDER, entityIndex, SEX_OFFENDER_REGISTRATION_LOCATION, {}]);
+    associations.push([IS_REGISTERED_SEX_OFFENDER_IN, 0, PEOPLE, entityIndex, SEX_OFFENDER_REGISTRATION_LOCATION, {}]);
   }
   return associations;
 };

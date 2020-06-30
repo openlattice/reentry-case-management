@@ -71,6 +71,8 @@ const {
   PROVIDER,
   PROVIDER_STAFF,
   REFERRAL_REQUEST,
+  SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
   STATE_ID,
 } = APP_TYPE_FQNS;
 
@@ -304,6 +306,8 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+    const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
+    const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
@@ -315,6 +319,8 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: enrollmentStatusESID },
       { direction: DST, neighborESID: manualJailStaysESID },
       { direction: DST, neighborESID: referralToReentryESID },
+      { direction: DST, neighborESID: sexOffenderESID },
+      { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
       { direction: DST, neighborESID: addressESID },
       { direction: SRC, neighborESID: emergencyContactESID },
       { direction: DST, neighborESID: hearingsESID },
