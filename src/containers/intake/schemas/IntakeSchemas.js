@@ -37,6 +37,7 @@ const {
   PROBATION_PAROLE,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
   STATE_ID,
 } = APP_TYPE_FQNS;
 const {
@@ -324,11 +325,11 @@ const personInformationSchema :Object = {
           enum: [true, false],
           enumNames: ['Yes', 'No'],
         },
-        [getEntityAddressKey(1, LOCATION, COUNTY)]: {
+        [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY)]: {
           type: 'string',
           title: 'Registered County',
         },
-        [getEntityAddressKey(1, LOCATION, US_STATE)]: {
+        [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE)]: {
           type: 'string',
           title: 'Registered State',
           enum: US_STATES,
@@ -552,10 +553,10 @@ const personInformationUiSchema :Object = {
         row: true
       }
     },
-    [getEntityAddressKey(1, LOCATION, COUNTY)]: {
+    [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(1, LOCATION, US_STATE)]: {
+    [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)]: {
@@ -566,8 +567,8 @@ const personInformationUiSchema :Object = {
     },
     'ui:order': [
       getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG),
-      getEntityAddressKey(1, LOCATION, COUNTY),
-      getEntityAddressKey(1, LOCATION, US_STATE),
+      getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY),
+      getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE),
       getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME),
       getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME),
     ]

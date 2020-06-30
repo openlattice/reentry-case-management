@@ -12,25 +12,15 @@ import {
   fromJS,
   get,
 } from 'immutable';
+import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { Models } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getFqnFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-} from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
 import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
@@ -41,10 +31,25 @@ import {
   getParticipantNeighbors,
   loadProfile,
 } from './ProfileActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP } from '../../utils/constants/ReduxStateConstants';
+import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
+import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
+
+import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getAssociationDetails,
+  getAssociationESID,
+  getEKID,
+  getESIDFromApp,
+  getFqnFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
+import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const LOG = new Logger('ProfileSagas');
 const { FullyQualifiedName } = Models;
@@ -54,7 +59,10 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
+  EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
+  IS_EMERGENCY_CONTACT_FOR,
+  LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PEOPLE,
@@ -62,6 +70,8 @@ const {
   PROVIDER,
   PROVIDER_STAFF,
   REFERRAL_REQUEST,
+  SEX_OFFENDER,
+  SEX_OFFENDER_REGISTRATION_LOCATION,
   STATE_ID,
 } = APP_TYPE_FQNS;
 
@@ -173,14 +183,21 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: participantsESID, filter: searchFilter })
     );
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
+
     let personNeighborMap :Map = Map();
     const neighbors :Map = fromJS(response.data);
     if (!neighbors.isEmpty()) {
       neighbors.forEach((neighborList :List) => {
         neighborList.forEach((neighbor :Map) => {
+          const associationESID :UUID = getAssociationESID(neighbor);
+          if (associationESID === getESIDFromApp(app, IS_EMERGENCY_CONTACT_FOR)) {
+            personNeighborMap = personNeighborMap.setIn(
+              [IS_EMERGENCY_CONTACT_FOR, getEKID(getNeighborDetails(neighbor))],
+              getAssociationDetails(neighbor)
+            );
+          }
+
           const neighborESID :UUID = getNeighborESID(neighbor);
           const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
           const entity :Map = getNeighborDetails(neighbor);
@@ -196,6 +213,12 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .map((statusEntity :Map) => getEKID(statusEntity))
         .toJS();
       yield call(getEnrollmentStatusNeighborsWorker, getEnrollmentStatusNeighbors({ enrollmentStatusEKIDs }));
+    }
+    if (isDefined(get(personNeighborMap, EMERGENCY_CONTACT))) {
+      const emergencyContactEKIDs :UUID[] = personNeighborMap.get(EMERGENCY_CONTACT)
+        .map((emergencyContact :Map) => getEKID(emergencyContact))
+        .toJS();
+      yield call(getEmergencyContactInfoWorker, getEmergencyContactInfo({ emergencyContactEKIDs }));
     }
 
     workerResponse.data = personNeighborMap;
@@ -282,6 +305,10 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+    const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
+    const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
+    const addressESID :UUID = getESIDFromApp(app, LOCATION);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
@@ -290,6 +317,10 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: enrollmentStatusESID },
       { direction: DST, neighborESID: manualJailStaysESID },
       { direction: DST, neighborESID: referralToReentryESID },
+      { direction: DST, neighborESID: sexOffenderESID },
+      { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
+      { direction: DST, neighborESID: addressESID },
+      { direction: SRC, neighborESID: emergencyContactESID },
       { direction: DST, neighborESID: stateIdESID },
     ];
     const workerResponses :Object[] = yield all([

@@ -57,6 +57,7 @@ const PROVIDERS :Object = {
 
 const PROFILE :Object = {
   CONTACT_NAME_BY_PROVIDER_EKID: 'contactNameByProviderEKID',
+  EMERGENCY_CONTACT_INFO_BY_CONTACT: 'emergencyContactInfoByContact',
   PARTICIPANT: 'participant',
   PARTICIPANT_NEIGHBORS: 'participantNeighbors',
   PROFILE: 'profile',

@@ -222,7 +222,7 @@ const EditProviderForm = ({
       const updatedFormData = {
         [getPageSectionKey(1, 1)]: updatedContactsInFormData,
       };
-      const preprocessedContactsFormData :Object = preprocessContactsData(updatedFormData);
+      const preprocessedContactsFormData :Object = preprocessContactsData(updatedFormData, PROVIDER_CONTACT_INFO);
       const contactsDataToSubmit :Object = processEntityData(
         preprocessedContactsFormData,
         entitySetIdsByFqn,
