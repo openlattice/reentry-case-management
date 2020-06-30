@@ -237,8 +237,8 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         constraints: [{
           type: 'advanced',
           searchFields: [
-            { searchTerm: '*', property: firstNamePTID, exact: true },
-            { searchTerm: '*', property: lastNamePTID, exact: true }
+            { searchTerm: '*', property: firstNamePTID },
+            { searchTerm: '*', property: lastNamePTID }
           ],
         }]
       });
