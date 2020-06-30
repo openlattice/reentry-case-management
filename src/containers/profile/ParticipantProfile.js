@@ -21,6 +21,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import * as Routes from '../../core/router/Routes';
+import ContactInfoCard from './contacts/ContactInfoCard';
 import RecordEventModal from './events/RecordEventModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
@@ -46,6 +47,7 @@ const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
@@ -59,7 +61,6 @@ const participantGridLabels = OrderedMap({
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
-  preferredContact: 'Pref. Contact',
   countyID: 'County ID number',
   opusNumber: 'OPUS number',
 });
@@ -91,6 +92,7 @@ type Props = {
     loadProfile :RequestSequence;
   };
   contactNameByProviderEKID :Map;
+  emergencyContactInfoByContact :Map;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
@@ -145,6 +147,7 @@ class ParticipantProfile extends Component<Props, State> {
   render() {
     const {
       contactNameByProviderEKID,
+      emergencyContactInfoByContact,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -196,6 +199,9 @@ class ParticipantProfile extends Component<Props, State> {
               </CardInnerWrapper>
             </CardSegment>
           </Card>
+          <ContactInfoCard
+              emergencyContactInfoByContact={emergencyContactInfoByContact}
+              participantNeighbors={participantNeighbors} />
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
@@ -216,6 +222,7 @@ const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
+    [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),

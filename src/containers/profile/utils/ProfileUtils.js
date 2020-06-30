@@ -9,7 +9,6 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
-  CONTACT_INFO,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
   STATE_ID,
@@ -18,14 +17,11 @@ const {
   COUNTY_ID,
   DATETIME_COMPLETED,
   DOB,
-  EMAIL,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
-  LAST_NAME,
   OL_ID_FQN,
-  PHONE_NUMBER,
-  PREFERRED,
+  LAST_NAME,
   PROJECTED_RELEASE_DATETIME,
   RACE,
 } = PROPERTY_TYPE_FQNS;
@@ -46,15 +42,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
   let gender :string = '';
   if (!personDetails.isEmpty()) gender = personDetails.getIn([0, GENDER]);
-  const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-  let preferredContact :string = '';
-  const preferredContactEntity :Map = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED));
-  if (preferredContactEntity && preferredContactEntity.has(EMAIL)) {
-    preferredContact = preferredContactEntity.getIn([EMAIL, 0]);
-  }
-  if (preferredContactEntity && preferredContactEntity.has(PHONE_NUMBER)) {
-    preferredContact = preferredContactEntity.getIn([PHONE_NUMBER, 0]);
-  }
   const stateIDEntity :List = participantNeighbors.get(STATE_ID, List());
   const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : EMPTY_FIELD;
 
@@ -66,7 +53,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     gender,
     race,
     ethnicity,
-    preferredContact,
     countyID,
     opusNumber,
   });
