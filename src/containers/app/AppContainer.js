@@ -100,7 +100,6 @@ class AppContainer extends Component<Props> {
     if (requestIsSuccess(requestStates[INITIALIZE_APPLICATION])) {
       return (
         <Switch>
-          <Route exact strict path="/home" />
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
@@ -109,7 +108,7 @@ class AppContainer extends Component<Props> {
           <Route path={Routes.PROVIDERS} component={Providers} />
           <Route path={Routes.REPORTS} component={Reports} />
           <Route path={Routes.TASKS} component={TaskManager} />
-          <Redirect to="/home" />
+          <Redirect to={Routes.PARTICIPANTS} />
         </Switch>
       );
     }

@@ -128,14 +128,7 @@ class ParticipantsSearch extends Component<Props, State> {
   }
 
   onPageChange= ({ page: newPage, start } :Object) => {
-    const { actions } = this.props;
-    actions.searchParticipants({
-      dob: '',
-      firstName: '',
-      lastName: '',
-      maxHits: MAX_HITS,
-      start,
-    });
+    this.searchPeople(undefined, start);
     this.setPage(newPage);
   }
 
