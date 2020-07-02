@@ -25,10 +25,12 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
 import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
@@ -286,6 +288,55 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ProfileActions.loadPersonInfoForEdit()
+ *
+ */
+
+function* loadPersonInfoForEditWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+
+  try {
+    yield put(loadPersonInfoForEdit.request(id));
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { participantEKID } = value;
+
+    const app = yield select(getAppFromState);
+    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
+    const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
+    const neighborsToGet = [
+      { direction: DST, neighborESID: personDetailsESID },
+      { direction: DST, neighborESID: stateIdESID },
+    ];
+    const workerResponses :Object[] = yield all([
+      call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
+      call(getParticipantWorker, getParticipant({ participantEKID })),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => error || workerResponse.error,
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+
+    yield put(loadPersonInfoForEdit.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(loadPersonInfoForEdit.failure(id, error));
+  }
+  finally {
+    yield put(loadPersonInfoForEdit.finally(id));
+  }
+}
+
+function* loadPersonInfoForEditWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(LOAD_PERSON_INFO_FOR_EDIT, loadPersonInfoForEditWorker);
+}
+
+/*
+ *
  * ProfileActions.loadProfile()
  *
  */
@@ -360,4 +411,6 @@ export {
   getParticipantNeighborsWorker,
   loadProfileWatcher,
   loadProfileWorker,
+  loadPersonInfoForEditWatcher,
+  loadPersonInfoForEditWorker,
 };

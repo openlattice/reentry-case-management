@@ -76,6 +76,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),
     fork(ProfileSagas.loadProfileWatcher),
+    fork(ProfileSagas.loadPersonInfoForEditWatcher),
 
     // ProgramHistorySagas
     fork(ProgramHistorySagas.editEventWatcher),
