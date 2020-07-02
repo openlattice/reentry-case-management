@@ -61,6 +61,7 @@ const {
   CONTACT_INFO,
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
+  HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
@@ -309,6 +310,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
@@ -321,6 +323,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
       { direction: DST, neighborESID: addressESID },
       { direction: SRC, neighborESID: emergencyContactESID },
+      { direction: DST, neighborESID: hearingsESID },
       { direction: DST, neighborESID: stateIdESID },
     ];
     const workerResponses :Object[] = yield all([

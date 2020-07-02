@@ -1,6 +1,9 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faUser } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
@@ -13,19 +16,18 @@ import {
   DataGrid,
   Spinner,
 } from 'lattice-ui-kit';
-import { faUser } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as Routes from '../../core/router/Routes';
 import ContactInfoCard from './contacts/ContactInfoCard';
-import RecordEventModal from './events/RecordEventModal';
+import CourtDatesCard from './court/CourtDatesCard';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
+import RecordEventModal from './events/RecordEventModal';
 import SexOffenderCard from './sexoffender/SexOffenderCard';
+import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
@@ -34,13 +36,14 @@ import {
   NameHeader,
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
-import { getEKID } from '../../utils/DataUtils';
+
+import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { LOAD_PROFILE, loadProfile } from './ProfileActions';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { getEKID } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
@@ -207,6 +210,7 @@ class ParticipantProfile extends Component<Props, State> {
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
         <RecordEventModal

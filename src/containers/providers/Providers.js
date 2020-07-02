@@ -1,5 +1,6 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -15,18 +16,21 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddProviderModal from './AddProviderModal';
 import ProviderCard from './ProviderCard';
-import COLORS from '../../core/style/Colors';
 import { GET_PROVIDERS, getProviders } from './ProvidersActions';
-import { requestIsPending } from '../../utils/RequestStateUtils';
-import { getEKID } from '../../utils/DataUtils';
-import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
+
+import COLORS from '../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../utils/DataUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
 import { PROVIDER_TYPES } from '../../utils/constants/DataConstants';
+import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PROVIDER } = APP_TYPE_FQNS;
 const { NAME, TYPE } = PROPERTY_TYPE_FQNS;
+
+const checkboxSelectOptions = PROVIDER_TYPES.map((type :string) => ({ label: type, value: type }));
 
 const HeaderRow = styled.div`
   align-items: center;
@@ -77,7 +81,6 @@ const Providers = ({
   }, [actions, providerESIDLoaded]);
 
   const sortedProvidersList = providersList.sortBy((provider :Map) => provider.getIn([NAME, 0]));
-  const checkboxSelectOptions = PROVIDER_TYPES.map((type :string) => ({ label: type, value: type }));
   const filterProvidersList = !selectedTypes || !selectedTypes.length
     ? sortedProvidersList
     : sortedProvidersList.filter((provider :Map) => {
