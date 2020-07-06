@@ -23,6 +23,12 @@ import {
   editEmergencyContacts,
   getEmergencyContactInfo,
 } from './contacts/ContactInfoActions';
+import {
+  DELETE_COURT_HEARING,
+  EDIT_COURT_HEARINGS,
+  deleteCourtHearing,
+  editCourtHearings,
+} from './court/CourtActions';
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
 import {
@@ -57,6 +63,7 @@ const {
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
+  HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
@@ -69,6 +76,9 @@ const {
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
     [EDIT_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_COURT_HEARINGS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_EMERGENCY_CONTACTS]: {
@@ -120,7 +130,11 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -141,6 +155,29 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_NEW_FOLLOW_UP, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_FOLLOW_UP, action.id]),
+      });
+    }
+
+    case deleteCourtHearing.case(action.type): {
+      return deleteCourtHearing.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_COURT_HEARING, action.id], action)
+          .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const hearingEKID = action.value;
+          let participantNeighbors = state.get(PARTICIPANT_NEIGHBORS);
+          const hearingIndex = participantNeighbors.get(HEARINGS)
+            .findIndex((hearing) => getEKID(hearing) === hearingEKID);
+          if (hearingIndex !== -1) {
+            participantNeighbors = participantNeighbors.deleteIn([HEARINGS, hearingIndex]);
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_COURT_HEARING, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_COURT_HEARING, action.id]),
       });
     }
 
@@ -186,6 +223,23 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_CONTACT_INFO, action.id]),
+      });
+    }
+
+    case editCourtHearings.case(action.type): {
+      return editCourtHearings.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_COURT_HEARINGS, action.id], action)
+          .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const editedHearings = action.value;
+          return state
+            .setIn([PARTICIPANT_NEIGHBORS, HEARINGS], editedHearings)
+            .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_COURT_HEARINGS, action.id]),
       });
     }
 

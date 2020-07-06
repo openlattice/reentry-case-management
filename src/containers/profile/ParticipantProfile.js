@@ -22,6 +22,7 @@ import type { Match } from 'react-router';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ContactInfoCard from './contacts/ContactInfoCard';
+import CourtDatesCard from './court/CourtDatesCard';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
 import RecordEventModal from './events/RecordEventModal';
@@ -221,6 +222,7 @@ class ParticipantProfile extends Component<Props, State> {
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
         <RecordEventModal
