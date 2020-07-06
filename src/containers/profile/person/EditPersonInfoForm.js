@@ -13,7 +13,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
+import EditPersonDetailsForm from './EditPersonDetailsForm';
 import EditPersonForm from './EditPersonForm';
+import EditStateIdForm from './EditStateIdForm';
 import {
   educationSchema,
   educationUiSchema,
@@ -21,8 +23,6 @@ import {
   idUiSchema,
   personDetailsSchema,
   personDetailsUiSchema,
-  personSchema,
-  personUiSchema,
 } from './schemas/EditPersonSchemas';
 
 import * as Routes from '../../../core/router/Routes';
@@ -39,7 +39,7 @@ import { loadPersonInfoForEdit } from '../ProfileActions';
 import { CardInnerWrapper } from '../styled/EventStyles';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 
-const { PARTICIPANT } = PROFILE;
+const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 
 const BreadcrumbsWrapper = styled(CardInnerWrapper)`
   margin-bottom: 20px;
@@ -63,6 +63,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
     updateFormData(newFormData);
   };
   const onSubmit = () => {};
+  const participantNeighbors :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT_NEIGHBORS]));
   const participant :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT]));
   const personName :string = getPersonFullName(participant);
   return (
@@ -86,22 +87,12 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <Form
-                formData={formData}
-                onChange={onChange}
-                onSubmit={onSubmit}
-                schema={idSchema}
-                uiSchema={idUiSchema} />
+            <EditStateIdForm participant={participant} participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
         <Card>
           <CardSegment padding="0">
-            <Form
-                formData={formData}
-                onChange={onChange}
-                onSubmit={onSubmit}
-                schema={personDetailsSchema}
-                uiSchema={personDetailsUiSchema} />
+            <EditPersonDetailsForm participant={participant} participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
         <Card>
