@@ -12,6 +12,7 @@ import { schema, uiSchema } from './schemas/EditContactInfoSchemas';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { isDefined } from '../../../utils/LangUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
@@ -24,6 +25,8 @@ import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData }
 
 const {
   findEntityAddressKeyFromMap,
+  processAssociationEntityData,
+  processEntityData,
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
@@ -40,12 +43,14 @@ type Props = {
   isVisible :boolean;
   onClose :() => void;
   participantNeighbors :Map;
+  personEKID :UUID;
 };
 
 const EditContactInfoModal = ({
   isVisible,
   onClose,
   participantNeighbors,
+  personEKID,
 } :Props) => {
 
   const addressList :List = participantNeighbors.get(LOCATION, List());
@@ -91,20 +96,44 @@ const EditContactInfoModal = ({
     updateFormData(newFormData);
   };
   const onSubmit = () => {
-    const preprocessedFormData = preprocessContactFormData(formData, originalFormData);
-    const draftWithKeys :Object = replaceEntityAddressKeys(
-      preprocessedFormData,
-      findEntityAddressKeyFromMap(entityIndexToIdMap)
+    const { associations, newData, updatedFormData } = preprocessContactFormData(
+      formData,
+      originalFormData,
+      address,
+      contactInfoEntities,
+      personEKID
     );
-    const entityData = processEntityDataForPartialReplace(
-      draftWithKeys,
-      replaceEntityAddressKeys(originalFormData, findEntityAddressKeyFromMap(entityIndexToIdMap)),
-      entitySetIds,
-      propertyTypeIds,
-    );
+    let newContactInfoData = {};
+    let newAssociations = [];
 
-    if (Object.values(entityData).length) {
-      dispatch(editContactInfo({ address, contactInfoEntities, entityData }));
+    if (!isDefined(address) || contactInfoEntities.isEmpty()) {
+      newContactInfoData = processEntityData(newData, entitySetIds, propertyTypeIds);
+      newAssociations = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
+    }
+
+    let editedContactInfoData = {};
+
+    if (isDefined(address) || !contactInfoEntities.isEmpty()) {
+      const draftWithKeys :Object = replaceEntityAddressKeys(
+        updatedFormData,
+        findEntityAddressKeyFromMap(entityIndexToIdMap)
+      );
+      editedContactInfoData = processEntityDataForPartialReplace(
+        draftWithKeys,
+        replaceEntityAddressKeys(originalFormData, findEntityAddressKeyFromMap(entityIndexToIdMap)),
+        entitySetIds,
+        propertyTypeIds,
+      );
+    }
+
+    if (Object.values(newContactInfoData).length || Object.values(editedContactInfoData).length) {
+      dispatch(editContactInfo({
+        address,
+        contactInfoEntities,
+        editedContactInfoData,
+        newAssociations,
+        newContactInfoData,
+      }));
     }
     else {
       onClose();
