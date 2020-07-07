@@ -69,49 +69,94 @@ function* editContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(editContactInfo.request(id));
     const { value } = action;
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-    const { entityData } = value;
-
-    const response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
-    if (response.error) throw response.error;
+    const {
+      address,
+      contactInfoEntities,
+      editedContactInfoData,
+      newAssociations,
+      newContactInfoData,
+    } = value;
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const { address, contactInfoEntities } = value;
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
 
-    const addressEKID :UUID = getEKID(address);
-    const addressData = entityData[addressESID];
-
-    let newAddress :Map = address;
-
-    if (isDefined(addressData)) {
-      const addressValues = addressData[addressEKID];
-      const newAddressData :Map = Map().withMutations((map :Map) => {
-        fromJS(addressValues).forEach((propertyValue :any, ptid :UUID) => {
-          const fqn = getPropertyFqnFromEDM(edm, ptid);
-          map.set(fqn, propertyValue);
-        });
-      });
-
-      newAddress = newAddress.mergeWith((oldVal, newVal) => newVal, newAddressData);
-    }
-
+    let newAddress :Map = address || Map();
     let newContacts :List = contactInfoEntities;
-    const contactData = entityData[contactInfoESID];
 
-    if (isDefined(contactData)) {
-      fromJS(contactData).forEach((contactValues :Map, contactEKID :UUID) => {
-        const contactIndex :number = newContacts.findIndex((contact :Map) => getEKID(contact) === contactEKID);
-        if (contactIndex !== -1) {
-          contactValues.forEach((propertyValue :any, ptid :UUID) => {
+    if (Object.values(editedContactInfoData).length) {
+      const response :Object = yield call(
+        submitPartialReplaceWorker,
+        submitPartialReplace({ entityData: editedContactInfoData })
+      );
+      if (response.error) throw response.error;
+
+      const addressEKID :UUID = getEKID(address);
+      const addressData = editedContactInfoData[addressESID];
+
+      if (isDefined(addressData)) {
+        const addressValues = addressData[addressEKID];
+        const newAddressData :Map = Map().withMutations((map :Map) => {
+          fromJS(addressValues).forEach((propertyValue :any, ptid :UUID) => {
             const fqn = getPropertyFqnFromEDM(edm, ptid);
-            newContacts = newContacts.updateIn([contactIndex, fqn], List(), () => propertyValue);
+            map.set(fqn, propertyValue);
           });
-        }
-      });
+        });
+
+        newAddress = newAddress.mergeWith((oldVal, newVal) => newVal, newAddressData);
+      }
+
+      const contactData = editedContactInfoData[contactInfoESID];
+
+      if (isDefined(contactData)) {
+        fromJS(contactData).forEach((contactValues :Map, contactEKID :UUID) => {
+          const contactIndex :number = newContacts.findIndex((contact :Map) => getEKID(contact) === contactEKID);
+          if (contactIndex !== -1) {
+            contactValues.forEach((propertyValue :any, ptid :UUID) => {
+              const fqn = getPropertyFqnFromEDM(edm, ptid);
+              newContacts = newContacts.updateIn([contactIndex, fqn], List(), () => propertyValue);
+            });
+          }
+        });
+      }
     }
 
+    if (Object.values(newContactInfoData).length) {
+      const response :Object = yield call(
+        submitDataGraphWorker,
+        submitDataGraph({ associationEntityData: newAssociations, entityData: newContactInfoData })
+      );
+      if (response.error) throw response.error;
+      const { entityKeyIds } = response.data;
+
+      if (entityKeyIds[addressESID]) {
+        const newAddressEKID :UUID = entityKeyIds[addressESID][0];
+        newAddress = Map().withMutations((map :Map) => {
+          map.set(ENTITY_KEY_ID, List([newAddressEKID]));
+          fromJS(newContactInfoData[addressESID][0])
+            .forEach((propertyValue :any, ptid :string) => {
+              const fqn = getPropertyFqnFromEDM(edm, ptid);
+              map.set(fqn, propertyValue);
+            });
+        });
+      }
+
+      if (entityKeyIds[contactInfoESID]) {
+        const newContactEKIDs = entityKeyIds[contactInfoESID];
+        newContactEKIDs.forEach((newContactEKID :UUID, index :number) => {
+          const newContact :Map = Map().withMutations((map :Map) => {
+            map.set(ENTITY_KEY_ID, List([newContactEKID]));
+            fromJS(newContactInfoData[contactInfoESID][index])
+              .forEach((propertyValue :any, ptid :string) => {
+                const fqn = getPropertyFqnFromEDM(edm, ptid);
+                map.set(fqn, propertyValue);
+              });
+          });
+          newContacts = newContacts.push(newContact);
+        });
+      }
+    }
     yield put(editContactInfo.success(id, { newAddress, newContacts }));
   }
   catch (error) {
