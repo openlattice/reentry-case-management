@@ -10,6 +10,7 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as ContactInfoSagas from '../../containers/profile/contacts/ContactInfoSagas';
 import * as CourtSagas from '../../containers/profile/court/CourtSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as EditPersonSagas from '../../containers/profile/person/EditPersonSagas';
 import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as NeedsSagas from '../../containers/profile/needs/NeedsSagas';
@@ -50,6 +51,9 @@ export default function* sagas() :Generator<*, *, *> {
     // CourtSagas
     fork(CourtSagas.deleteCourtHearingWatcher),
     fork(CourtSagas.editCourtHearingsWatcher),
+
+    // EditPersonSagas
+    fork(EditPersonSagas.editPersonWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),

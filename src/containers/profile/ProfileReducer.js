@@ -7,10 +7,12 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
 import {
@@ -31,6 +33,7 @@ import {
 } from './court/CourtActions';
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
+import { EDIT_PERSON, editPerson } from './person/EditPersonActions';
 import {
   EDIT_EVENT,
   EDIT_RELEASE_INFO,
@@ -90,6 +93,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -109,6 +115,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [LOAD_PROFILE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [LOAD_PERSON_INFO_FOR_EDIT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -321,6 +330,25 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editPerson.case(action.type): {
+      return editPerson.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedPersonData = action.value;
+          const participant :Map = state.get(PARTICIPANT, Map())
+            .mergeWith((oldVal, newVal) => newVal, updatedPersonData);
+          return state
+            .set(PARTICIPANT, participant)
+            .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON, action.id]),
+      });
+    }
+
     case editReleaseInfo.case(action.type): {
       return editReleaseInfo.reducer(state, action, {
         REQUEST: () => state
@@ -459,6 +487,18 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => state.setIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, LOAD_PROFILE, action.id]),
+      });
+    }
+
+    case loadPersonInfoForEdit.case(action.type): {
+
+      return loadPersonInfoForEdit.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id], action)
+          .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state.setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id]),
       });
     }
 
