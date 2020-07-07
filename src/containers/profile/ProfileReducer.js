@@ -215,8 +215,11 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const { newAddress, newContacts } = action.value;
+          const addressList = state.get(PARTICIPANT_NEIGHBORS)
+            .set(LOCATION, List())
+            .get(LOCATION).push(newAddress);
           return state
-            .setIn([PARTICIPANT_NEIGHBORS, LOCATION, 0], newAddress)
+            .setIn([PARTICIPANT_NEIGHBORS, LOCATION], addressList)
             .setIn([PARTICIPANT_NEIGHBORS, CONTACT_INFO], newContacts)
             .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
