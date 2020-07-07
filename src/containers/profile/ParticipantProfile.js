@@ -204,7 +204,8 @@ class ParticipantProfile extends Component<Props, State> {
           </Card>
           <ContactInfoCard
               emergencyContactInfoByContact={emergencyContactInfoByContact}
-              participantNeighbors={participantNeighbors} />
+              participantNeighbors={participantNeighbors}
+              personEKID={personEKID} />
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}

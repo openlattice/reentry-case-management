@@ -62,9 +62,10 @@ const ButtonRow = styled.div`
 type Props = {
   emergencyContactInfoByContact :Map;
   participantNeighbors :Map;
+  personEKID :UUID;
 };
 
-const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors } :Props) => {
+const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors, personEKID } :Props) => {
 
   const [editModalVisible, setEditModalVisibility] = useState(false);
   const [editEmergencyModalVisible, setEditEmergencyVisibility] = useState(false);
@@ -131,7 +132,8 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors }
       <EditContactInfoModal
           isVisible={editModalVisible}
           onClose={() => setEditModalVisibility(false)}
-          participantNeighbors={participantNeighbors} />
+          participantNeighbors={participantNeighbors}
+          personEKID={personEKID} />
       <EditEmergencyContactsModal
           emergencyContactInfoByContact={emergencyContactInfoByContact}
           isVisible={editEmergencyModalVisible}
