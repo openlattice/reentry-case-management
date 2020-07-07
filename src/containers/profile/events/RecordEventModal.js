@@ -1,29 +1,30 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faTimes } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map, fromJS } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   CardSegment,
   Colors,
   Modal,
   ModalFooter,
 } from 'lattice-ui-kit';
-import { DataProcessingUtils, Form } from 'lattice-fabricate';
-import { faTimes } from '@fortawesome/pro-light-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import COLORS from '../../../core/style/Colors';
 import {
   RECORD_ENROLLMENT_EVENT,
   recordEnrollmentEvent,
 } from './EventActions';
-import { getProviders } from '../../providers/ProvidersActions';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { schema, uiSchema } from './schemas/RecordEventSchemas';
 import { hydrateEventSchema, prepareFormDataForProcessing } from './utils/EventUtils';
+
+import COLORS from '../../../core/style/Colors';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
@@ -31,6 +32,7 @@ import {
   PROVIDERS,
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
+import { getProviders } from '../../providers/ProvidersActions';
 
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { NEUTRALS } = Colors;
@@ -63,7 +65,7 @@ const ActionText = styled.div`
   color: ${COLORS.GRAY_01};
   font-size: 14px;
   line-height: 19px;
-  margin-bottom: 20px;
+  margin: 20px 0;
 `;
 
 type HeaderProps = {
@@ -71,7 +73,7 @@ type HeaderProps = {
 };
 
 const Header = ({ onClose } :HeaderProps) => (
-  <ModalCardSegment padding="30px 30px 20px">
+  <ModalCardSegment padding="30px 30px 20px" vertical={false}>
     <ModalTitle>Record Event</ModalTitle>
     <CloseButton onClick={onClose}>
       <FontAwesomeIcon color={NEUTRALS[2]} icon={faTimes} size="lg" />
