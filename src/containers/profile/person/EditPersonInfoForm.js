@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { Map, mergeDeep } from 'immutable';
-import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Map } from 'immutable';
+import { Form } from 'lattice-fabricate';
 import {
   Breadcrumbs,
   Card,
   CardSegment,
   CardStack,
+  Spinner,
 } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
@@ -19,27 +20,18 @@ import EditStateIdForm from './EditStateIdForm';
 import {
   educationSchema,
   educationUiSchema,
-  idSchema,
-  idUiSchema,
-  personDetailsSchema,
-  personDetailsUiSchema,
 } from './schemas/EditPersonSchemas';
 
 import * as Routes from '../../../core/router/Routes';
-import { getEKID } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import {
-  APP,
-  EDM,
-  PROFILE,
-  SHARED
-} from '../../../utils/constants/ReduxStateConstants';
-import { loadPersonInfoForEdit } from '../ProfileActions';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
+import { LOAD_PERSON_INFO_FOR_EDIT, loadPersonInfoForEdit } from '../ProfileActions';
 import { CardInnerWrapper } from '../styled/EventStyles';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const BreadcrumbsWrapper = styled(CardInnerWrapper)`
   margin-bottom: 20px;
@@ -66,6 +58,17 @@ const EditPersonInfoForm = ({ match } :Props) => {
   const participantNeighbors :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT_NEIGHBORS]));
   const participant :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT]));
   const personName :string = getPersonFullName(participant);
+  const loadPersonInfoReqState = useSelector((store) => store.getIn([
+    PROFILE.PROFILE,
+    ACTIONS,
+    LOAD_PERSON_INFO_FOR_EDIT,
+    REQUEST_STATE
+  ]));
+
+  if (requestIsPending(loadPersonInfoReqState)) {
+    return <Spinner size="2x" />;
+  }
+
   return (
     <>
       <BreadcrumbsWrapper>
@@ -87,12 +90,12 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <EditStateIdForm participant={participant} participantNeighbors={participantNeighbors} />
+            <EditPersonDetailsForm participant={participant} participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
         <Card>
           <CardSegment padding="0">
-            <EditPersonDetailsForm participant={participant} participantNeighbors={participantNeighbors} />
+            <EditStateIdForm participant={participant} participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
         <Card>
