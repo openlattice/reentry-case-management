@@ -6,7 +6,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { getEntityProperties } from '../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { PEOPLE, PERSON_DETAILS } = APP_TYPE_FQNS;
+const { PEOPLE, PERSON_DETAILS, STATE_ID } = APP_TYPE_FQNS;
 const {
   COUNTY_ID,
   DOB,
@@ -16,6 +16,7 @@ const {
   LAST_NAME,
   MARITAL_STATUS,
   MIDDLE_NAME,
+  OL_ID_FQN,
   PERSON_SEX,
   RACE,
 } = PROPERTY_TYPE_FQNS;
@@ -68,7 +69,21 @@ const getPersonDetailsFormData = (participantNeighborMap :Map) :Object => {
   return originalFormData;
 };
 
+const getStateIdFormData = (participantNeighborMap :Map) :Object => {
+  if (participantNeighborMap.isEmpty()) return {};
+  const personId :List = participantNeighborMap.get(STATE_ID, List());
+  if (personId.isEmpty()) return {};
+  const { [OL_ID_FQN]: opusNumber } = getEntityProperties(personId.get(0) || Map(), [OL_ID_FQN]);
+  const originalFormData = {
+    [getPageSectionKey(1, 1)]: {
+      [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: opusNumber,
+    }
+  };
+  return originalFormData;
+};
+
 export {
   getPersonDetailsFormData,
   getPersonFormData,
+  getStateIdFormData,
 };

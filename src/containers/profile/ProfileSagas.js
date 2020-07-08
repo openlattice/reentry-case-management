@@ -35,7 +35,11 @@ import {
 } from './ProfileActions';
 import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
 import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
-import { getPersonDetailsFormData, getPersonFormData } from './utils/EditPersonUtils';
+import {
+  getPersonDetailsFormData,
+  getPersonFormData,
+  getStateIdFormData,
+} from './utils/EditPersonUtils';
 
 import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -322,12 +326,13 @@ function* loadPersonInfoForEditWorker(action :SequenceAction) :Generator<*, *, *
     const getParticipantNeighborsResponse = workerResponses[0];
     const participantNeighborMap :Map = getParticipantNeighborsResponse.data;
     const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighborMap);
+    const stateIdFormData :Object = getStateIdFormData(participantNeighborMap);
 
     const getParticipantResponse = workerResponses[1];
     const participant :Map = fromJS(getParticipantResponse.data);
     const personFormData :Object = getPersonFormData(participant);
 
-    yield put(loadPersonInfoForEdit.success(id, { personDetailsFormData, personFormData }));
+    yield put(loadPersonInfoForEdit.success(id, { personDetailsFormData, personFormData, stateIdFormData }));
   }
   catch (error) {
     LOG.error(action.type, error);
