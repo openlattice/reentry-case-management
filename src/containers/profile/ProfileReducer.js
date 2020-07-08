@@ -59,6 +59,8 @@ const {
   EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
+  PERSON_DETAILS_FORM_DATA,
+  PERSON_FORM_DATA,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
 const {
@@ -125,6 +127,8 @@ const INITIAL_STATE :Map = fromJS({
   [EMERGENCY_CONTACT_INFO_BY_CONTACT]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
+  [PERSON_DETAILS_FORM_DATA]: Map(),
+  [PERSON_FORM_DATA]: Map(),
   [PROVIDER_BY_STATUS_EKID]: Map(),
 });
 
@@ -499,7 +503,14 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         REQUEST: () => state
           .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id], action)
           .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state.setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const { value } = action;
+          const { personDetailsFormData, personFormData } = value;
+          return state
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .set(PERSON_FORM_DATA, fromJS(personFormData))
+            .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state.setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id]),
       });
