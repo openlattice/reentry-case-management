@@ -30,7 +30,12 @@ import { LOAD_PERSON_INFO_FOR_EDIT, loadPersonInfoForEdit } from '../ProfileActi
 import { CardInnerWrapper } from '../styled/EventStyles';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 
-const { PARTICIPANT, PARTICIPANT_NEIGHBORS, PERSON_FORM_DATA } = PROFILE;
+const {
+  PARTICIPANT,
+  PARTICIPANT_NEIGHBORS,
+  PERSON_FORM_DATA,
+  PERSON_DETAILS_FORM_DATA,
+} = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const BreadcrumbsWrapper = styled(CardInnerWrapper)`
@@ -58,6 +63,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
   const participantNeighbors :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT_NEIGHBORS]));
   const participant :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT]));
   const personFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_FORM_DATA]));
+  const personDetailsFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_DETAILS_FORM_DATA]));
   const personName :string = getPersonFullName(participant);
   const loadPersonInfoReqState = useSelector((store) => store.getIn([
     PROFILE.PROFILE,
@@ -91,7 +97,10 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <EditPersonDetailsForm participant={participant} participantNeighbors={participantNeighbors} />
+            <EditPersonDetailsForm
+                participant={participant}
+                participantNeighbors={participantNeighbors}
+                personDetailsFormData={personDetailsFormData} />
           </CardSegment>
         </Card>
         <Card>
