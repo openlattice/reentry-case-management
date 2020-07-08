@@ -1,9 +1,8 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Form } from 'lattice-fabricate';
 import {
   Breadcrumbs,
   Card,
@@ -14,13 +13,10 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
+import EditEducationForm from './EditEducationForm';
 import EditPersonDetailsForm from './EditPersonDetailsForm';
 import EditPersonForm from './EditPersonForm';
 import EditStateIdForm from './EditStateIdForm';
-import {
-  educationSchema,
-  educationUiSchema,
-} from './schemas/EditPersonSchemas';
 
 import * as Routes from '../../../core/router/Routes';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
@@ -49,17 +45,12 @@ type Props = {
 const EditPersonInfoForm = ({ match } :Props) => {
   const { params } = match;
   const { participantId } = params;
-  const [formData, updateFormData] = useState({});
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(loadPersonInfoForEdit({ participantEKID: participantId }));
   }, [dispatch, participantId]);
 
-  const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
-  };
-  const onSubmit = () => {};
   const participantNeighbors :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT_NEIGHBORS]));
   const participant :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT]));
   const personFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_FORM_DATA]));
@@ -110,12 +101,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <Form
-                formData={formData}
-                onChange={onChange}
-                onSubmit={onSubmit}
-                schema={educationSchema}
-                uiSchema={educationUiSchema} />
+            <EditEducationForm participant={participant} participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
       </CardStack>
