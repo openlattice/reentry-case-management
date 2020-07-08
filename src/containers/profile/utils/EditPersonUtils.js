@@ -6,13 +6,19 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { getEntityProperties } from '../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { PEOPLE, PERSON_DETAILS, STATE_ID } = APP_TYPE_FQNS;
+const {
+  EDUCATION,
+  PEOPLE,
+  PERSON_DETAILS,
+  STATE_ID,
+} = APP_TYPE_FQNS;
 const {
   COUNTY_ID,
   DOB,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
+  HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
   MARITAL_STATUS,
   MIDDLE_NAME,
@@ -82,7 +88,24 @@ const getStateIdFormData = (participantNeighborMap :Map) :Object => {
   return originalFormData;
 };
 
+const getEducationFormData = (participantNeighborMap :Map) :Object => {
+  if (participantNeighborMap.isEmpty()) return {};
+  const education :List = participantNeighborMap.get(EDUCATION, List());
+  if (education.isEmpty()) return {};
+  const { [HIGHEST_EDUCATION_LEVEL]: highestEducationLevel } = getEntityProperties(
+    education.get(0) || Map(),
+    [HIGHEST_EDUCATION_LEVEL]
+  );
+  const originalFormData = {
+    [getPageSectionKey(1, 1)]: {
+      [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: highestEducationLevel,
+    }
+  };
+  return originalFormData;
+};
+
 export {
+  getEducationFormData,
   getPersonDetailsFormData,
   getPersonFormData,
   getStateIdFormData,
