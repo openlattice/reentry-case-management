@@ -34,14 +34,18 @@ import {
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
 import {
+  EDIT_EDUCATION,
   EDIT_PERSON,
   EDIT_PERSON_DETAILS,
   EDIT_STATE_ID,
+  SUBMIT_EDUCATION,
   SUBMIT_PERSON_DETAILS,
   SUBMIT_STATE_ID,
+  editEducation,
   editPerson,
   editPersonDetails,
   editStateId,
+  submitEducation,
   submitPersonDetails,
   submitStateId,
 } from './person/EditPersonActions';
@@ -58,7 +62,12 @@ import {
   createNewFollowUp,
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
-import { getPersonDetailsFormData, getPersonFormData, getStateIdFormData } from './utils/EditPersonUtils';
+import {
+  getEducationFormData,
+  getPersonDetailsFormData,
+  getPersonFormData,
+  getStateIdFormData,
+} from './utils/EditPersonUtils';
 
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
@@ -79,6 +88,7 @@ const {
 } = PROFILE;
 const {
   CONTACT_INFO,
+  EDUCATION,
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
@@ -100,6 +110,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_COURT_HEARINGS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_EDUCATION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_EMERGENCY_CONTACTS]: {
@@ -144,6 +157,9 @@ const INITIAL_STATE :Map = fromJS({
     [LOAD_PERSON_INFO_FOR_EDIT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SUBMIT_EDUCATION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [SUBMIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -152,6 +168,7 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [CONTACT_NAME_BY_PROVIDER_EKID]: Map(),
+  [EDUCATION_FORM_DATA]: Map(),
   [EMERGENCY_CONTACT_INFO_BY_CONTACT]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
@@ -285,6 +302,28 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_COURT_HEARINGS, action.id]),
+      });
+    }
+
+    case editEducation.case(action.type): {
+      return editEducation.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_EDUCATION, action.id], action)
+          .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedEducationData = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .updateIn([EDUCATION, 0], Map(), (oldEducation) => oldEducation
+              .mergeWith((oldVal, newVal) => newVal, updatedEducationData));
+          const educationFormData :Object = getEducationFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
+            .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_EDUCATION, action.id]),
       });
     }
 
@@ -474,7 +513,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => {
           const updatedStateIdData = action.value;
           const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
-            .updateIn([STATE_ID, 0], Map(), (oldPersonDetails) => oldPersonDetails
+            .updateIn([STATE_ID, 0], Map(), (oldStateId) => oldStateId
               .mergeWith((oldVal, newVal) => newVal, updatedStateIdData));
           const stateIdFormData :Object = getStateIdFormData(participantNeighbors);
           return state
@@ -643,6 +682,27 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
             )
             .setIn([ACTIONS, RECORD_ENROLLMENT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
+      });
+    }
+
+    case submitEducation.case(action.type): {
+      return submitEducation.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_EDUCATION, action.id], action)
+          .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const education = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .set(EDUCATION, List([education]));
+          const educationFormData :Object = getEducationFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
+            .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_EDUCATION, action.id]),
       });
     }
 

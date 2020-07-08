@@ -2,6 +2,12 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const EDIT_EDUCATION :'EDIT_EDUCATION' = 'EDIT_EDUCATION';
+const editEducation :RequestSequence = newRequestSequence(EDIT_EDUCATION);
+
+const SUBMIT_EDUCATION :'SUBMIT_EDUCATION' = 'SUBMIT_EDUCATION';
+const submitEducation :RequestSequence = newRequestSequence(SUBMIT_EDUCATION);
+
 const EDIT_PERSON :'EDIT_PERSON' = 'EDIT_PERSON';
 const editPerson :RequestSequence = newRequestSequence(EDIT_PERSON);
 
@@ -18,14 +24,18 @@ const SUBMIT_STATE_ID :'SUBMIT_STATE_ID' = 'SUBMIT_STATE_ID';
 const submitStateId :RequestSequence = newRequestSequence(SUBMIT_STATE_ID);
 
 export {
+  EDIT_EDUCATION,
   EDIT_PERSON,
   EDIT_PERSON_DETAILS,
   EDIT_STATE_ID,
+  SUBMIT_EDUCATION,
   SUBMIT_PERSON_DETAILS,
   SUBMIT_STATE_ID,
+  editEducation,
   editPerson,
   editPersonDetails,
   editStateId,
+  submitEducation,
   submitPersonDetails,
   submitStateId,
 };
