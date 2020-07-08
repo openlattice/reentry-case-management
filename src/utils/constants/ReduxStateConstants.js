@@ -64,6 +64,7 @@ const PROFILE :Object = {
   PERSON_FORM_DATA: 'personFormData',
   PROFILE: 'profile',
   PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
+  STATE_ID_FORM_DATA: 'stateIdFormData',
 };
 
 const RELEASES :Object = {
