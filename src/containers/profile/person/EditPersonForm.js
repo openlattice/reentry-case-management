@@ -1,8 +1,8 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Map } from 'immutable';
-import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Form } from 'lattice-fabricate';
 import { Card, CardSegment, Spinner } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -11,8 +11,8 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { EDIT_PERSON, editPerson } from './EditPersonActions';
 import { personSchema, personUiSchema } from './schemas/EditPersonSchemas';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   APP,
@@ -21,18 +21,7 @@ import {
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
 
-const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { PEOPLE } = APP_TYPE_FQNS;
-const {
-  COUNTY_ID,
-  DOB,
-  ETHNICITY,
-  FIRST_NAME,
-  LAST_NAME,
-  MIDDLE_NAME,
-  PERSON_SEX,
-  RACE,
-} = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
@@ -43,6 +32,7 @@ type Props = {
   };
   entitySetIds :Map;
   participant :Map;
+  personFormData :Map;
   propertyTypeIds :Map;
   requestStates :{
     EDIT_PERSON :RequestState;
@@ -53,40 +43,25 @@ const EditPersonForm = ({
   actions,
   entitySetIds,
   participant,
+  personFormData,
   propertyTypeIds,
   requestStates,
 } :Props) => {
 
-  const {
-    [COUNTY_ID]: countyID,
-    [DOB]: dobISO,
-    [ETHNICITY]: ethnicity,
-    [FIRST_NAME]: firstName,
-    [MIDDLE_NAME]: middleName,
-    [LAST_NAME]: lastName,
-    [PERSON_SEX]: sex,
-    [RACE]: race,
-  } = getEntityProperties(
-    participant,
-    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, PERSON_SEX, RACE],
-    ''
-  );
-  const originalFormData = {
-    [getPageSectionKey(1, 1)]: {
-      [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: lastName,
-      [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: firstName,
-      [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: middleName,
-      [getEntityAddressKey(0, PEOPLE, DOB)]: dobISO,
-      [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: countyID,
-      [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: sex,
-      [getEntityAddressKey(0, PEOPLE, RACE)]: race,
-      [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: ethnicity,
-    }
-  };
-  const [formData, updateFormData] = useState(originalFormData);
+  const [formData, updateFormData] = useState(personFormData.toJS());
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
   };
+
+  const mounted = useRef();
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+    }
+    else {
+      updateFormData(personFormData.toJS());
+    }
+  }, [personFormData]);
 
   const personEKID :UUID = getEKID(participant);
   const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
