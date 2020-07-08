@@ -47,6 +47,7 @@ import {
   createNewFollowUp,
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
+import { getPersonFormData } from './utils/EditPersonUtils';
 
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
@@ -346,8 +347,10 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           const updatedPersonData = action.value;
           const participant :Map = state.get(PARTICIPANT, Map())
             .mergeWith((oldVal, newVal) => newVal, updatedPersonData);
+          const personFormData :Object = getPersonFormData(participant);
           return state
             .set(PARTICIPANT, participant)
+            .set(PERSON_FORM_DATA, fromJS(personFormData))
             .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
