@@ -33,7 +33,14 @@ import {
 } from './court/CourtActions';
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
-import { EDIT_PERSON, editPerson } from './person/EditPersonActions';
+import {
+  EDIT_PERSON,
+  EDIT_PERSON_DETAILS,
+  SUBMIT_PERSON_DETAILS,
+  editPerson,
+  editPersonDetails,
+  submitPersonDetails,
+} from './person/EditPersonActions';
 import {
   EDIT_EVENT,
   EDIT_RELEASE_INFO,
@@ -47,7 +54,7 @@ import {
   createNewFollowUp,
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
-import { getPersonFormData } from './utils/EditPersonUtils';
+import { getPersonDetailsFormData, getPersonFormData } from './utils/EditPersonUtils';
 
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
@@ -74,6 +81,7 @@ const {
   LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
+  PERSON_DETAILS,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
   SEX_OFFENDER_REGISTRATION_LOCATION,
@@ -99,6 +107,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_PERSON]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_PERSON_DETAILS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -121,6 +132,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [LOAD_PERSON_INFO_FOR_EDIT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -359,6 +373,28 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editPersonDetails.case(action.type): {
+      return editPersonDetails.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedPersonDetailsData = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .updateIn([PERSON_DETAILS, 0], Map(), (oldPersonDetails) => oldPersonDetails
+              .mergeWith((oldVal, newVal) => newVal, updatedPersonDetailsData));
+          const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
     case editReleaseInfo.case(action.type): {
       return editReleaseInfo.reducer(state, action, {
         REQUEST: () => state
@@ -564,6 +600,27 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
             )
             .setIn([ACTIONS, RECORD_ENROLLMENT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
+      });
+    }
+
+    case submitPersonDetails.case(action.type): {
+      return submitPersonDetails.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id], action)
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const personDetails = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .set(PERSON_DETAILS, List([personDetails]));
+          const personDetailsFormData :Object = getPersonFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id]),
       });
     }
 
