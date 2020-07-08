@@ -67,6 +67,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
+  EDUCATION,
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   HEARINGS,
@@ -310,9 +311,11 @@ function* loadPersonInfoForEditWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getAppFromState);
     const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
     const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
+    const educationESID :UUID = getESIDFromApp(app, EDUCATION);
     const neighborsToGet = [
       { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: stateIdESID },
+      { direction: DST, neighborESID: educationESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
@@ -370,31 +373,33 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const { participantEKID } = value;
 
     const app = yield select(getAppFromState);
-    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
-    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    const educationESID :UUID = getESIDFromApp(app, EDUCATION);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
     const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
-    const addressESID :UUID = getESIDFromApp(app, LOCATION);
-    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
-    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
     const neighborsToGet = [
-      { direction: DST, neighborESID: personDetailsESID },
-      { direction: DST, neighborESID: needsAssessmentESID },
+      { direction: DST, neighborESID: addressESID },
       { direction: DST, neighborESID: contactInfoESID },
+      { direction: DST, neighborESID: educationESID },
       { direction: DST, neighborESID: enrollmentStatusESID },
+      { direction: DST, neighborESID: hearingsESID },
       { direction: DST, neighborESID: manualJailStaysESID },
+      { direction: DST, neighborESID: needsAssessmentESID },
+      { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: referralToReentryESID },
       { direction: DST, neighborESID: sexOffenderESID },
       { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
-      { direction: DST, neighborESID: addressESID },
-      { direction: SRC, neighborESID: emergencyContactESID },
-      { direction: DST, neighborESID: hearingsESID },
       { direction: DST, neighborESID: stateIdESID },
+      { direction: SRC, neighborESID: emergencyContactESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),

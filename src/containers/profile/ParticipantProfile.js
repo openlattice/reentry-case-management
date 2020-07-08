@@ -62,11 +62,14 @@ const participantGridLabels = OrderedMap({
   firstName: 'First name',
   dob: 'Date of birth',
   age: 'Age',
+  sex: 'Sex',
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
   countyID: 'County ID number',
   opusNumber: 'OPUS number',
+  maritalStatus: 'Marital status',
+  education: 'Education',
 });
 
 const ProfileCardStack = styled(CardStack)`
