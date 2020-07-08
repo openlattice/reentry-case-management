@@ -27,6 +27,7 @@ import { CardInnerWrapper } from '../styled/EventStyles';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 
 const {
+  EDUCATION_FORM_DATA,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PERSON_FORM_DATA,
@@ -57,6 +58,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
   const personFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_FORM_DATA]));
   const personDetailsFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_DETAILS_FORM_DATA]));
   const stateIdFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, STATE_ID_FORM_DATA]));
+  const educationFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, EDUCATION_FORM_DATA]));
   const personName :string = getPersonFullName(participant);
   const loadPersonInfoReqState = useSelector((store) => store.getIn([
     PROFILE.PROFILE,
@@ -106,7 +108,10 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <EditEducationForm participant={participant} participantNeighbors={participantNeighbors} />
+            <EditEducationForm
+                educationFormData={educationFormData}
+                participant={participant}
+                participantNeighbors={participantNeighbors} />
           </CardSegment>
         </Card>
       </CardStack>
