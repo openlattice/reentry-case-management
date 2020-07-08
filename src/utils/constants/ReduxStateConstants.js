@@ -60,6 +60,8 @@ const PROFILE :Object = {
   EMERGENCY_CONTACT_INFO_BY_CONTACT: 'emergencyContactInfoByContact',
   PARTICIPANT: 'participant',
   PARTICIPANT_NEIGHBORS: 'participantNeighbors',
+  PERSON_DETAILS_FORM_DATA: 'personDetailsFormData',
+  PERSON_FORM_DATA: 'personFormData',
   PROFILE: 'profile',
   PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
 };
