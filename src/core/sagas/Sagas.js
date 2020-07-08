@@ -53,9 +53,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CourtSagas.editCourtHearingsWatcher),
 
     // EditPersonSagas
-    fork(EditPersonSagas.editPersonWatcher),
     fork(EditPersonSagas.editPersonDetailsWatcher),
+    fork(EditPersonSagas.editPersonWatcher),
+    fork(EditPersonSagas.editStateIdWatcher),
     fork(EditPersonSagas.submitPersonDetailsWatcher),
+    fork(EditPersonSagas.submitStateIdWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
