@@ -36,6 +36,7 @@ import {
 import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
 import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
 import {
+  getEducationFormData,
   getPersonDetailsFormData,
   getPersonFormData,
   getStateIdFormData,
@@ -327,12 +328,18 @@ function* loadPersonInfoForEditWorker(action :SequenceAction) :Generator<*, *, *
     const participantNeighborMap :Map = getParticipantNeighborsResponse.data;
     const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighborMap);
     const stateIdFormData :Object = getStateIdFormData(participantNeighborMap);
+    const educationFormData :Object = getEducationFormData(participantNeighborMap);
 
     const getParticipantResponse = workerResponses[1];
     const participant :Map = fromJS(getParticipantResponse.data);
     const personFormData :Object = getPersonFormData(participant);
 
-    yield put(loadPersonInfoForEdit.success(id, { personDetailsFormData, personFormData, stateIdFormData }));
+    yield put(loadPersonInfoForEdit.success(id, {
+      educationFormData,
+      personDetailsFormData,
+      personFormData,
+      stateIdFormData,
+    }));
   }
   catch (error) {
     LOG.error(action.type, error);

@@ -68,6 +68,7 @@ import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EDUCATION_FORM_DATA,
   EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
@@ -579,8 +580,14 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const { value } = action;
-          const { personDetailsFormData, personFormData, stateIdFormData } = value;
+          const {
+            educationFormData,
+            personDetailsFormData,
+            personFormData,
+            stateIdFormData,
+          } = value;
           return state
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
             .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
             .set(PERSON_FORM_DATA, fromJS(personFormData))
             .set(STATE_ID_FORM_DATA, fromJS(stateIdFormData))
