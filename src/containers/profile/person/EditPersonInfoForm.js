@@ -31,6 +31,7 @@ const {
   PARTICIPANT_NEIGHBORS,
   PERSON_FORM_DATA,
   PERSON_DETAILS_FORM_DATA,
+  STATE_ID_FORM_DATA,
 } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
@@ -55,6 +56,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
   const participant :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PARTICIPANT]));
   const personFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_FORM_DATA]));
   const personDetailsFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, PERSON_DETAILS_FORM_DATA]));
+  const stateIdFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, STATE_ID_FORM_DATA]));
   const personName :string = getPersonFullName(participant);
   const loadPersonInfoReqState = useSelector((store) => store.getIn([
     PROFILE.PROFILE,
@@ -96,7 +98,10 @@ const EditPersonInfoForm = ({ match } :Props) => {
         </Card>
         <Card>
           <CardSegment padding="0">
-            <EditStateIdForm participant={participant} participantNeighbors={participantNeighbors} />
+            <EditStateIdForm
+                participant={participant}
+                participantNeighbors={participantNeighbors}
+                stateIdFormData={stateIdFormData} />
           </CardSegment>
         </Card>
         <Card>
