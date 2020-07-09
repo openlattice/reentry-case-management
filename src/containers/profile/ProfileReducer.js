@@ -314,7 +314,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           const updatedEducationData = action.value;
           const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
             .updateIn([EDUCATION, 0], Map(), (oldEducation) => oldEducation
-              .mergeWith((oldVal, newVal) => newVal, updatedEducationData));
+              .merge(updatedEducationData));
           const educationFormData :Object = getEducationFormData(participantNeighbors);
           return state
             .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
@@ -413,7 +413,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         SUCCESS: () => {
           const updatedPersonData = action.value;
           const participant :Map = state.get(PARTICIPANT, Map())
-            .mergeWith((oldVal, newVal) => newVal, updatedPersonData);
+            .merge(updatedPersonData);
           const personFormData :Object = getPersonFormData(participant);
           return state
             .set(PARTICIPANT, participant)
@@ -435,7 +435,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           const updatedPersonDetailsData = action.value;
           const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
             .updateIn([PERSON_DETAILS, 0], Map(), (oldPersonDetails) => oldPersonDetails
-              .mergeWith((oldVal, newVal) => newVal, updatedPersonDetailsData));
+              .merge(updatedPersonDetailsData));
           const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighbors);
           return state
             .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
@@ -514,7 +514,7 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           const updatedStateIdData = action.value;
           const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
             .updateIn([STATE_ID, 0], Map(), (oldStateId) => oldStateId
-              .mergeWith((oldVal, newVal) => newVal, updatedStateIdData));
+              .merge(updatedStateIdData));
           const stateIdFormData :Object = getStateIdFormData(participantNeighbors);
           return state
             .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
