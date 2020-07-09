@@ -2,6 +2,7 @@
 import {
   List,
   Map,
+  get,
   getIn,
   isImmutable,
   set
@@ -9,8 +10,9 @@ import {
 import { Models } from 'lattice';
 
 import { isDefined } from './LangUtils';
-import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from './constants/ReduxStateConstants';
+
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
@@ -49,7 +51,8 @@ const getFirstEntityValue = (
 
 const getEntityProperties = (
   entityObj :Map,
-  propertyList :FullyQualifiedName[]
+  propertyList :FullyQualifiedName[],
+  defaultValue ? :string = ''
 ) :{ [FullyQualifiedName]:any } => {
 
   let returnPropertyFields = {};
@@ -60,7 +63,7 @@ const getEntityProperties = (
         returnPropertyFields = set(returnPropertyFields, propertyType, value.toJS());
       }
       else {
-        const property = getFirstEntityValue(entityObj, propertyType, '');
+        const property = getFirstEntityValue(entityObj, propertyType, defaultValue);
         returnPropertyFields = set(returnPropertyFields, propertyType, property);
       }
     });
@@ -95,8 +98,11 @@ const getNeighborESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [NEIG
 
 const getAssociationESID = (neighbor :Map | Object) :UUID => (getIn(neighbor, [ASSOCIATION_ENTITY_SET, ID]));
 
+const getAssociationDetails = (neighborObj :Map | Object) :Map => get(neighborObj, ASSOCIATION_DETAILS, Map());
+
 export {
   ASSOCIATION_DETAILS,
+  getAssociationDetails,
   getAssociationESID,
   getEKID,
   getESIDFromApp,

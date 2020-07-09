@@ -15,6 +15,8 @@ const APP_TYPE_FQNS :Object = {
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
   COURT_CASES: new FullyQualifiedName('app.courtcases'),
   EDUCATION: new FullyQualifiedName('app.education'),
+  EMERGENCY_CONTACT: new FullyQualifiedName('app.emergencycontact'), // general.person
+  EMERGENCY_CONTACT_INFO: new FullyQualifiedName('app.emergencycontactinformation'),
   EMPLOYED_BY: new FullyQualifiedName('app.employedby'),
   EMPLOYEE: new FullyQualifiedName('app.employee'),
   EMPLOYMENT: new FullyQualifiedName('app.employment'),
@@ -25,6 +27,7 @@ const APP_TYPE_FQNS :Object = {
   HEARINGS: new FullyQualifiedName('app.hearings'),
   INMATES: new FullyQualifiedName('app.inmate'),
   IS: new FullyQualifiedName('app.is_new'),
+  IS_EMERGENCY_CONTACT_FOR: new FullyQualifiedName('app.isemergencycontactfor'),
   IS_REGISTERED_SEX_OFFENDER_IN: new FullyQualifiedName('app.isregisteredsexoffenderin'),
   JAILS_PRISONS: new FullyQualifiedName('app.jailsorprisons'),
   JAIL_STAYS: new FullyQualifiedName('app.jailstays'),
@@ -64,6 +67,7 @@ const APP_TYPE_FQNS :Object = {
   REPORTED: new FullyQualifiedName('app.reported'),
   REPRESENTED_BY: new FullyQualifiedName('app.representedby'),
   SEX_OFFENDER: new FullyQualifiedName('app.sexoffender'),
+  SEX_OFFENDER_REGISTRATION_LOCATION: new FullyQualifiedName('app.sexoffenderregistrationlocation'), // ol.location
   STATE_ID: new FullyQualifiedName('app.identification'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
 };
@@ -107,6 +111,7 @@ const PROPERTY_TYPE_FQNS = {
   REASON: new FullyQualifiedName('ol.reason'),
   RECOGNIZED_END_DATETIME: new FullyQualifiedName('ol.recognizedenddate'),
   REGISTERED_FLAG: new FullyQualifiedName('ol.registeredflag'),
+  RELATIONSHIP: new FullyQualifiedName('ol.relationship'),
   RELEASE_DATETIME: new FullyQualifiedName('ol.releasedatetime'),
   SEX_OFFENDER: new FullyQualifiedName('ol.sexoffender'),
   SOURCE: new FullyQualifiedName('ol.source'),

@@ -7,6 +7,8 @@ import { AuthSagas } from 'lattice-auth';
 import { SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as ContactInfoSagas from '../../containers/profile/contacts/ContactInfoSagas';
+import * as CourtSagas from '../../containers/profile/court/CourtSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
@@ -19,6 +21,7 @@ import * as ProvidersSagas from '../../containers/providers/ProvidersSagas';
 import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
+import * as SexOffenderSagas from '../../containers/profile/sexoffender/SexOffenderSagas';
 import * as TasksSagas from '../../containers/tasks/TasksSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -37,6 +40,16 @@ export default function* sagas() :Generator<*, *, *> {
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
     fork(AppSagas.switchOrganizationWatcher),
+
+    // ContactInfoSagas
+    fork(ContactInfoSagas.deleteEmergencyContactWatcher),
+    fork(ContactInfoSagas.editContactInfoWatcher),
+    fork(ContactInfoSagas.editEmergencyContactsWatcher),
+    fork(ContactInfoSagas.getEmergencyContactInfoWatcher),
+
+    // CourtSagas
+    fork(CourtSagas.deleteCourtHearingWatcher),
+    fork(CourtSagas.editCourtHearingsWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
@@ -98,6 +111,9 @@ export default function* sagas() :Generator<*, *, *> {
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
     fork(RoutingSagas.goToRouteWatcher),
+
+    // SexOffenderSagas
+    fork(SexOffenderSagas.editSexOffenderWatcher),
 
     // TasksSagas
     fork(TasksSagas.getPeopleForNewTaskFormWatcher),

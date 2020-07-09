@@ -1,7 +1,10 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { faUser } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
   Button,
@@ -13,17 +16,18 @@ import {
   DataGrid,
   Spinner,
 } from 'lattice-ui-kit';
-import { faUser } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as Routes from '../../core/router/Routes';
-import RecordEventModal from './events/RecordEventModal';
+import ContactInfoCard from './contacts/ContactInfoCard';
+import CourtDatesCard from './court/CourtDatesCard';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
+import RecordEventModal from './events/RecordEventModal';
+import SexOffenderCard from './sexoffender/SexOffenderCard';
+import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
@@ -32,25 +36,27 @@ import {
   NameHeader,
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
-import { getEKID } from '../../utils/DataUtils';
+
+import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { LOAD_PROFILE, loadProfile } from './ProfileActions';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { getEKID } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
 
-const participantGridLabels = Map({
+const participantGridLabels = OrderedMap({
   lastName: 'Last name',
   firstName: 'First name',
   dob: 'Date of birth',
@@ -58,7 +64,8 @@ const participantGridLabels = Map({
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
-  preferredContact: 'Pref. Contact',
+  countyID: 'County ID number',
+  opusNumber: 'OPUS number',
 });
 
 const ProfileCardStack = styled(CardStack)`
@@ -88,6 +95,7 @@ type Props = {
     loadProfile :RequestSequence;
   };
   contactNameByProviderEKID :Map;
+  emergencyContactInfoByContact :Map;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
@@ -142,6 +150,7 @@ class ParticipantProfile extends Component<Props, State> {
   render() {
     const {
       contactNameByProviderEKID,
+      emergencyContactInfoByContact,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -193,11 +202,17 @@ class ParticipantProfile extends Component<Props, State> {
               </CardInnerWrapper>
             </CardSegment>
           </Card>
+          <ContactInfoCard
+              emergencyContactInfoByContact={emergencyContactInfoByContact}
+              participantNeighbors={participantNeighbors}
+              personEKID={personEKID} />
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <CourtDatesCard participantNeighbors={participantNeighbors} />
+          <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
         <RecordEventModal
             isVisible={eventModalIsOpen}
@@ -212,6 +227,7 @@ const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
+    [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),
