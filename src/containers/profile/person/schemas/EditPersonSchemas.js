@@ -66,7 +66,6 @@ const personSchema :Object = {
           type: 'string',
           title: 'Sex',
           enum: SEXES,
-          enumNames: SEXES
         },
         [getEntityAddressKey(0, PEOPLE, RACE)]: {
           type: 'string',
