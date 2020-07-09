@@ -12,7 +12,9 @@ const RELEASES :string = '/releases';
 const REPORTS :string = '/reports';
 const TASKS :string = '/tasks';
 
-const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
+const PARTICIPANT_ID :':participantId' = ':participantId';
+
+const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
 
@@ -21,6 +23,7 @@ export {
   LOGIN,
   NEW_INTAKE,
   PARTICIPANTS,
+  PARTICIPANT_ID,
   PARTICIPANT_PROFILE,
   PARTICIPANT_TASK_MANAGER,
   PROVIDERS,

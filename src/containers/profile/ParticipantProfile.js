@@ -16,6 +16,7 @@ import {
   EditButton,
   Spinner,
 } from 'lattice-ui-kit';
+import { RoutingUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { Match } from 'react-router';
@@ -47,6 +48,7 @@ import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { getParamFromMatch } = RoutingUtils;
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
@@ -144,21 +146,19 @@ class ParticipantProfile extends Component<Props, State> {
   goToEditPersonPage = () => {
     const {
       actions,
-      match: {
-        params: { participantId }
-      }
+      match,
     } = this.props;
-    if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':participantId', participantId));
+    const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
+    if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(Routes.PARTICIPANT_ID, participantId));
   };
 
   goToTaskManager = () => {
     const {
       actions,
-      match: {
-        params: { participantId }
-      }
+      match,
     } = this.props;
-    if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', participantId));
+    const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
+    if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(Routes.PARTICIPANT_ID, participantId));
   }
 
   render() {
