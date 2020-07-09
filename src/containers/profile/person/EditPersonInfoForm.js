@@ -10,7 +10,9 @@ import {
   CardStack,
   Spinner,
 } from 'lattice-ui-kit';
+import { useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
+import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import EditEducationForm from './EditEducationForm';
@@ -34,7 +36,7 @@ const {
   PERSON_DETAILS_FORM_DATA,
   STATE_ID_FORM_DATA,
 } = PROFILE;
-const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ACTIONS } = SHARED;
 
 const BreadcrumbsWrapper = styled(CardInnerWrapper)`
   margin-bottom: 20px;
@@ -60,12 +62,11 @@ const EditPersonInfoForm = ({ match } :Props) => {
   const stateIdFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, STATE_ID_FORM_DATA]));
   const educationFormData :Map = useSelector((store) => store.getIn([PROFILE.PROFILE, EDUCATION_FORM_DATA]));
   const personName :string = getPersonFullName(participant);
-  const loadPersonInfoReqState = useSelector((store) => store.getIn([
+  const loadPersonInfoReqState = useRequestState([
     PROFILE.PROFILE,
     ACTIONS,
     LOAD_PERSON_INFO_FOR_EDIT,
-    REQUEST_STATE
-  ]));
+  ]) || RequestStates.STANDBY;
 
   if (requestIsPending(loadPersonInfoReqState)) {
     return <Spinner size="2x" />;

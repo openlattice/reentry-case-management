@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { List, Map } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardSegment, Spinner } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -19,7 +20,7 @@ import { educationSchema, educationUiSchema } from './schemas/EditPersonSchemas'
 
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../../utils/DataUtils';
-import { reduceRequestStates, requestIsPending } from '../../../utils/RequestStateUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
@@ -28,6 +29,7 @@ import {
 } from '../../../utils/constants/ReduxStateConstants';
 
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
+const { reduceRequestStates } = ReduxUtils;
 const { EDUCATION, HAS, PEOPLE } = APP_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
