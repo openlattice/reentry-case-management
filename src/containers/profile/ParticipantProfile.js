@@ -9,13 +9,14 @@ import {
   Breadcrumbs,
   Button,
   Card,
-  CardHeader,
   CardSegment,
   CardStack,
   Colors,
   DataGrid,
+  EditButton,
   Spinner,
 } from 'lattice-ui-kit';
+import { RoutingUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { Match } from 'react-router';
@@ -31,6 +32,7 @@ import { LOAD_PROFILE, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
+  CardHeaderWithButtons,
   GrayerButton,
   Header,
   NameHeader,
@@ -46,6 +48,7 @@ import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { getParamFromMatch } = RoutingUtils;
 const { NEUTRALS } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
@@ -61,11 +64,14 @@ const participantGridLabels = OrderedMap({
   firstName: 'First name',
   dob: 'Date of birth',
   age: 'Age',
+  sex: 'Sex',
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',
   countyID: 'County ID number',
   opusNumber: 'OPUS number',
+  maritalStatus: 'Marital status',
+  education: 'Education',
 });
 
 const ProfileCardStack = styled(CardStack)`
@@ -137,14 +143,22 @@ class ParticipantProfile extends Component<Props, State> {
     this.setState({ eventModalIsOpen: false });
   }
 
+  goToEditPersonPage = () => {
+    const {
+      actions,
+      match,
+    } = this.props;
+    const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
+    if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(Routes.PARTICIPANT_ID, participantId));
+  };
+
   goToTaskManager = () => {
     const {
       actions,
-      match: {
-        params: { participantId }
-      }
+      match,
     } = this.props;
-    if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', participantId));
+    const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
+    if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(Routes.PARTICIPANT_ID, participantId));
   }
 
   render() {
@@ -186,9 +200,10 @@ class ParticipantProfile extends Component<Props, State> {
         </HeaderWrapper>
         <ProfileCardStack>
           <Card>
-            <CardHeader padding="30px">
+            <CardHeaderWithButtons padding="30px" vertical={false}>
               <CardHeaderTitle>Person Profile</CardHeaderTitle>
-            </CardHeader>
+              <EditButton onClick={this.goToEditPersonPage}>Edit</EditButton>
+            </CardHeaderWithButtons>
             <CardSegment padding="30px">
               <CardInnerWrapper>
                 <PictureWrapper>

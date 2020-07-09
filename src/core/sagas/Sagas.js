@@ -10,6 +10,7 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as ContactInfoSagas from '../../containers/profile/contacts/ContactInfoSagas';
 import * as CourtSagas from '../../containers/profile/court/CourtSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as EditPersonSagas from '../../containers/profile/person/EditPersonSagas';
 import * as EventSagas from '../../containers/profile/events/EventSagas';
 import * as IntakeSagas from '../../containers/intake/IntakeSagas';
 import * as NeedsSagas from '../../containers/profile/needs/NeedsSagas';
@@ -51,6 +52,15 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CourtSagas.deleteCourtHearingWatcher),
     fork(CourtSagas.editCourtHearingsWatcher),
 
+    // EditPersonSagas
+    fork(EditPersonSagas.editEducationWatcher),
+    fork(EditPersonSagas.editPersonDetailsWatcher),
+    fork(EditPersonSagas.editPersonWatcher),
+    fork(EditPersonSagas.editStateIdWatcher),
+    fork(EditPersonSagas.submitEducationWatcher),
+    fork(EditPersonSagas.submitPersonDetailsWatcher),
+    fork(EditPersonSagas.submitStateIdWatcher),
+
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
 
@@ -81,6 +91,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),
     fork(ProfileSagas.loadProfileWatcher),
+    fork(ProfileSagas.loadPersonInfoForEditWatcher),
 
     // ProgramHistorySagas
     fork(ProgramHistorySagas.editEventWatcher),
