@@ -78,9 +78,7 @@ const EditStateIdForm = ({
 
   const stateId :List = participantNeighbors.get(STATE_ID, List());
   const stateIdEKID :UUID = getEKID(!stateId.isEmpty() ? stateId.get(0) : Map());
-  const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
-    map.setIn([STATE_ID, 0], stateIdEKID);
-  });
+  const entityIndexToIdMap :Map = Map().set(STATE_ID, [stateIdEKID]);
 
   const onSubmit = () => {
     const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds);

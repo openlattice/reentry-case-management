@@ -64,9 +64,7 @@ const EditPersonForm = ({
   }, [personFormData]);
 
   const personEKID :UUID = getEKID(participant);
-  const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
-    map.setIn([PEOPLE, 0], personEKID);
-  });
+  const entityIndexToIdMap :Map = Map().set(PEOPLE, [personEKID]);
 
   const formContext = {
     editAction: actions.editPerson,

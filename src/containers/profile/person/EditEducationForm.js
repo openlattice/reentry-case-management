@@ -78,9 +78,7 @@ const EditEducationForm = ({
 
   const education :List = participantNeighbors.get(EDUCATION, List());
   const educationEKID :UUID = getEKID(!education.isEmpty() ? education.get(0) : Map());
-  const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
-    map.setIn([EDUCATION, 0], educationEKID);
-  });
+  const entityIndexToIdMap :Map = Map().set(EDUCATION, [educationEKID]);
 
   const onSubmit = () => {
     const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds);
