@@ -10,7 +10,7 @@ import {
   CardStack,
   Spinner,
 } from 'lattice-ui-kit';
-import { useRequestState } from 'lattice-utils';
+import { RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
@@ -21,6 +21,7 @@ import EditPersonForm from './EditPersonForm';
 import EditStateIdForm from './EditStateIdForm';
 
 import * as Routes from '../../../core/router/Routes';
+import { getEKID } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
@@ -28,6 +29,7 @@ import { LOAD_PERSON_INFO_FOR_EDIT, loadPersonInfoForEdit } from '../ProfileActi
 import { CardInnerWrapper } from '../styled/EventStyles';
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 
+const { getParamFromMatch } = RoutingUtils;
 const {
   EDUCATION_FORM_DATA,
   PARTICIPANT,
@@ -47,8 +49,7 @@ type Props = {
 };
 
 const EditPersonInfoForm = ({ match } :Props) => {
-  const { params } = match;
-  const { participantId } = params;
+  const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -67,6 +68,7 @@ const EditPersonInfoForm = ({ match } :Props) => {
     ACTIONS,
     LOAD_PERSON_INFO_FOR_EDIT,
   ]) || RequestStates.STANDBY;
+  const personEKID :UUID = getEKID(participant);
 
   if (requestIsPending(loadPersonInfoReqState)) {
     return <Spinner size="2x" />;
@@ -77,10 +79,10 @@ const EditPersonInfoForm = ({ match } :Props) => {
       <BreadcrumbsWrapper>
         <Breadcrumbs>
           <Header to={Routes.PARTICIPANTS}>PARTICIPANTS</Header>
-          <NameHeader to={Routes.PARTICIPANT_PROFILE.replace(':participantId', participantId || '')}>
+          <NameHeader to={Routes.PARTICIPANT_PROFILE.replace(Routes.PARTICIPANT_ID, personEKID)}>
             { personName }
           </NameHeader>
-          <NameHeader to={Routes.EDIT_PARTICIPANT.replace(':participantId', participantId || '')}>
+          <NameHeader to={Routes.EDIT_PARTICIPANT.replace(Routes.PARTICIPANT_ID, personEKID)}>
             Edit Person Profile
           </NameHeader>
         </Breadcrumbs>
