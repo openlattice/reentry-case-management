@@ -6,6 +6,7 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
+import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -51,7 +52,7 @@ const LOG = new Logger('EditPersonSagas');
  *
  */
 
-function* editEducationWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editEducationWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -85,7 +86,7 @@ function* editEducationWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* editEducationWatcher() :Generator<*, *, *> {
+function* editEducationWatcher() :Saga<*> {
 
   yield takeEvery(EDIT_EDUCATION, editEducationWorker);
 }
@@ -96,7 +97,7 @@ function* editEducationWatcher() :Generator<*, *, *> {
  *
  */
 
-function* submitEducationWorker(action :SequenceAction) :Generator<*, *, *> {
+function* submitEducationWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -133,7 +134,7 @@ function* submitEducationWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* submitEducationWatcher() :Generator<*, *, *> {
+function* submitEducationWatcher() :Saga<*> {
 
   yield takeEvery(SUBMIT_EDUCATION, submitEducationWorker);
 }
@@ -144,7 +145,7 @@ function* submitEducationWatcher() :Generator<*, *, *> {
  *
  */
 
-function* editPersonWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editPersonWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -178,7 +179,7 @@ function* editPersonWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* editPersonWatcher() :Generator<*, *, *> {
+function* editPersonWatcher() :Saga<*> {
 
   yield takeEvery(EDIT_PERSON, editPersonWorker);
 }
@@ -189,7 +190,7 @@ function* editPersonWatcher() :Generator<*, *, *> {
  *
  */
 
-function* editPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editPersonDetailsWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -223,7 +224,7 @@ function* editPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* editPersonDetailsWatcher() :Generator<*, *, *> {
+function* editPersonDetailsWatcher() :Saga<*> {
 
   yield takeEvery(EDIT_PERSON_DETAILS, editPersonDetailsWorker);
 }
@@ -234,7 +235,7 @@ function* editPersonDetailsWatcher() :Generator<*, *, *> {
  *
  */
 
-function* submitPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* submitPersonDetailsWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -271,7 +272,7 @@ function* submitPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> 
   }
 }
 
-function* submitPersonDetailsWatcher() :Generator<*, *, *> {
+function* submitPersonDetailsWatcher() :Saga<*> {
 
   yield takeEvery(SUBMIT_PERSON_DETAILS, submitPersonDetailsWorker);
 }
@@ -282,7 +283,7 @@ function* submitPersonDetailsWatcher() :Generator<*, *, *> {
  *
  */
 
-function* editStateIdWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editStateIdWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -316,7 +317,7 @@ function* editStateIdWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* editStateIdWatcher() :Generator<*, *, *> {
+function* editStateIdWatcher() :Saga<*> {
 
   yield takeEvery(EDIT_STATE_ID, editStateIdWorker);
 }
@@ -327,7 +328,7 @@ function* editStateIdWatcher() :Generator<*, *, *> {
  *
  */
 
-function* submitStateIdWorker(action :SequenceAction) :Generator<*, *, *> {
+function* submitStateIdWorker(action :SequenceAction) :Saga<*> {
   const { id, value } = action;
 
   try {
@@ -364,7 +365,7 @@ function* submitStateIdWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* submitStateIdWatcher() :Generator<*, *, *> {
+function* submitStateIdWatcher() :Saga<*> {
 
   yield takeEvery(SUBMIT_STATE_ID, submitStateIdWorker);
 }
