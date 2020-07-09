@@ -30,19 +30,19 @@ import { NavLink } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import OpenLatticeIcon from '../../assets/images/ol_icon.png';
+import * as AppActions from './AppActions';
+
+import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import IntakeForm from '../intake/IntakeForm';
-import ParticipantsSearch from '../participants/ParticipantsSearch';
-import ParticipantProfile from '../profile/ParticipantProfile';
+import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
+import ParticipantProfile from '../profile/ParticipantProfile';
+import ParticipantsSearch from '../participants/ParticipantsSearch';
 import Providers from '../providers/Providers';
 import Releases from '../releases/Releases';
 import Reports from '../reports/Reports';
 import TaskManager from '../tasks/TaskManager';
-
-import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
-
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
@@ -101,6 +101,7 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
+          <Route path={Routes.EDIT_PARTICIPANT} component={EditPersonInfoForm} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
           <Route path={Routes.RELEASES} component={Releases} />

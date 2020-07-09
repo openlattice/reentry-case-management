@@ -25,14 +25,22 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
 import { getEmergencyContactInfo } from './contacts/ContactInfoActions';
 import { getEmergencyContactInfoWorker } from './contacts/ContactInfoSagas';
+import {
+  getEducationFormData,
+  getPersonDetailsFormData,
+  getPersonFormData,
+  getStateIdFormData,
+} from './utils/EditPersonUtils';
 
 import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -59,6 +67,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFO,
+  EDUCATION,
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   HEARINGS,
@@ -287,6 +296,70 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ProfileActions.loadPersonInfoForEdit()
+ *
+ */
+
+function* loadPersonInfoForEditWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+
+  try {
+    yield put(loadPersonInfoForEdit.request(id));
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { participantEKID } = value;
+
+    const app = yield select(getAppFromState);
+    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
+    const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
+    const educationESID :UUID = getESIDFromApp(app, EDUCATION);
+    const neighborsToGet = [
+      { direction: DST, neighborESID: personDetailsESID },
+      { direction: DST, neighborESID: stateIdESID },
+      { direction: DST, neighborESID: educationESID },
+    ];
+    const workerResponses :Object[] = yield all([
+      call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
+      call(getParticipantWorker, getParticipant({ participantEKID })),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => error || workerResponse.error,
+      undefined,
+    );
+    if (responseError) throw responseError;
+
+    const getParticipantNeighborsResponse = workerResponses[0];
+    const participantNeighborMap :Map = getParticipantNeighborsResponse.data;
+    const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighborMap);
+    const stateIdFormData :Object = getStateIdFormData(participantNeighborMap);
+    const educationFormData :Object = getEducationFormData(participantNeighborMap);
+
+    const getParticipantResponse = workerResponses[1];
+    const participant :Map = fromJS(getParticipantResponse.data);
+    const personFormData :Object = getPersonFormData(participant);
+
+    yield put(loadPersonInfoForEdit.success(id, {
+      educationFormData,
+      personDetailsFormData,
+      personFormData,
+      stateIdFormData,
+    }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(loadPersonInfoForEdit.failure(id, error));
+  }
+  finally {
+    yield put(loadPersonInfoForEdit.finally(id));
+  }
+}
+
+function* loadPersonInfoForEditWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(LOAD_PERSON_INFO_FOR_EDIT, loadPersonInfoForEditWorker);
+}
+
+/*
+ *
  * ProfileActions.loadProfile()
  *
  */
@@ -300,31 +373,33 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const { participantEKID } = value;
 
     const app = yield select(getAppFromState);
-    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
-    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    const educationESID :UUID = getESIDFromApp(app, EDUCATION);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
     const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
-    const addressESID :UUID = getESIDFromApp(app, LOCATION);
-    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
-    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
     const neighborsToGet = [
-      { direction: DST, neighborESID: personDetailsESID },
-      { direction: DST, neighborESID: needsAssessmentESID },
+      { direction: DST, neighborESID: addressESID },
       { direction: DST, neighborESID: contactInfoESID },
+      { direction: DST, neighborESID: educationESID },
       { direction: DST, neighborESID: enrollmentStatusESID },
+      { direction: DST, neighborESID: hearingsESID },
       { direction: DST, neighborESID: manualJailStaysESID },
+      { direction: DST, neighborESID: needsAssessmentESID },
+      { direction: DST, neighborESID: personDetailsESID },
       { direction: DST, neighborESID: referralToReentryESID },
       { direction: DST, neighborESID: sexOffenderESID },
       { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
-      { direction: DST, neighborESID: addressESID },
-      { direction: SRC, neighborESID: emergencyContactESID },
-      { direction: DST, neighborESID: hearingsESID },
       { direction: DST, neighborESID: stateIdESID },
+      { direction: SRC, neighborESID: emergencyContactESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
@@ -363,4 +438,6 @@ export {
   getParticipantNeighborsWorker,
   loadProfileWatcher,
   loadProfileWorker,
+  loadPersonInfoForEditWatcher,
+  loadPersonInfoForEditWorker,
 };

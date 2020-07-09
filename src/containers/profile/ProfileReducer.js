@@ -7,10 +7,12 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
 import {
@@ -32,6 +34,22 @@ import {
 import { RECORD_ENROLLMENT_EVENT, recordEnrollmentEvent } from './events/EventActions';
 import { CLEAR_EDIT_REQUEST_STATE, EDIT_NEEDS, editNeeds } from './needs/NeedsActions';
 import {
+  EDIT_EDUCATION,
+  EDIT_PERSON,
+  EDIT_PERSON_DETAILS,
+  EDIT_STATE_ID,
+  SUBMIT_EDUCATION,
+  SUBMIT_PERSON_DETAILS,
+  SUBMIT_STATE_ID,
+  editEducation,
+  editPerson,
+  editPersonDetails,
+  editStateId,
+  submitEducation,
+  submitPersonDetails,
+  submitStateId,
+} from './person/EditPersonActions';
+import {
   EDIT_EVENT,
   EDIT_RELEASE_INFO,
   editEvent,
@@ -44,6 +62,12 @@ import {
   createNewFollowUp,
   markFollowUpAsComplete,
 } from './tasks/FollowUpsActions';
+import {
+  getEducationFormData,
+  getPersonDetailsFormData,
+  getPersonFormData,
+  getStateIdFormData,
+} from './utils/EditPersonUtils';
 
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
@@ -53,13 +77,18 @@ import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
+  EDUCATION_FORM_DATA,
   EMERGENCY_CONTACT_INFO_BY_CONTACT,
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
+  PERSON_DETAILS_FORM_DATA,
+  PERSON_FORM_DATA,
   PROVIDER_BY_STATUS_EKID,
+  STATE_ID_FORM_DATA,
 } = PROFILE;
 const {
   CONTACT_INFO,
+  EDUCATION,
   EMERGENCY_CONTACT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
@@ -68,9 +97,11 @@ const {
   LOCATION,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
+  PERSON_DETAILS,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
   SEX_OFFENDER_REGISTRATION_LOCATION,
+  STATE_ID,
 } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
@@ -79,6 +110,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_COURT_HEARINGS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_EDUCATION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_EMERGENCY_CONTACTS]: {
@@ -90,10 +124,19 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PERSON_DETAILS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_SEX_OFFENDER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_STATE_ID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_EMERGENCY_CONTACT_INFO]: {
@@ -111,12 +154,28 @@ const INITIAL_STATE :Map = fromJS({
     [LOAD_PROFILE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [LOAD_PERSON_INFO_FOR_EDIT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_EDUCATION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_PERSON_DETAILS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_STATE_ID]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [CONTACT_NAME_BY_PROVIDER_EKID]: Map(),
+  [EDUCATION_FORM_DATA]: Map(),
   [EMERGENCY_CONTACT_INFO_BY_CONTACT]: Map(),
   [PARTICIPANT]: Map(),
   [PARTICIPANT_NEIGHBORS]: Map(),
+  [PERSON_DETAILS_FORM_DATA]: Map(),
+  [PERSON_FORM_DATA]: Map(),
   [PROVIDER_BY_STATUS_EKID]: Map(),
+  [STATE_ID_FORM_DATA]: Map(),
 });
 
 export default function profileReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -246,6 +305,28 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editEducation.case(action.type): {
+      return editEducation.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_EDUCATION, action.id], action)
+          .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedEducationData = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .updateIn([EDUCATION, 0], Map(), (oldEducation) => oldEducation
+              .merge(updatedEducationData));
+          const educationFormData :Object = getEducationFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
+            .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_EDUCATION, action.id]),
+      });
+    }
+
     case editEmergencyContacts.case(action.type): {
       return editEmergencyContacts.reducer(state, action, {
         REQUEST: () => state
@@ -324,6 +405,49 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editPerson.case(action.type): {
+      return editPerson.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedPersonData = action.value;
+          const participant :Map = state.get(PARTICIPANT, Map())
+            .merge(updatedPersonData);
+          const personFormData :Object = getPersonFormData(participant);
+          return state
+            .set(PARTICIPANT, participant)
+            .set(PERSON_FORM_DATA, fromJS(personFormData))
+            .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON, action.id]),
+      });
+    }
+
+    case editPersonDetails.case(action.type): {
+      return editPersonDetails.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedPersonDetailsData = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .updateIn([PERSON_DETAILS, 0], Map(), (oldPersonDetails) => oldPersonDetails
+              .merge(updatedPersonDetailsData));
+          const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
     case editReleaseInfo.case(action.type): {
       return editReleaseInfo.reducer(state, action, {
         REQUEST: () => state
@@ -378,6 +502,28 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_SEX_OFFENDER, action.id]),
+      });
+    }
+
+    case editStateId.case(action.type): {
+      return editStateId.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_STATE_ID, action.id], action)
+          .setIn([ACTIONS, EDIT_STATE_ID, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const updatedStateIdData = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .updateIn([STATE_ID, 0], Map(), (oldStateId) => oldStateId
+              .merge(updatedStateIdData));
+          const stateIdFormData :Object = getStateIdFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(STATE_ID_FORM_DATA, fromJS(stateIdFormData))
+            .setIn([ACTIONS, EDIT_STATE_ID, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_STATE_ID, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_STATE_ID, action.id]),
       });
     }
 
@@ -465,6 +611,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case loadPersonInfoForEdit.case(action.type): {
+
+      return loadPersonInfoForEdit.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id], action)
+          .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { value } = action;
+          const {
+            educationFormData,
+            personDetailsFormData,
+            personFormData,
+            stateIdFormData,
+          } = value;
+          return state
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .set(PERSON_FORM_DATA, fromJS(personFormData))
+            .set(STATE_ID_FORM_DATA, fromJS(stateIdFormData))
+            .setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, LOAD_PERSON_INFO_FOR_EDIT, action.id]),
+      });
+    }
+
     case markFollowUpAsComplete.case(action.type): {
       return markFollowUpAsComplete.reducer(state, action, {
         REQUEST: () => state
@@ -510,6 +682,69 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
             )
             .setIn([ACTIONS, RECORD_ENROLLMENT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
+      });
+    }
+
+    case submitEducation.case(action.type): {
+      return submitEducation.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_EDUCATION, action.id], action)
+          .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const education = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .set(EDUCATION, List([education]));
+          const educationFormData :Object = getEducationFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(EDUCATION_FORM_DATA, fromJS(educationFormData))
+            .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_EDUCATION, action.id]),
+      });
+    }
+
+    case submitPersonDetails.case(action.type): {
+      return submitPersonDetails.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id], action)
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const personDetails = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .set(PERSON_DETAILS, List([personDetails]));
+          const personDetailsFormData :Object = getPersonDetailsFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(PERSON_DETAILS_FORM_DATA, fromJS(personDetailsFormData))
+            .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
+    case submitStateId.case(action.type): {
+      return submitStateId.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_STATE_ID, action.id], action)
+          .setIn([ACTIONS, SUBMIT_STATE_ID, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const stateId = action.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS, Map())
+            .set(STATE_ID, List([stateId]));
+          const stateIdFormData :Object = getStateIdFormData(participantNeighbors);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(STATE_ID_FORM_DATA, fromJS(stateIdFormData))
+            .setIn([ACTIONS, SUBMIT_STATE_ID, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_STATE_ID, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_STATE_ID, action.id]),
       });
     }
 

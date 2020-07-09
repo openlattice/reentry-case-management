@@ -2,13 +2,14 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
-import { getEntityProperties, getEKID } from '../../../utils/DataUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
+  EDUCATION,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
   STATE_ID,
@@ -20,8 +21,11 @@ const {
   ETHNICITY,
   FIRST_NAME,
   GENDER,
-  OL_ID_FQN,
+  HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
+  MARITAL_STATUS,
+  OL_ID_FQN,
+  PERSON_SEX,
   PROJECTED_RELEASE_DATETIME,
   RACE,
 } = PROPERTY_TYPE_FQNS;
@@ -35,26 +39,48 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [ETHNICITY]: ethnicity,
     [FIRST_NAME]: firstName,
     [LAST_NAME]: lastName,
+    [PERSON_SEX]: sex,
     [RACE]: race,
-  } = getEntityProperties(participant, [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE], EMPTY_FIELD);
+  } = getEntityProperties(
+    participant,
+    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, PERSON_SEX, RACE],
+    EMPTY_FIELD
+  );
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
   const dob :string = dobAsDateTime.toLocaleString(DateTime.DATE_SHORT);
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
-  let gender :string = '';
-  if (!personDetails.isEmpty()) gender = personDetails.getIn([0, GENDER]);
+  let gender :string = EMPTY_FIELD;
+  let maritalStatus :string = EMPTY_FIELD;
+  if (!personDetails.isEmpty()) {
+    const { [GENDER]: personGender, [MARITAL_STATUS]: personMaritalStatus } = getEntityProperties(
+      personDetails.get(0),
+      [GENDER, MARITAL_STATUS],
+      EMPTY_FIELD
+    );
+    gender = personGender;
+    maritalStatus = personMaritalStatus;
+  }
   const stateIDEntity :List = participantNeighbors.get(STATE_ID, List());
   const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : EMPTY_FIELD;
+  const educationList :List = participantNeighbors.get(EDUCATION, List());
+  let education :string = EMPTY_FIELD;
+  if (!educationList.isEmpty()) {
+    education = educationList.getIn([0, HIGHEST_EDUCATION_LEVEL, 0], EMPTY_FIELD);
+  }
 
   const participantData = Map({
     lastName,
     firstName,
     dob,
     age,
+    sex,
     gender,
     race,
     ethnicity,
     countyID,
     opusNumber,
+    maritalStatus,
+    education,
   });
   return participantData;
 };

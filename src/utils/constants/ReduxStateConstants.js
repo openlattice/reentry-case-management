@@ -57,11 +57,15 @@ const PROVIDERS :Object = {
 
 const PROFILE :Object = {
   CONTACT_NAME_BY_PROVIDER_EKID: 'contactNameByProviderEKID',
+  EDUCATION_FORM_DATA: 'educationFormData',
   EMERGENCY_CONTACT_INFO_BY_CONTACT: 'emergencyContactInfoByContact',
   PARTICIPANT: 'participant',
   PARTICIPANT_NEIGHBORS: 'participantNeighbors',
+  PERSON_DETAILS_FORM_DATA: 'personDetailsFormData',
+  PERSON_FORM_DATA: 'personFormData',
   PROFILE: 'profile',
   PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
+  STATE_ID_FORM_DATA: 'stateIdFormData',
 };
 
 const RELEASES :Object = {
