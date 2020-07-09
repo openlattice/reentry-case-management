@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Map } from 'immutable';
 import { Form } from 'lattice-fabricate';
@@ -53,14 +53,8 @@ const EditPersonForm = ({
     updateFormData(newFormData);
   };
 
-  const mounted = useRef();
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-    }
-    else {
-      updateFormData(personFormData.toJS());
-    }
+    updateFormData(personFormData.toJS());
   }, [personFormData]);
 
   const personEKID :UUID = getEKID(participant);

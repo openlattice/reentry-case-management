@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
@@ -66,14 +66,8 @@ const EditPersonDetailsForm = ({
     updateFormData(newFormData);
   };
 
-  const mounted = useRef();
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-    }
-    else {
-      updateFormData(personDetailsFormData.toJS());
-    }
+    updateFormData(personDetailsFormData.toJS());
   }, [personDetailsFormData]);
 
   const personDetails :List = participantNeighbors.get(PERSON_DETAILS, List());
