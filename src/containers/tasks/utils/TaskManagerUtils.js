@@ -1,15 +1,15 @@
 // @flow
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { sortEntitiesByDateProperty } from '../../../utils/Utils';
-import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { getTaskName } from '../../profile/tasks/utils/ParticipantFollowUpsUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
+import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { FOLLOW_UPS_STATUSES } from '../../profile/tasks/FollowUpsConstants';
+import { getTaskName } from '../../profile/tasks/utils/ParticipantFollowUpsUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
@@ -53,6 +53,27 @@ const addLinkedPersonField = (schema :Object, uiSchema :Object) :Object => {
   taskUiSchema[getPageSectionKey(1, 1)][getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)] = {
     classNames: 'column-span-12',
   };
+
+  return { taskSchema, taskUiSchema };
+};
+
+const removeLinkedPersonField = (schema :Object, uiSchema :Object) :Object => {
+  const taskSchema = schema;
+  const taskUiSchema = uiSchema;
+
+  delete taskSchema
+    .properties[getPageSectionKey(1, 1)]
+    .properties[getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)];
+
+  const linkedPersonAsRequiredIndex = taskSchema
+    .properties[getPageSectionKey(1, 1)]
+    .required
+    .find((requiredProperty :string) => requiredProperty === getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID));
+  taskSchema
+    .properties[getPageSectionKey(1, 1)]
+    .required.splice(linkedPersonAsRequiredIndex, 1);
+
+  delete taskUiSchema[getPageSectionKey(1, 1)][getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)];
 
   return { taskSchema, taskUiSchema };
 };
@@ -145,4 +166,5 @@ export {
   formatTasksForTable,
   getReentryStaffOptions,
   getTaskOptionsForSearch,
+  removeLinkedPersonField,
 };
