@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_PARTICIPANTS,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
@@ -11,6 +12,7 @@ import {
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
+
 import { SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
 
 const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
@@ -35,6 +37,10 @@ const INITIAL_STATE :Map = fromJS({
 export default function tasksReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_PARTICIPANTS: {
+      return state.set(PARTICIPANTS, List());
+    }
 
     case getPeopleForNewTaskForm.case(action.type): {
       return getPeopleForNewTaskForm.reducer(state, action, {
