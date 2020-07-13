@@ -21,6 +21,7 @@ import {
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
+import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
   formatTasksForTable,
   getReentryStaffOptions,
@@ -38,7 +39,6 @@ import {
 import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
 import { GET_FOLLOW_UP_NEIGHBORS } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
-import { schema, uiSchema } from '../profile/tasks/schemas/AddNewFollowUpSchemas';
 
 const { NEUTRALS } = Colors;
 const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
@@ -163,8 +163,8 @@ const TaskManager = ({
           isVisible={newFollowUpModalVisible}
           onClose={() => setModalVisibility(false)}
           participants={participants}
-          schema={taskSchema}
-          uiSchema={taskUiSchema} />
+          schema={schema}
+          uiSchema={uiSchema} />
     </>
   );
 };
