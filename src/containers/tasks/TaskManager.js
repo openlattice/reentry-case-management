@@ -22,11 +22,9 @@ import {
   searchForTasks,
 } from './TasksActions';
 import {
-  addLinkedPersonField,
   formatTasksForTable,
   getReentryStaffOptions,
   getTaskOptionsForSearch,
-  removeLinkedPersonField,
 } from './utils/TaskManagerUtils';
 
 import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
@@ -113,11 +111,9 @@ const TaskManager = ({
     actions.loadTaskManagerData();
     return () => {
       actions.clearParticipants();
-      removeLinkedPersonField(schema, uiSchema);
     };
   }, [actions]);
 
-  const { taskSchema, taskUiSchema } = addLinkedPersonField(schema, uiSchema);
   const tasksData :Object[] = formatTasksForTable(followUps, followUpNeighborMap, selectedAssignees, selectedReporters);
   const reentryStaffOptions :Object[] = getReentryStaffOptions(reentryStaffMembers);
 

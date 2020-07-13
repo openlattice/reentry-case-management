@@ -1,6 +1,5 @@
 // @flow
 import { List, Map } from 'immutable';
-import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -11,16 +10,13 @@ import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { FOLLOW_UPS_STATUSES } from '../../profile/tasks/FollowUpsConstants';
 import { getTaskName } from '../../profile/tasks/utils/ParticipantFollowUpsUtils';
 
-const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   MANUAL_ASSIGNED_TO,
   MANUAL_SUBJECT_OF,
-  PEOPLE,
   REPORTED,
 } = APP_TYPE_FQNS;
 const {
   CATEGORY,
-  ENTITY_KEY_ID,
   DATETIME_COMPLETED,
   DESCRIPTION,
   GENERAL_DATETIME,
@@ -32,50 +28,6 @@ const getTaskNameForTaskManager = (category :string, title :string, personName :
   let taskName = getTaskName(category, title, personName);
   if (!taskName.includes(personName)) taskName = `${taskName} for ${personName}`;
   return taskName;
-};
-
-const addLinkedPersonField = (schema :Object, uiSchema :Object) :Object => {
-  const taskSchema = schema;
-  const taskUiSchema = uiSchema;
-
-  taskSchema
-    .properties[getPageSectionKey(1, 1)]
-    .properties[getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)] = {
-      type: 'string',
-      title: 'Linked Person',
-      enum: [],
-      enumNames: []
-    };
-  taskSchema
-    .properties[getPageSectionKey(1, 1)]
-    .required.push(getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID));
-
-  taskUiSchema[getPageSectionKey(1, 1)][getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)] = {
-    classNames: 'column-span-12',
-  };
-
-  return { taskSchema, taskUiSchema };
-};
-
-const removeLinkedPersonField = (schema :Object, uiSchema :Object) :Object => {
-  const taskSchema = schema;
-  const taskUiSchema = uiSchema;
-
-  delete taskSchema
-    .properties[getPageSectionKey(1, 1)]
-    .properties[getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)];
-
-  const linkedPersonAsRequiredIndex = taskSchema
-    .properties[getPageSectionKey(1, 1)]
-    .required
-    .find((requiredProperty :string) => requiredProperty === getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID));
-  taskSchema
-    .properties[getPageSectionKey(1, 1)]
-    .required.splice(linkedPersonAsRequiredIndex, 1);
-
-  delete taskUiSchema[getPageSectionKey(1, 1)][getEntityAddressKey(0, PEOPLE, ENTITY_KEY_ID)];
-
-  return { taskSchema, taskUiSchema };
 };
 
 const formatTasksForTable = (
@@ -162,9 +114,7 @@ const getTaskOptionsForSearch = (alreadySelectedStatuses :Object[], selectedStat
 };
 
 export {
-  addLinkedPersonField,
   formatTasksForTable,
   getReentryStaffOptions,
   getTaskOptionsForSearch,
-  removeLinkedPersonField,
 };
