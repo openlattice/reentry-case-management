@@ -1,7 +1,10 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { List, Map } from 'immutable';
 import {
+  Breadcrumbs,
   Button,
   Card,
   CardSegment,
@@ -13,20 +16,10 @@ import {
   Radio,
   SearchResults,
 } from 'lattice-ui-kit';
-import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import NoResults from '../../components/noresults/NoResults';
-import COLORS from '../../core/style/Colors';
-import * as Routes from '../../core/router/Routes';
-import {
-  ButtonWrapper,
-  FieldsGrid,
-  PaginationWrapper,
-  StyledSearchButton,
-} from '../../components/search/SearchStyledComponents';
 import {
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
@@ -34,8 +27,17 @@ import {
   searchReleasesByDate,
   searchReleasesByPersonName,
 } from './ReleasesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { formatDataForReleasesByDateList, formatDataForReleasesByPersonList } from './utils/ReleasesUtils';
+
+import NoResults from '../../components/noresults/NoResults';
+import * as Routes from '../../core/router/Routes';
+import {
+  ButtonWrapper,
+  FieldsGrid,
+  PaginationWrapper,
+  StyledSearchButton,
+} from '../../components/search/SearchStyledComponents';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { isNonEmptyString } from '../../utils/LangUtils';
 import {
   reduceRequestStates,
@@ -44,6 +46,7 @@ import {
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { CardHeaderWithButtons, Header } from '../profile/styled/GeneralProfileStyles';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const NoReleasesFound = () => (
@@ -75,26 +78,6 @@ const ContainerWrapper = styled.div`
   width: 100%;
 `;
 
-const HeaderRowWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 22px;
-  width: 100%;
-`;
-
-const Header = styled.div`
-  color: ${COLORS.GRAY_01};
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 35px;
-`;
-
-const StyledPrimaryButton = styled(Button)`
-  font-size: 14px;
-  padding: 8px 32px;
-`;
-
 const ButtonGrid = styled.div`
   display: grid;
   grid-gap: 15px;
@@ -107,6 +90,15 @@ const Label = styled.div`
   font-size: 14px;
   line-height: 19px;
   margin-bottom: 10px;
+`;
+
+const CenteredCardSegment = styled(CardSegment)`
+  align-items: center;
+  justify-content: center;
+`;
+
+const SearchResultMessage = styled.div`
+  margin-right: 5px;
 `;
 
 type Props = {
@@ -217,7 +209,7 @@ class Releases extends Component<Props, State> {
 
   goToNewIntakeForm = () => {
     const { actions } = this.props;
-    actions.goToRoute(Routes.NEW_INTAKE);
+    actions.goToRoute(Routes.NEW_INTAKE_FORM);
   }
 
   onSwitchSearchContext = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -287,18 +279,15 @@ class Releases extends Component<Props, State> {
       : this.onPageChangePersonName;
 
     const releasesData :List = this.getReleasesData();
+    const searchResultMessage :string = 'Can\'t find what you\'re looking for?';
     return (
       <ContainerWrapper>
-        <HeaderRowWrapper>
-          <Header>New Releases</Header>
-          <StyledPrimaryButton
-              onClick={this.goToNewIntakeForm}
-              mode="primary">
-            New Intake
-          </StyledPrimaryButton>
-        </HeaderRowWrapper>
         <CardStack>
           <Card>
+            <CardHeaderWithButtons vertical={false}>
+              <div>Search Releases</div>
+              <Button onClick={this.goToNewIntakeForm}>Create New Person</Button>
+            </CardHeaderWithButtons>
             <CardSegment padding="30px" vertical>
               <ButtonGrid>
                 <Radio
@@ -371,6 +360,16 @@ class Releases extends Component<Props, State> {
               noResults={NoReleasesFound}
               resultLabels={labels}
               results={releasesData} />
+          {
+            hasSearched && (
+              <CenteredCardSegment vertical={false}>
+                <SearchResultMessage>{ searchResultMessage }</SearchResultMessage>
+                <Breadcrumbs>
+                  <Header to={Routes.NEW_INTAKE_FORM}>CREATE NEW PERSON</Header>
+                </Breadcrumbs>
+              </CenteredCardSegment>
+            )
+          }
         </CardStack>
       </ContainerWrapper>
     );
