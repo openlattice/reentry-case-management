@@ -3,10 +3,10 @@ import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
+import { deleteKeyFromFormData } from '../../../../utils/FormUtils';
 import { isDefined } from '../../../../utils/LangUtils';
 import { getValuesFromEntityList } from '../../../../utils/Utils';
-import { deleteKeyFromFormData } from '../../../../utils/FormUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { FOLLOW_UPS_CATEGORIES, FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -190,7 +190,7 @@ const removeEKIDsFromFormData = (formData :Object) :Object => {
   if (isDefined(getIn(formData, reporterPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, reporterPath);
   if (isDefined(getIn(formData, assigneePath))) updatedFormData = deleteKeyFromFormData(updatedFormData, assigneePath);
   if (isDefined(getIn(formData, providerPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, providerPath);
-  if (isDefined(getIn(formData, providerPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, personPath);
+  if (isDefined(getIn(formData, personPath))) updatedFormData = deleteKeyFromFormData(updatedFormData, personPath);
 
   return updatedFormData;
 };
