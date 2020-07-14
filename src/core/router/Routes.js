@@ -12,6 +12,8 @@ const RELEASES :string = '/releases';
 const REPORTS :string = '/reports';
 const TASKS :string = '/tasks';
 
+const NEW_INTAKE_FORM :string = `${NEW_INTAKE}/form`;
+
 const PARTICIPANT_ID :':participantId' = ':participantId';
 
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
@@ -22,6 +24,7 @@ export {
   EDIT_PARTICIPANT,
   LOGIN,
   NEW_INTAKE,
+  NEW_INTAKE_FORM,
   PARTICIPANTS,
   PARTICIPANT_ID,
   PARTICIPANT_PROFILE,

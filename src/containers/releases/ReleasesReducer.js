@@ -4,18 +4,21 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_RELEASE_RESULT,
   CLEAR_SEARCH_RESULTS,
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
   SEARCH_PEOPLE_BY_JAIL_STAY,
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
+  SELECT_RELEASE_RESULT,
   getJailsByJailStayEKID,
   searchJailStaysByPerson,
   searchPeopleByJailStay,
   searchReleasesByDate,
   searchReleasesByPersonName,
 } from './ReleasesActions';
+
 import { RELEASES, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
@@ -25,6 +28,8 @@ const {
   PEOPLE_BY_JAIL_STAY_EKID,
   SEARCHED_JAIL_STAYS,
   SEARCHED_PEOPLE,
+  SELECTED_PERSON,
+  SELECTED_RELEASE_DATE,
 } = RELEASES;
 
 const INITIAL_STATE :Map = fromJS({
@@ -50,6 +55,8 @@ const INITIAL_STATE :Map = fromJS({
   [PEOPLE_BY_JAIL_STAY_EKID]: Map(),
   [SEARCHED_JAIL_STAYS]: List(),
   [SEARCHED_PEOPLE]: List(),
+  [SELECTED_PERSON]: Map(),
+  [SELECTED_RELEASE_DATE]: undefined,
   [TOTAL_HITS]: 0,
 });
 
@@ -58,7 +65,32 @@ export default function releasesReducer(state :Map = INITIAL_STATE, action :Sequ
   switch (action.type) {
 
     case CLEAR_SEARCH_RESULTS: {
-      return INITIAL_STATE;
+      return state
+        .set(JAILS_BY_JAIL_STAY_EKID, Map())
+        .set(JAIL_STAYS_BY_PERSON_EKID, Map())
+        .set(PEOPLE_BY_JAIL_STAY_EKID, Map())
+        .set(SEARCHED_JAIL_STAYS, List())
+        .set(SEARCHED_PEOPLE, List())
+        .set(TOTAL_HITS, 0)
+        .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, SEARCH_RELEASES_BY_PERSON_NAME, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
+    case SELECT_RELEASE_RESULT: {
+      const { value } = action;
+      const { person, releaseDate } = value;
+      if (person || releaseDate) {
+        return state
+          .set(SELECTED_PERSON, person)
+          .set(SELECTED_RELEASE_DATE, releaseDate);
+      }
+      return state;
+    }
+
+    case CLEAR_RELEASE_RESULT: {
+      return state
+        .set(SELECTED_PERSON, Map())
+        .set(SELECTED_RELEASE_DATE, '');
     }
 
     case getJailsByJailStayEKID.case(action.type): {

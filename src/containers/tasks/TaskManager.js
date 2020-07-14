@@ -1,34 +1,35 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Button,
+  CheckboxSelect,
   Colors,
   Label,
-  CheckboxSelect,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
-import TasksTable from '../../components/tasks/TasksTable';
 import {
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  clearParticipants,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
-import { GET_FOLLOW_UP_NEIGHBORS } from '../profile/tasks/FollowUpsActions';
+import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import {
-  addLinkedPersonField,
   formatTasksForTable,
   getReentryStaffOptions,
   getTaskOptionsForSearch,
 } from './utils/TaskManagerUtils';
-import { schema, uiSchema } from '../profile/tasks/schemas/AddNewFollowUpSchemas';
+
+import AddNewFollowUpModal from '../profile/tasks/AddNewFollowUpModal';
+import TasksTable from '../../components/tasks/TasksTable';
 import {
   reduceRequestStates,
   requestIsFailure,
@@ -36,6 +37,7 @@ import {
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
 import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
+import { GET_FOLLOW_UP_NEIGHBORS } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
 const { NEUTRALS } = Colors;
@@ -75,6 +77,7 @@ const SelectWrapper = styled.div`
 
 type Props = {
   actions :{
+    clearParticipants :() => void;
     loadTaskManagerData :RequestSequence;
     searchForTasks :RequestSequence;
   };
@@ -106,9 +109,11 @@ const TaskManager = ({
 
   useEffect(() => {
     actions.loadTaskManagerData();
+    return () => {
+      actions.clearParticipants();
+    };
   }, [actions]);
 
-  const { taskSchema, taskUiSchema } = addLinkedPersonField(schema, uiSchema);
   const tasksData :Object[] = formatTasksForTable(followUps, followUpNeighborMap, selectedAssignees, selectedReporters);
   const reentryStaffOptions :Object[] = getReentryStaffOptions(reentryStaffMembers);
 
@@ -158,8 +163,8 @@ const TaskManager = ({
           isVisible={newFollowUpModalVisible}
           onClose={() => setModalVisibility(false)}
           participants={participants}
-          schema={taskSchema}
-          uiSchema={taskUiSchema} />
+          schema={schema}
+          uiSchema={uiSchema} />
     </>
   );
 };
@@ -183,6 +188,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearParticipants,
     loadTaskManagerData,
     searchForTasks,
   }, dispatch)

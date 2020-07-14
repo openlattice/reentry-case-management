@@ -2,6 +2,11 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const CLEAR_RELEASE_RESULT :'CLEAR_RELEASE_RESULT' = 'CLEAR_RELEASE_RESULT';
+const clearReleaseResult = () => ({
+  type: CLEAR_RELEASE_RESULT,
+});
+
 const CLEAR_SEARCH_RESULTS :'CLEAR_SEARCH_RESULTS' = 'CLEAR_SEARCH_RESULTS';
 const clearSearchResults = () => ({
   type: CLEAR_SEARCH_RESULTS
@@ -22,17 +27,27 @@ const searchReleasesByDate :RequestSequence = newRequestSequence(SEARCH_RELEASES
 const SEARCH_RELEASES_BY_PERSON_NAME :'SEARCH_RELEASES_BY_PERSON_NAME' = 'SEARCH_RELEASES_BY_PERSON_NAME';
 const searchReleasesByPersonName :RequestSequence = newRequestSequence(SEARCH_RELEASES_BY_PERSON_NAME);
 
+const SELECT_RELEASE_RESULT :'SELECT_RELEASE_RESULT' = 'SELECT_RELEASE_RESULT';
+const selectReleaseResult = (value :any) => ({
+  type: SELECT_RELEASE_RESULT,
+  value,
+});
+
 export {
+  CLEAR_RELEASE_RESULT,
   CLEAR_SEARCH_RESULTS,
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
   SEARCH_PEOPLE_BY_JAIL_STAY,
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
+  SELECT_RELEASE_RESULT,
+  clearReleaseResult,
   clearSearchResults,
   getJailsByJailStayEKID,
   searchJailStaysByPerson,
   searchPeopleByJailStay,
   searchReleasesByDate,
   searchReleasesByPersonName,
+  selectReleaseResult,
 };

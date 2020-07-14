@@ -7,13 +7,14 @@ import {
   hasIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 
-import { getValuesFromEntityList } from '../../../utils/Utils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../../utils/DataUtils';
 import { deleteKeyFromFormData, updateFormData } from '../../../utils/FormUtils';
 import { isDefined } from '../../../utils/LangUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getValuesFromEntityList } from '../../../utils/Utils';
 import { PAROLE_PROBATION_CONSTS, PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
@@ -50,21 +51,26 @@ const {
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
+  DOB,
   EMAIL,
   ENTITY_KEY_ID,
+  ETHNICITY,
   FIRST_NAME,
   GENDER,
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
-  OL_ID_FQN,
   LAST_NAME,
   MARITAL_STATUS,
+  MIDDLE_NAME,
   NAME,
   OL_DATETIME,
+  OL_ID_FQN,
+  PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
+  RACE,
   RECOGNIZED_END_DATETIME,
   REGISTERED_FLAG,
   SOURCE,
@@ -107,6 +113,41 @@ const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List)
   );
 
   return newSchema;
+};
+
+const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :Object => {
+  const formData :Object = {};
+
+  if (isDefined(selectedPerson) && !selectedPerson.isEmpty()) {
+    const {
+      [DOB]: dobISO,
+      [ETHNICITY]: ethnicity,
+      [FIRST_NAME]: firstName,
+      [LAST_NAME]: lastName,
+      [MIDDLE_NAME]: middleName,
+      [PERSON_SEX]: sex,
+      [RACE]: race,
+    } = getEntityProperties(
+      selectedPerson,
+      [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, PERSON_SEX, RACE],
+    );
+    formData[getPageSectionKey(1, 1)] = {
+      [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: lastName,
+      [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: firstName,
+      [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: middleName,
+      [getEntityAddressKey(0, PEOPLE, DOB)]: DateTime.fromISO(dobISO).toISODate(),
+      [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: sex,
+      [getEntityAddressKey(0, PEOPLE, RACE)]: race,
+      [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: ethnicity,
+    };
+  }
+
+  if (selectedReleaseDate) {
+    formData[getPageSectionKey(1, 4)] = {
+      [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: selectedReleaseDate
+    };
+  }
+  return formData;
 };
 
 // Entities Utils
@@ -667,6 +708,7 @@ export {
   getOfficerAndAttorneyContactAssociations,
   getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
+  prepopulateFormData,
   setClientContactInfoIndices,
   setContactIndices,
   setDatesAsDateTimes,

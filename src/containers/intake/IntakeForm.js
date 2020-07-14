@@ -1,7 +1,9 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
+import { DataProcessingUtils, Form, Paged } from 'lattice-fabricate';
 import {
   Banner,
   Button,
@@ -9,20 +11,16 @@ import {
   CardHeader,
   Colors,
 } from 'lattice-ui-kit';
-import { DataProcessingUtils, Form, Paged } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import COLORS from '../../core/style/Colors';
-import * as Routes from '../../core/router/Routes';
 import {
   SUBMIT_INTAKE_FORM,
   clearSubmitRequestState,
   getIncarcerationFacilities,
   submitIntakeForm
 } from './IntakeActions';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { schemas, uiSchemas } from './schemas/IntakeSchemas';
 import {
   getClientContactAndAddressAssociations,
@@ -33,7 +31,9 @@ import {
   getClientSexOffenderAssociations,
   getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
+  getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
+  prepopulateFormData,
   setClientContactInfoIndices,
   setContactIndices,
   setDatesAsDateTimes,
@@ -41,18 +41,23 @@ import {
   setPreferredTimeOfContact,
   setProbationOrParoleValues,
   setRegisteredSexOffender,
-  getStateIDAssociations,
 } from './utils/IntakeUtils';
+
+import COLORS from '../../core/style/Colors';
+import * as Routes from '../../core/router/Routes';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { deleteKeyFromFormData } from '../../utils/FormUtils';
-import { pipeConcat, pipeValue } from '../../utils/Utils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import { pipeConcat, pipeValue } from '../../utils/Utils';
 import {
   APP,
   EDM,
   INTAKE,
+  RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
@@ -67,6 +72,7 @@ const {
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
+const { SELECTED_PERSON, SELECTED_RELEASE_DATE } = RELEASES;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { MANUAL_JAILS_PRISONS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPE_FQNS;
@@ -112,6 +118,7 @@ const BannerButtonWrapper = styled.div`
 
 type Props = {
   actions :{
+    clearReleaseResult :() => void;
     clearSubmitRequestState :() => { type :string };
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;
@@ -124,6 +131,8 @@ type Props = {
   requestStates :{
     SUBMIT_INTAKE_FORM :RequestState;
   };
+  selectedPerson :Map;
+  selectedReleaseDate :string;
 };
 
 class IntakeForm extends Component<Props> {
@@ -154,6 +163,7 @@ class IntakeForm extends Component<Props> {
   componentWillUnmount() {
     const { actions } = this.props;
     actions.clearSubmitRequestState();
+    actions.clearReleaseResult();
   }
 
   goToParticipantProfile = () => {
@@ -224,10 +234,17 @@ class IntakeForm extends Component<Props> {
   }
 
   render() {
-    const { incarcerationFacilities, requestStates } = this.props;
+    const {
+      incarcerationFacilities,
+      requestStates,
+      selectedPerson,
+      selectedReleaseDate,
+    } = this.props;
     const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
+    const initialFormData = prepopulateFormData(selectedPerson, selectedReleaseDate);
     return (
       <Paged
+          initialFormData={initialFormData}
           render={(props :Object) => {
             const {
               formRef,
@@ -308,9 +325,12 @@ class IntakeForm extends Component<Props> {
 const mapStateToProps = (state :Map) => {
   const personInformationForm :Map = state.get(INTAKE.INTAKE);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
+  const releases :Map = state.get(RELEASES.RELEASES);
   return {
     [INCARCERATION_FACILITIES]: personInformationForm.get(INCARCERATION_FACILITIES),
     [NEW_PARTICIPANT_EKID]: personInformationForm.get(NEW_PARTICIPANT_EKID),
+    [SELECTED_PERSON]: releases.get(SELECTED_PERSON),
+    [SELECTED_RELEASE_DATE]: releases.get(SELECTED_RELEASE_DATE),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {
@@ -325,6 +345,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearReleaseResult,
     clearSubmitRequestState,
     getIncarcerationFacilities,
     goToRoute,
