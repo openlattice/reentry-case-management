@@ -2,9 +2,9 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
@@ -23,10 +23,14 @@ const formatDataForReleasesByDateList = (searchedJailStays :List, peopleByJailSt
       [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
       [RELEASE_DATETIME]: releaseDateTime
     } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDate :string = (releaseDateTime && releaseDateTime.length)
-      ? DateTime.fromISO(releaseDateTime).toLocaleString(DateTime.DATE_SHORT)
-      : DateTime.fromISO(projectedReleaseDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
+      ? DateTime.fromISO(releaseDateTime)
+      : DateTime.fromISO(projectedReleaseDateTime);
+    const releaseDate :string = releaseDateAsDateTime.isValid
+      ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
+      : EMPTY_FIELD;
     release = release.set('releaseDate', releaseDate);
+    release = release.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
 
     const jailStayEKID :UUID = getEKID(jailStay);
     const person :Map = peopleByJailStayEKID.get(jailStayEKID, Map());
@@ -34,6 +38,7 @@ const formatDataForReleasesByDateList = (searchedJailStays :List, peopleByJailSt
     release = release.set('name', personName);
     const { [DATA_SOURCE]: dataSource } = getEntityProperties(person, [DATA_SOURCE]);
     release = release.set('dataSource', dataSource);
+    release = release.set('personEntity', person);
     releasesData = releasesData.push(release);
   });
 
@@ -64,6 +69,8 @@ const formatDataForReleasesByPersonList = (searchedPeople :List, jailStaysByPers
       ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
       : EMPTY_FIELD;
     release = release.set('releaseDate', releaseDate);
+    release = release.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
+    release = release.set('personEntity', person);
     releasesData = releasesData.push(release);
   });
 
