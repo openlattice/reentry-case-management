@@ -103,8 +103,8 @@ class AppContainer extends Component<Props> {
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
           <Route path={Routes.EDIT_PARTICIPANT} component={EditPersonInfoForm} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
-          <Route path={Routes.NEW_INTAKE} component={IntakeForm} />
-          <Route path={Routes.RELEASES} component={Releases} />
+          <Route path={Routes.NEW_INTAKE_FORM} component={IntakeForm} />
+          <Route path={Routes.NEW_INTAKE} component={Releases} />
           <Route path={Routes.PARTICIPANTS} component={ParticipantsSearch} />
           <Route path={Routes.PROVIDERS} component={Providers} />
           <Route path={Routes.REPORTS} component={Reports} />
@@ -159,9 +159,8 @@ class AppContainer extends Component<Props> {
                 user={user}>
               <AppNavigationWrapper>
                 <NavLink to={Routes.ROOT} />
-                <NavLink to={Routes.RELEASES}>Releases</NavLink>
-                <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
                 <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
+                <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
                 <NavLink to={Routes.REPORTS}>Reports</NavLink>
                 <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
                 <NavLink to={Routes.TASKS}>Tasks</NavLink>
