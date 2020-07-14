@@ -118,7 +118,7 @@ const BannerButtonWrapper = styled.div`
 
 type Props = {
   actions :{
-    clearReleaseResult :() => { type :string };
+    clearReleaseResult :() => void;
     clearSubmitRequestState :() => { type :string };
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;

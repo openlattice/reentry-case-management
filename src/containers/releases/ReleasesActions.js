@@ -3,9 +3,8 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_RELEASE_RESULT :'CLEAR_RELEASE_RESULT' = 'CLEAR_RELEASE_RESULT';
-const clearReleaseResult = (value :any) => ({
+const clearReleaseResult = () => ({
   type: CLEAR_RELEASE_RESULT,
-  value,
 });
 
 const CLEAR_SEARCH_RESULTS :'CLEAR_SEARCH_RESULTS' = 'CLEAR_SEARCH_RESULTS';

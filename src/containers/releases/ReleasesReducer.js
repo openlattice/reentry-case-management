@@ -56,7 +56,7 @@ const INITIAL_STATE :Map = fromJS({
   [SEARCHED_JAIL_STAYS]: List(),
   [SEARCHED_PEOPLE]: List(),
   [SELECTED_PERSON]: Map(),
-  [SELECTED_RELEASE_DATE]: '',
+  [SELECTED_RELEASE_DATE]: undefined,
   [TOTAL_HITS]: 0,
 });
 
