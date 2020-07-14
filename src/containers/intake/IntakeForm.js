@@ -57,6 +57,7 @@ import {
   RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { NEUTRALS } = Colors;
@@ -117,6 +118,7 @@ const BannerButtonWrapper = styled.div`
 
 type Props = {
   actions :{
+    clearReleaseResult :() => { type :string };
     clearSubmitRequestState :() => { type :string };
     getIncarcerationFacilities :RequestSequence;
     goToRoute :GoToRoute;
@@ -161,6 +163,7 @@ class IntakeForm extends Component<Props> {
   componentWillUnmount() {
     const { actions } = this.props;
     actions.clearSubmitRequestState();
+    actions.clearReleaseResult();
   }
 
   goToParticipantProfile = () => {
@@ -342,6 +345,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearReleaseResult,
     clearSubmitRequestState,
     getIncarcerationFacilities,
     goToRoute,

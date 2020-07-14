@@ -2,6 +2,12 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const CLEAR_RELEASE_RESULT :'CLEAR_RELEASE_RESULT' = 'CLEAR_RELEASE_RESULT';
+const clearReleaseResult = (value :any) => ({
+  type: CLEAR_RELEASE_RESULT,
+  value,
+});
+
 const CLEAR_SEARCH_RESULTS :'CLEAR_SEARCH_RESULTS' = 'CLEAR_SEARCH_RESULTS';
 const clearSearchResults = () => ({
   type: CLEAR_SEARCH_RESULTS
@@ -29,6 +35,7 @@ const selectReleaseResult = (value :any) => ({
 });
 
 export {
+  CLEAR_RELEASE_RESULT,
   CLEAR_SEARCH_RESULTS,
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
@@ -36,6 +43,7 @@ export {
   SEARCH_RELEASES_BY_DATE,
   SEARCH_RELEASES_BY_PERSON_NAME,
   SELECT_RELEASE_RESULT,
+  clearReleaseResult,
   clearSearchResults,
   getJailsByJailStayEKID,
   searchJailStaysByPerson,

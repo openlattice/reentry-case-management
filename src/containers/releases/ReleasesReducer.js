@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_RELEASE_RESULT,
   CLEAR_SEARCH_RESULTS,
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
@@ -84,6 +85,12 @@ export default function releasesReducer(state :Map = INITIAL_STATE, action :Sequ
           .set(SELECTED_RELEASE_DATE, releaseDate);
       }
       return state;
+    }
+
+    case CLEAR_RELEASE_RESULT: {
+      return state
+        .set(SELECTED_PERSON, Map())
+        .set(SELECTED_RELEASE_DATE, '');
     }
 
     case getJailsByJailStayEKID.case(action.type): {
