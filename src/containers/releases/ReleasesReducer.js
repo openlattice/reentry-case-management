@@ -70,7 +70,9 @@ export default function releasesReducer(state :Map = INITIAL_STATE, action :Sequ
         .set(PEOPLE_BY_JAIL_STAY_EKID, Map())
         .set(SEARCHED_JAIL_STAYS, List())
         .set(SEARCHED_PEOPLE, List())
-        .set(TOTAL_HITS, 0);
+        .set(TOTAL_HITS, 0)
+        .setIn([ACTIONS, SEARCH_RELEASES_BY_DATE, REQUEST_STATE], RequestStates.STANDBY)
+        .setIn([ACTIONS, SEARCH_RELEASES_BY_PERSON_NAME, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case SELECT_RELEASE_RESULT: {
