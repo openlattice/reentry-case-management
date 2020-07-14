@@ -75,6 +75,8 @@ const RELEASES :Object = {
   RELEASES: 'releases',
   SEARCHED_JAIL_STAYS: 'searchedJailStays',
   SEARCHED_PEOPLE: 'searchedPeople',
+  SELECTED_PERSON: 'selectedPerson',
+  SELECTED_RELEASE_DATE: 'selectedReleaseDate',
 };
 
 const REPORTS :Object = {
