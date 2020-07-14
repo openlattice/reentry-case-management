@@ -2,9 +2,9 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
@@ -34,6 +34,7 @@ const formatDataForReleasesByDateList = (searchedJailStays :List, peopleByJailSt
     release = release.set('name', personName);
     const { [DATA_SOURCE]: dataSource } = getEntityProperties(person, [DATA_SOURCE]);
     release = release.set('dataSource', dataSource);
+    release = release.set('personEntity', person);
     releasesData = releasesData.push(release);
   });
 
@@ -64,6 +65,7 @@ const formatDataForReleasesByPersonList = (searchedPeople :List, jailStaysByPers
       ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
       : EMPTY_FIELD;
     release = release.set('releaseDate', releaseDate);
+    release = release.set('personEntity', person);
     releasesData = releasesData.push(release);
   });
 
