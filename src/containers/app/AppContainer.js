@@ -39,8 +39,8 @@ import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
 import ParticipantProfile from '../profile/ParticipantProfile';
 import ParticipantsSearch from '../participants/ParticipantsSearch';
 import Providers from '../providers/Providers';
-import Releases from '../releases/Releases';
 import Reports from '../reports/Reports';
+import SearchReleases from '../releases/SearchReleases';
 import TaskManager from '../tasks/TaskManager';
 import * as Routes from '../../core/router/Routes';
 import { isNonEmptyString } from '../../utils/LangUtils';
@@ -104,7 +104,7 @@ class AppContainer extends Component<Props> {
           <Route path={Routes.EDIT_PARTICIPANT} component={EditPersonInfoForm} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />
           <Route path={Routes.NEW_INTAKE_FORM} component={IntakeForm} />
-          <Route path={Routes.NEW_INTAKE} component={Releases} />
+          <Route path={Routes.NEW_INTAKE} component={SearchReleases} />
           <Route path={Routes.PARTICIPANTS} component={ParticipantsSearch} />
           <Route path={Routes.PROVIDERS} component={Providers} />
           <Route path={Routes.REPORTS} component={Reports} />
