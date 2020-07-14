@@ -26,6 +26,7 @@ import {
   clearSearchResults,
   searchReleasesByDate,
   searchReleasesByPersonName,
+  selectReleaseResult,
 } from './ReleasesActions';
 import { formatDataForReleasesByDateList, formatDataForReleasesByPersonList } from './utils/ReleasesUtils';
 
@@ -107,6 +108,7 @@ type Props = {
     goToRoute :GoToRoute;
     searchReleasesByDate :RequestSequence;
     searchReleasesByPersonName :RequestSequence;
+    selectReleaseResult :(person :Map) => { type :string };
   };
   jailStaysByPersonEKID :Map;
   peopleByJailStayEKID :Map;
@@ -210,6 +212,14 @@ class Releases extends Component<Props, State> {
   goToNewIntakeForm = () => {
     const { actions } = this.props;
     actions.goToRoute(Routes.NEW_INTAKE_FORM);
+  }
+
+  selectRelease = (clickedResult :Map) => {
+    const { actions } = this.props;
+    const person :Map = clickedResult.get('personEntity');
+    const releaseDate :string = clickedResult.get('releaseDate');
+    actions.selectReleaseResult({ person, releaseDate });
+    this.goToNewIntakeForm();
   }
 
   onSwitchSearchContext = (e :SyntheticEvent<HTMLInputElement>) => {
@@ -358,6 +368,7 @@ class Releases extends Component<Props, State> {
               hasSearched={hasSearched}
               isLoading={isSearching}
               noResults={NoReleasesFound}
+              onResultClick={this.selectRelease}
               resultLabels={labels}
               results={releasesData} />
           {
@@ -397,6 +408,7 @@ const mapDispatchToProps = (dispatch :Function) => ({
     goToRoute,
     searchReleasesByDate,
     searchReleasesByPersonName,
+    selectReleaseResult,
   }, dispatch)
 });
 
