@@ -217,7 +217,7 @@ class Releases extends Component<Props, State> {
   selectRelease = (clickedResult :Map) => {
     const { actions } = this.props;
     const person :Map = clickedResult.get('personEntity');
-    const releaseDate :string = clickedResult.get('releaseDate');
+    const releaseDate :string = clickedResult.get('releaseDateAsISODate');
     actions.selectReleaseResult({ person, releaseDate });
     this.goToNewIntakeForm();
   }
