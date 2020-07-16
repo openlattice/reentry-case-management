@@ -96,7 +96,7 @@ const Providers = ({
     <>
       <HeaderRow>
         <Header>Service Providers</Header>
-        <Button mode="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
+        <Button color="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
       </HeaderRow>
       <SelectWrapper>
         <Label>Filter by Provider Type:</Label>

@@ -1,5 +1,6 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -16,13 +17,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import IntakesBarChart from './IntakesBarChart';
 import DownloadPeopleModal from './DownloadPeopleModal';
-import COLORS from '../../core/style/Colors';
-import { generateTableHeaders } from '../../utils/Utils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
+import IntakesBarChart from './IntakesBarChart';
 import { GET_REPORTS_DATA, getReportsData } from './ReportsActions';
 import { TABLE_HEADERS } from './ReportsConstants';
+
+import COLORS from '../../core/style/Colors';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { generateTableHeaders } from '../../utils/Utils';
 import { APP, REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { NEUTRALS, WHITE } = Colors;
@@ -129,7 +131,7 @@ const Reports = ({
     <>
       <HeaderRow>
         <Header>Reports</Header>
-        <Button mode="primary" onClick={() => setModalVisibility(true)}>Download</Button>
+        <Button color="primary" onClick={() => setModalVisibility(true)}>Download</Button>
       </HeaderRow>
       <StatsWrapper>
         <StatBox>

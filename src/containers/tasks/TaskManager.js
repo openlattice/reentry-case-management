@@ -156,7 +156,7 @@ const TaskManager = ({
                 options={reentryStaffOptions} />
           </SelectWrapper>
         </span>
-        <Button mode="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
+        <Button color="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
       </Row>
       <TasksTable hasSearched={hasSearched} isLoading={isSearching} tasksData={tasksData} />
       <AddNewFollowUpModal

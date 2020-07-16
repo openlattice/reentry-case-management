@@ -10,7 +10,6 @@ import {
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   ExpansionPanel,
   ExpansionPanelDetails,
   ExpansionPanelSummary,
@@ -20,6 +19,7 @@ import {
 import EditContactInfoModal from './EditContactInfoModal';
 import EditEmergencyContactsModal from './EditEmergencyContactsModal';
 
+import EditButton from '../../../components/buttons/EditButton';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';

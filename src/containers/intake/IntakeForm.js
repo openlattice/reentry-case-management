@@ -308,8 +308,8 @@ class IntakeForm extends Component<Props> {
                       Back
                     </DarkerButton>
                     <Button
+                        color="primary"
                         isLoading={requestIsPending(requestStates[SUBMIT_INTAKE_FORM])}
-                        mode="primary"
                         onClick={handleNext}>
                       { primaryButtonText }
                     </Button>

@@ -1,21 +1,23 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Card,
   CardSegment,
   Colors,
-  EditButton,
   Label,
 } from 'lattice-ui-kit';
 
 import EditProviderModal from './EditProviderModal';
-import COLORS from '../../core/style/Colors';
-import { getAddress } from '../../utils/FormattingUtils';
 import { getListOfContacts } from './utils/ProvidersUtils';
-import { getEKID, getEntityProperties } from '../../utils/DataUtils';
+
+import COLORS from '../../core/style/Colors';
+import EditButton from '../../components/buttons/EditButton';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../utils/DataUtils';
+import { getAddress } from '../../utils/FormattingUtils';
 
 const { NEUTRALS } = Colors;
 const { PROVIDER_ADDRESS, PROVIDER_STAFF } = APP_TYPE_FQNS;

@@ -2,8 +2,8 @@
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
-import { generateReviewSchemas } from '../../../utils/FormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { generateReviewSchemas } from '../../../utils/FormUtils';
 import {
   EDUCATION_LEVELS,
   ETHNICITIES,
@@ -547,7 +547,7 @@ const personInformationUiSchema :Object = {
   [getPageSectionKey(1, 5)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-8',
       'ui:widget': 'RadioWidget',
       'ui:options': {
         row: true
