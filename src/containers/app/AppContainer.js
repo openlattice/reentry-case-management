@@ -32,6 +32,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as AppActions from './AppActions';
 
+import ContactSupportButton from '../../components/buttons/ContactSupportButton';
 import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import IntakeForm from '../intake/IntakeForm';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
@@ -169,6 +170,7 @@ class AppContainer extends Component<Props> {
             <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
               { this.renderAppContent() }
             </AppContentWrapper>
+            <ContactSupportButton />
           </AppContainerWrapper>
         </MuiPickersUtilsProvider>
       </ThemeProvider>
