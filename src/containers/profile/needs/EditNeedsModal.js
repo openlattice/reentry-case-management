@@ -1,23 +1,25 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
-import { schema, uiSchema } from './schemas/EditNeedsSchemas';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEKID } from '../../../utils/DataUtils';
 import { EDIT_NEEDS, clearEditRequestState, editNeeds } from './NeedsActions';
+import { schema, uiSchema } from './schemas/EditNeedsSchemas';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   findEntityAddressKeyFromMap,
@@ -54,7 +56,7 @@ const EditNeedsModal = ({
 
   const originalFormData = {
     [getPageSectionKey(1, 1)]: {
-      [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: needsAssessment.get(TYPE, []),
+      [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: needsAssessment.get(TYPE, List()).toJS(),
       [getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)]: needsAssessment.getIn([NOTES, 0], ''),
     }
   };
