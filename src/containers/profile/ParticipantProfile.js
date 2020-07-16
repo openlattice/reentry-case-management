@@ -13,7 +13,6 @@ import {
   CardStack,
   Colors,
   DataGrid,
-  EditButton,
   Spinner,
 } from 'lattice-ui-kit';
 import { RoutingUtils } from 'lattice-utils';
@@ -39,6 +38,7 @@ import {
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
 
+import EditButton from '../../components/buttons/EditButton';
 import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEKID } from '../../utils/DataUtils';
