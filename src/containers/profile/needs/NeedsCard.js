@@ -1,18 +1,20 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   Card,
   CardSegment,
   Colors,
-  EditButton,
 } from 'lattice-ui-kit';
 
 import EditNeedsModal from './EditNeedsModal';
-import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
+
 import COLORS from '../../../core/style/Colors';
+import EditButton from '../../../components/buttons/EditButton';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 
 const { NEUTRALS } = Colors;
 const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
