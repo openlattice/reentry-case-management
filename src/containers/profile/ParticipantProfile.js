@@ -195,7 +195,7 @@ class ParticipantProfile extends Component<Props, State> {
           </CardInnerWrapper>
           <ButtonsWrapper>
             <GrayerButton onClick={this.goToTaskManager}>Manage Tasks</GrayerButton>
-            <Button mode="primary" onClick={this.openEventModal}>Record Event</Button>
+            <Button color="primary" onClick={this.openEventModal}>Record Event</Button>
           </ButtonsWrapper>
         </HeaderWrapper>
         <ProfileCardStack>
