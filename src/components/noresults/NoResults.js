@@ -1,11 +1,12 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
-import { CardSegment, Colors } from 'lattice-ui-kit';
 import { faFolderOpen } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { CardSegment, Colors } from 'lattice-ui-kit';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 
 const Wrapper = styled(CardSegment)`
   align-items: center;
@@ -13,7 +14,7 @@ const Wrapper = styled(CardSegment)`
 `;
 
 const Text = styled.div`
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N600};
   margin-top: 20px;
 `;
 
@@ -23,7 +24,7 @@ type Props = {
 
 const NoResults = ({ text } :Props) => (
   <Wrapper vertical>
-    <FontAwesomeIcon color={NEUTRALS[3]} icon={faFolderOpen} size="3x" />
+    <FontAwesomeIcon color={NEUTRAL.N300} icon={faFolderOpen} size="3x" />
     <Text>{ text }</Text>
   </Wrapper>
 );
