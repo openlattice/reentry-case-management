@@ -13,7 +13,7 @@ const IconMarginRight = styled.span`
 `;
 
 type Props = {
-  children :any;
+  children ? :any;
   onClick :() => void;
 };
 
@@ -35,6 +35,10 @@ const EditButton = ({ children, onClick } :Props) => {
       {children}
     </Button>
   );
+};
+
+EditButton.defaultProps = {
+  children: undefined,
 };
 
 export default EditButton;

@@ -16,14 +16,14 @@ import EditButton from '../../../components/buttons/EditButton';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const { NOTES, TYPE } = PROPERTY_TYPE_FQNS;
 
 const NeedsTag = styled.div`
-  background-color: ${NEUTRALS[6]};
+  background-color: ${NEUTRAL.N50};
   border-radius: 3px;
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N700};
   font-size: 14px;
   margin-right: 20px;
   padding: 12px 20px;

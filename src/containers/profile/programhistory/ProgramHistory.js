@@ -29,7 +29,7 @@ import {
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { getMostRecentReleaseDate, getReentryEnrollmentDate } from '../utils/ProfileUtils';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const {
   ENROLLMENT_STATUS,
   MANUAL_JAIL_STAYS,
@@ -49,8 +49,8 @@ const EventsCard = styled(Card)`
 
 const GrayBar = styled(CardSegment)`
   align-items: center;
-  background-color: ${NEUTRALS[6]};
-  color: ${NEUTRALS[0]};
+  background-color: ${NEUTRAL.N50};
+  color: ${NEUTRAL.N600};
   justify-content: space-between;
   font-size: 14px;
   line-height: 1.35;

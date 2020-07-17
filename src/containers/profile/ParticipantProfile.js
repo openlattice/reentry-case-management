@@ -49,7 +49,7 @@ import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
@@ -207,7 +207,7 @@ class ParticipantProfile extends Component<Props, State> {
             <CardSegment padding="30px">
               <CardInnerWrapper>
                 <PictureWrapper>
-                  <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="8x" />
+                  <FontAwesomeIcon color={NEUTRAL.N300} icon={faUser} size="8x" />
                 </PictureWrapper>
                 <DataGrid
                     data={participantData}

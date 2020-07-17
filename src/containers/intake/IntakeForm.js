@@ -9,7 +9,6 @@ import {
   Button,
   Card,
   CardHeader,
-  Colors,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -60,7 +59,6 @@ import {
 import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-const { NEUTRALS } = Colors;
 const {
   KEY_MAPPERS,
   VALUE_MAPPERS,
@@ -95,14 +93,6 @@ const CustomCardHeader = styled(CardHeader)`
   font-weight: 500;
   font-size: 22px;
   line-height: 30px;
-`;
-
-const DarkerButton = styled(Button)`
-  background-color: ${NEUTRALS[6]};
-
-  :disabled {
-    background-color: ${NEUTRALS[6]};
-  }
 `;
 
 const BannerContent = styled.div`
@@ -302,11 +292,11 @@ class IntakeForm extends Component<Props> {
                 </Card>
                 <ActionRow>
                   <ButtonsWrapper>
-                    <DarkerButton
+                    <Button
                         disabled={!(page > 0)}
                         onClick={onBack}>
                       Back
-                    </DarkerButton>
+                    </Button>
                     <Button
                         color="primary"
                         isLoading={requestIsPending(requestStates[SUBMIT_INTAKE_FORM])}

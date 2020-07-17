@@ -3,13 +3,11 @@ import styled from 'styled-components';
 import { Button, CardHeader, Colors } from 'lattice-ui-kit';
 import { NavLink } from 'react-router-dom';
 
-import COLORS from '../../../core/style/Colors';
-
-const { NEUTRALS, PURPLES } = Colors;
+const { NEUTRAL, PURPLE } = Colors;
 
 // Breadcrumbs contents:
 const Header = styled(NavLink)`
-  color: ${PURPLES[1]};
+  color: ${PURPLE.P300};
   font-size: 12px;
   font-weight: bold;
   text-decoration: none;
@@ -17,24 +15,23 @@ const Header = styled(NavLink)`
 `;
 
 const NameHeader = styled(Header)`
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N500};
   font-weight: 500;
 `;
 
 // Buttons:
 const GrayerButton = styled(Button)`
-  background-color: ${NEUTRALS[6]};
+  background-color: ${NEUTRAL.N600};
 `;
 
 // card titles:
 const CardHeaderTitle = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 22px;
   font-weight: 600;
 `;
 
 const SmallCardHeaderTitle = styled(CardHeaderTitle)`
-  color: ${NEUTRALS[0]};
+  color: ${NEUTRAL.N600};
   font-size: 20px;
 `;
 

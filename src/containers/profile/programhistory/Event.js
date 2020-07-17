@@ -1,9 +1,8 @@
 // @flow
 import React, { useState } from 'react';
 
-import styled from 'styled-components';
 import { Map } from 'immutable';
-import { CardSegment, Colors } from 'lattice-ui-kit';
+import { CardSegment } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch } from 'react-redux';
 
@@ -23,12 +22,7 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 
-const { NEUTRALS } = Colors;
 const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
-
-const EventCardSegment = styled(CardSegment)`
-  border-bottom: 1px solid ${NEUTRALS[4]};
-`;
 
 type Props = {
   contactNameByProviderEKID :Map;
@@ -63,7 +57,7 @@ const Event = ({
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
-    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
+    <CardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
       <CardInnerWrapper>
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
@@ -80,7 +74,7 @@ const Event = ({
           provider={provider}
           schema={schema}
           uiSchema={uiSchema} />
-    </EventCardSegment>
+    </CardSegment>
   );
 };
 
