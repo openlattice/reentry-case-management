@@ -42,7 +42,6 @@ import {
   setRegisteredSexOffender,
 } from './utils/IntakeUtils';
 
-import COLORS from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -89,7 +88,6 @@ const ButtonsWrapper = styled.div`
 `;
 
 const CustomCardHeader = styled(CardHeader)`
-  color: ${COLORS.GRAY_01};
   font-weight: 500;
   font-size: 22px;
   line-height: 30px;

@@ -11,7 +11,6 @@ import {
 
 import EditNeedsModal from './EditNeedsModal';
 
-import COLORS from '../../../core/style/Colors';
 import EditButton from '../../../components/buttons/EditButton';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
@@ -31,7 +30,6 @@ const NeedsTag = styled.div`
 `;
 
 const Notes = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 14px;
 `;
 

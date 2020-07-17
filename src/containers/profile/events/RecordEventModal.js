@@ -16,7 +16,6 @@ import {
 import { schema, uiSchema } from './schemas/RecordEventSchemas';
 import { hydrateEventSchema, prepareFormDataForProcessing } from './utils/EventUtils';
 
-import COLORS from '../../../core/style/Colors';
 import ModalHeader from '../../../components/modal/ModalHeader';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
@@ -35,7 +34,6 @@ const { PROVIDERS_LIST } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const ActionText = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 14px;
   line-height: 19px;
   margin: 20px 0;

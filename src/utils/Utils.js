@@ -1,12 +1,13 @@
 // @flow
 import { List, Map } from 'immutable';
 import { Models } from 'lattice';
+import { Colors } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
-import COLORS from '../core/style/Colors';
 import { getEKID, getFirstEntityValue } from './DataUtils';
 
 const { FullyQualifiedName } = Models;
+const { NEUTRAL } = Colors;
 
 const pipeValue = (...fns :Function) => (initial :Object) => fns
   .reduce((pipedValue, currentFn) => currentFn(pipedValue), initial);
@@ -51,7 +52,7 @@ const generateTableHeaders = (headers :string[]) :Object[] => {
     tableHeaders.push({
       cellStyle: {
         backgroundColor: 'white',
-        color: COLORS.GRAY_01,
+        color: NEUTRAL.N900,
         fontSize: '10px',
         fontWeight: '600',
         padding: '15px',

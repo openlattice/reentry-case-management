@@ -10,6 +10,7 @@ import {
   Card,
   CardHeader,
   CardSegment,
+  Colors,
   Spinner,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
@@ -25,15 +26,14 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { GET_INTAKES_PER_YEAR, getIntakesPerYear } from './ReportsActions';
 
-import COLORS from '../../core/style/Colors';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
+const { BLUE } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const TableHeader = styled(CardHeader)`
   border: none;
-  color: ${COLORS.GRAY_01};
   font-size: 20px;
   font-weight: 600;
 `;
@@ -82,14 +82,14 @@ const IntakesBarChart = ({ actions, numberOfIntakesPerMonth, requestStates } :Pr
               variant="text"
               onClick={getIntakesForPreviousYear}
               size="sm">
-            <FontAwesomeIcon icon={faChevronLeft} color={COLORS.BLUE_01} />
+            <FontAwesomeIcon icon={faChevronLeft} color={BLUE.BLUE_01} />
           </Button>
           <Year>{ selectedYear }</Year>
           <Button
               variant="text"
               onClick={getIntakesForNextYear}
               size="sm">
-            <FontAwesomeIcon icon={faChevronRight} color={COLORS.BLUE_01} />
+            <FontAwesomeIcon icon={faChevronRight} color={BLUE.BLUE_01} />
           </Button>
         </YearRow>
         {
@@ -111,7 +111,7 @@ const IntakesBarChart = ({ actions, numberOfIntakesPerMonth, requestStates } :Pr
                   width={854}>
                 <XAxis />
                 <YAxis />
-                <VerticalBarSeries barWidth={0.55} color={COLORS.BLUE_01} data={numberOfIntakesPerMonth.toJS()} />
+                <VerticalBarSeries barWidth={0.55} color={BLUE.B300} data={numberOfIntakesPerMonth.toJS()} />
               </XYPlot>
             )
         }
