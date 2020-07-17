@@ -74,6 +74,10 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const { MANUAL_JAILS_PRISONS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPE_FQNS;
 
+const FormWrapper = styled.div`
+  padding-bottom: 50px;
+`;
+
 const ActionRow = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -266,7 +270,7 @@ class IntakeForm extends Component<Props> {
             const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
 
             return (
-              <>
+              <FormWrapper>
                 <Banner
                     maxHeight="100px"
                     isOpen={submissionSuccessful}
@@ -303,7 +307,7 @@ class IntakeForm extends Component<Props> {
                     </Button>
                   </ButtonsWrapper>
                 </ActionRow>
-              </>
+              </FormWrapper>
             );
           }} />
     );
