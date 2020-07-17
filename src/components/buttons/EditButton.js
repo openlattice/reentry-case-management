@@ -1,19 +1,15 @@
 // @flow
 import React from 'react';
+import type { Node } from 'react';
 
-import styled from 'styled-components';
 import { faPen } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Colors } from 'lattice-ui-kit';
 
 const { NEUTRAL } = Colors;
 
-const IconMarginRight = styled.span`
-  margin: 0 8px 0 0;
-`;
-
 type Props = {
-  children ? :any;
+  children ?:Node;
   onClick :() => void;
 };
 
@@ -30,8 +26,7 @@ const EditButton = ({ children, onClick } :Props) => {
   }
 
   return (
-    <Button onClick={onClick}>
-      <IconMarginRight>{EditIcon}</IconMarginRight>
+    <Button onClick={onClick} startIcon={EditIcon}>
       {children}
     </Button>
   );
