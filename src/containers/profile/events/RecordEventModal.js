@@ -2,16 +2,9 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
-import { faTimes } from '@fortawesome/pro-light-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
-import {
-  CardSegment,
-  Colors,
-  Modal,
-  ModalFooter,
-} from 'lattice-ui-kit';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -23,7 +16,7 @@ import {
 import { schema, uiSchema } from './schemas/RecordEventSchemas';
 import { hydrateEventSchema, prepareFormDataForProcessing } from './utils/EventUtils';
 
-import COLORS from '../../../core/style/Colors';
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
@@ -35,51 +28,16 @@ import {
 import { getProviders } from '../../providers/ProvidersActions';
 
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
-const { NEUTRALS } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PROVIDERS_LIST } = PROVIDERS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
-const ModalCardSegment = styled(CardSegment)`
-  justify-content: space-between;
-`;
-
-const ModalTitle = styled.div`
-  color: ${NEUTRALS[0]};
-  font-weight: 600;
-  font-size: 22px;
-  max-height: 30px;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  height: 32px;
-  width: 32px;
-`;
-
 const ActionText = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 14px;
   line-height: 19px;
   margin: 20px 0;
 `;
-
-type HeaderProps = {
-  onClose :() => void;
-};
-
-const Header = ({ onClose } :HeaderProps) => (
-  <ModalCardSegment padding="30px 30px 20px" vertical={false}>
-    <ModalTitle>Record Event</ModalTitle>
-    <CloseButton onClick={onClose}>
-      <FontAwesomeIcon color={NEUTRALS[2]} icon={faTimes} size="lg" />
-    </CloseButton>
-  </ModalCardSegment>
-);
 
 type Props = {
   actions :{
@@ -157,23 +115,20 @@ class RecordEventModal extends Component<Props, State> {
     }
   }
 
-  renderHeader = () => (<Header onClose={this.closeModal} />);
-
-  renderFooter = () => {
-    const { requestStates } = this.props;
+  render() {
+    const { isVisible, providersList, requestStates } = this.props;
+    const { formData } = this.state;
+    const hydratedSchema :Object = hydrateEventSchema(schema, providersList);
     const isSubmitting :boolean = requestIsPending(requestStates[RECORD_ENROLLMENT_EVENT]);
-    return (
+
+    const withFooter = (
       <ModalFooter
           isPendingPrimary={isSubmitting}
           onClickPrimary={this.onSubmit}
           textPrimary="Save" />
     );
-  }
+    const withHeader = <ModalHeader onClose={this.closeModal} title="Record Event" />;
 
-  render() {
-    const { isVisible, providersList } = this.props;
-    const { formData } = this.state;
-    const hydratedSchema :Object = hydrateEventSchema(schema, providersList);
     return (
       <Modal
           isVisible={isVisible}
@@ -181,8 +136,8 @@ class RecordEventModal extends Component<Props, State> {
           onClose={this.closeModal}
           textPrimary="Save"
           viewportScrolling
-          withFooter={this.renderFooter}
-          withHeader={this.renderHeader}>
+          withFooter={withFooter}
+          withHeader={withHeader}>
         <ActionText>
           Select an event type and the related organization to record it in program history.
         </ActionText>

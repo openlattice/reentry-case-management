@@ -1,5 +1,6 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -16,16 +17,16 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import IntakesBarChart from './IntakesBarChart';
 import DownloadPeopleModal from './DownloadPeopleModal';
-import COLORS from '../../core/style/Colors';
-import { generateTableHeaders } from '../../utils/Utils';
-import { requestIsPending } from '../../utils/RequestStateUtils';
+import IntakesBarChart from './IntakesBarChart';
 import { GET_REPORTS_DATA, getReportsData } from './ReportsActions';
 import { TABLE_HEADERS } from './ReportsConstants';
+
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { generateTableHeaders } from '../../utils/Utils';
 import { APP, REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
-const { NEUTRALS, WHITE } = Colors;
+const { NEUTRAL } = Colors;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
@@ -43,7 +44,6 @@ const HeaderRow = styled.div`
 `;
 
 const Header = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 26px;
   font-weight: 600;
   line-height: 35px;
@@ -55,9 +55,9 @@ const StatsWrapper = styled.div`
 
 const StatBox = styled.div`
   align-items: center;
-  background-color: ${WHITE};
+  background-color: white;
   border-radius: 5px;
-  border: 1px solid ${COLORS.GRAY_03};
+  border: 1px solid ${NEUTRAL.N100};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -72,19 +72,17 @@ const StatBox = styled.div`
 `;
 
 const Number = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 24px;
 `;
 
 const Category = styled.div`
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N500};
   font-size: 14px;
   font-weight: 600;
 `;
 
 const TableHeader = styled(CardHeader)`
   border: none;
-  color: ${COLORS.GRAY_01};
   font-size: 20px;
   font-weight: 600;
 `;
@@ -129,7 +127,7 @@ const Reports = ({
     <>
       <HeaderRow>
         <Header>Reports</Header>
-        <Button mode="primary" onClick={() => setModalVisibility(true)}>Download</Button>
+        <Button color="primary" onClick={() => setModalVisibility(true)}>Download</Button>
       </HeaderRow>
       <StatsWrapper>
         <StatBox>

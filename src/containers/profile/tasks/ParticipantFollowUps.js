@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -10,25 +11,25 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddNewFollowUpModal from './AddNewFollowUpModal';
-import TasksTable from '../../../components/tasks/TasksTable';
-
-import * as Routes from '../../../core/router/Routes';
-import { Header, NameHeader } from '../styled/GeneralProfileStyles';
+import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
+import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
 import { formatTableData } from './utils/ParticipantFollowUpsUtils';
+
+import TasksTable from '../../../components/tasks/TasksTable';
+import * as Routes from '../../../core/router/Routes';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { schema, uiSchema } from './schemas/AddNewFollowUpSchemas';
-import { LOAD_TASKS, loadTasks } from './FollowUpsActions';
 import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
@@ -41,7 +42,7 @@ const HeaderRow = styled.div`
 `;
 
 const PageHeader = styled.div`
-  color: ${NEUTRALS[0]};
+  color: ${NEUTRAL.N600};
   font-size: 28px;
   font-weight: 600;
 `;
@@ -138,7 +139,7 @@ class ParticipantTasks extends Component<Props, State> {
         </Breadcrumbs>
         <HeaderRow>
           <PageHeader>{ header }</PageHeader>
-          <Button mode="primary" onClick={this.openModal}>New Task</Button>
+          <Button color="primary" onClick={this.openModal}>New Task</Button>
         </HeaderRow>
         <TasksTable
             hasSearched={hasSearched}

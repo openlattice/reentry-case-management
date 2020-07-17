@@ -13,7 +13,6 @@ import {
   CardStack,
   Colors,
   DataGrid,
-  EditButton,
   Spinner,
 } from 'lattice-ui-kit';
 import { RoutingUtils } from 'lattice-utils';
@@ -39,6 +38,7 @@ import {
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
 
+import EditButton from '../../components/buttons/EditButton';
 import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEKID } from '../../utils/DataUtils';
@@ -49,7 +49,7 @@ import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
@@ -196,7 +196,7 @@ class ParticipantProfile extends Component<Props, State> {
           </CardInnerWrapper>
           <ButtonsWrapper>
             <GrayerButton onClick={this.goToTaskManager}>Manage Tasks</GrayerButton>
-            <Button mode="primary" onClick={this.openEventModal}>Record Event</Button>
+            <Button color="primary" onClick={this.openEventModal}>Record Event</Button>
           </ButtonsWrapper>
         </HeaderWrapper>
         <ProfileCardStack>
@@ -208,7 +208,7 @@ class ParticipantProfile extends Component<Props, State> {
             <CardSegment padding="30px">
               <CardInnerWrapper>
                 <PictureWrapper>
-                  <FontAwesomeIcon color={NEUTRALS[3]} icon={faUser} size="8x" />
+                  <FontAwesomeIcon color={NEUTRAL.N300} icon={faUser} size="8x" />
                 </PictureWrapper>
                 <DataGrid
                     data={participantData}

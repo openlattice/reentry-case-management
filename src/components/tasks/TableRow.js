@@ -1,31 +1,32 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled, { css } from 'styled-components';
-import {
-  CardSegment,
-  Colors,
-  IconButton,
-  StyleUtils,
-} from 'lattice-ui-kit';
 import { faCheck } from '@fortawesome/pro-light-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
+import {
+  Button,
+  CardSegment,
+  Colors,
+  StyleUtils,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 
-import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { StyledTableRow } from './FollowUpsTableStyles';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+
+import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
   GREEN_2,
-  NEUTRALS,
-  REDS,
-  WHITE
+  NEUTRAL,
+  REDS
 } = Colors;
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
 const {
@@ -48,7 +49,7 @@ const TaskName = styled.td`
 `;
 
 const TaskDescriptionPreview = styled.td`
-  color: ${NEUTRALS[2]};
+  color: ${NEUTRAL.N300};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -76,16 +77,16 @@ const StatusWrapper = styled.td`
 `;
 
 const statusColorVariation = getStyleVariation('bgColor', {
-  default: NEUTRALS[1],
+  default: NEUTRAL.N300,
   [FOLLOW_UPS_STATUSES.DONE]: GREEN_2,
   [FOLLOW_UPS_STATUSES.LATE]: REDS[3],
-  [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
+  [FOLLOW_UPS_STATUSES.PENDING]: NEUTRAL.N300,
 });
 
 const Status = styled.div`
   ${statusStyles}
   border-radius: 4px;
-  color: ${WHITE};
+  color: white;
   font-size: 12px;
   font-weight: bold;
   padding: 4px 0;
@@ -205,9 +206,9 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
               <div>{ providerName }</div>
               {
                 taskStatus !== FOLLOW_UPS_STATUSES.DONE && (
-                  <IconButton
-                      onClick={() => setCompletionModalVisibility(true)}
-                      icon={<FontAwesomeIcon icon={faCheck} />} />
+                  <Button onClick={() => setCompletionModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faCheck} />
+                  </Button>
                 )
               }
               {

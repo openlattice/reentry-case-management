@@ -1,12 +1,19 @@
 // @flow
 import React, { useState } from 'react';
-import styled from 'styled-components';
+
 import { Map } from 'immutable';
+import { CardSegment } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
-import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
 import { useDispatch } from 'react-redux';
 
 import EditEventModal from './EditEventModal';
+
+import EditButton from '../../../components/buttons/EditButton';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
+import { getProviders } from '../../providers/ProvidersActions';
+import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -14,18 +21,8 @@ import {
   EventText,
   EventWrapper,
 } from '../styled/EventStyles';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
-import { getProviders } from '../../providers/ProvidersActions';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
-const { NEUTRALS } = Colors;
 const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
-
-const EventCardSegment = styled(CardSegment)`
-  border-bottom: 1px solid ${NEUTRALS[4]};
-`;
 
 type Props = {
   contactNameByProviderEKID :Map;
@@ -60,7 +57,7 @@ const Event = ({
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
-    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
+    <CardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
       <CardInnerWrapper>
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
@@ -77,7 +74,7 @@ const Event = ({
           provider={provider}
           schema={schema}
           uiSchema={uiSchema} />
-    </EventCardSegment>
+    </CardSegment>
   );
 };
 
