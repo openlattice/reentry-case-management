@@ -29,7 +29,7 @@ import { PARTICIPANT_FOLLOW_UPS, PROFILE, SHARED } from '../../../utils/constant
 import { Header, NameHeader } from '../styled/GeneralProfileStyles';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { PARTICIPANT, PARTICIPANT_NEIGHBORS } = PROFILE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
@@ -42,7 +42,7 @@ const HeaderRow = styled.div`
 `;
 
 const PageHeader = styled.div`
-  color: ${NEUTRALS[0]};
+  color: ${NEUTRAL.N600};
   font-size: 28px;
   font-weight: 600;
 `;

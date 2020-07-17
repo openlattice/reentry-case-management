@@ -25,7 +25,7 @@ import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstant
 const { getStyleVariation } = StyleUtils;
 const {
   GREEN_2,
-  NEUTRALS,
+  NEUTRAL,
   REDS,
   WHITE
 } = Colors;
@@ -50,7 +50,7 @@ const TaskName = styled.td`
 `;
 
 const TaskDescriptionPreview = styled.td`
-  color: ${NEUTRALS[2]};
+  color: ${NEUTRAL.N300};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -78,10 +78,10 @@ const StatusWrapper = styled.td`
 `;
 
 const statusColorVariation = getStyleVariation('bgColor', {
-  default: NEUTRALS[1],
+  default: NEUTRAL.N300,
   [FOLLOW_UPS_STATUSES.DONE]: GREEN_2,
   [FOLLOW_UPS_STATUSES.LATE]: REDS[3],
-  [FOLLOW_UPS_STATUSES.PENDING]: NEUTRALS[1],
+  [FOLLOW_UPS_STATUSES.PENDING]: NEUTRAL.N300,
 });
 
 const Status = styled.div`
