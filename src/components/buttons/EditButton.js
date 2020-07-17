@@ -11,10 +11,12 @@ type Props = {
   onClick :() => void;
 };
 
+const EditIcon = (
+  <FontAwesomeIcon color={NEUTRAL.N700} icon={faPen} />
+);
+
 const EditButton = ({ onClick } :Props) => (
-  <IconButton
-      icon={<FontAwesomeIcon color={NEUTRAL.N700} icon={faPen} />}
-      onClick={onClick} />
+  <IconButton icon={EditIcon} onClick={onClick} />
 );
 
 export default EditButton;
