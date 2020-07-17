@@ -206,8 +206,7 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
               <div>{ providerName }</div>
               {
                 taskStatus !== FOLLOW_UPS_STATUSES.DONE && (
-                  <Button
-                      onClick={() => setCompletionModalVisibility(true)}>
+                  <Button onClick={() => setCompletionModalVisibility(true)}>
                     <FontAwesomeIcon icon={faCheck} />
                   </Button>
                 )
