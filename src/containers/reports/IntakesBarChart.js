@@ -1,30 +1,32 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
+import { faChevronLeft, faChevronRight } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
+  Button,
   Card,
   CardHeader,
   CardSegment,
-  IconButton,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   VerticalBarSeries,
-  XYPlot,
   XAxis,
+  XYPlot,
   YAxis,
 } from 'react-vis';
-import { faChevronLeft, faChevronRight } from '@fortawesome/pro-light-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import { GET_INTAKES_PER_YEAR, getIntakesPerYear } from './ReportsActions';
+
 import COLORS from '../../core/style/Colors';
 import { requestIsPending } from '../../utils/RequestStateUtils';
-import { GET_INTAKES_PER_YEAR, getIntakesPerYear } from './ReportsActions';
 import { REPORTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -76,17 +78,19 @@ const IntakesBarChart = ({ actions, numberOfIntakesPerMonth, requestStates } :Pr
       <TableHeader>Number of Intakes per Month</TableHeader>
       <CardSegment padding="30px" vertical>
         <YearRow>
-          <IconButton
-              icon={<FontAwesomeIcon icon={faChevronLeft} color={COLORS.BLUE_01} />}
-              mode="subtle"
+          <Button
+              variant="text"
               onClick={getIntakesForPreviousYear}
-              size="sm" />
+              size="sm">
+            <FontAwesomeIcon icon={faChevronLeft} color={COLORS.BLUE_01} />
+          </Button>
           <Year>{ selectedYear }</Year>
-          <IconButton
-              icon={<FontAwesomeIcon icon={faChevronRight} color={COLORS.BLUE_01} />}
-              mode="subtle"
+          <Button
+              variant="text"
               onClick={getIntakesForNextYear}
-              size="sm" />
+              size="sm">
+            <FontAwesomeIcon icon={faChevronRight} color={COLORS.BLUE_01} />
+          </Button>
         </YearRow>
         {
           retrievingIntakes

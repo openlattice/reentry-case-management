@@ -1,24 +1,26 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled, { css } from 'styled-components';
-import {
-  CardSegment,
-  Colors,
-  IconButton,
-  StyleUtils,
-} from 'lattice-ui-kit';
 import { faCheck } from '@fortawesome/pro-light-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
+import {
+  Button,
+  CardSegment,
+  Colors,
+  StyleUtils,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 
-import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { StyledTableRow } from './FollowUpsTableStyles';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+
+import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
+import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
 
 const { getStyleVariation } = StyleUtils;
 const {
@@ -205,9 +207,10 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
               <div>{ providerName }</div>
               {
                 taskStatus !== FOLLOW_UPS_STATUSES.DONE && (
-                  <IconButton
-                      onClick={() => setCompletionModalVisibility(true)}
-                      icon={<FontAwesomeIcon icon={faCheck} />} />
+                  <Button
+                      onClick={() => setCompletionModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faCheck} />
+                  </Button>
                 )
               }
               {
