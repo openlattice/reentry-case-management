@@ -3,12 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import {
-  Button,
-  CheckboxSelect,
-  Colors,
-  Label,
-} from 'lattice-ui-kit';
+import { Button, CheckboxSelect, Label } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -40,7 +35,6 @@ import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/consta
 import { GET_FOLLOW_UP_NEIGHBORS } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
-const { NEUTRALS } = Colors;
 const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
 const { FOLLOW_UP_NEIGHBOR_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -53,7 +47,6 @@ const FOLLOW_UP_STATUS_OPTIONS :Object[] = [
 ];
 
 const PageHeader = styled.div`
-  color: ${NEUTRALS[0]};
   font-size: 28px;
   font-weight: 600;
 `;

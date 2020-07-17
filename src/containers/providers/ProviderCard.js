@@ -13,13 +13,12 @@ import {
 import EditProviderModal from './EditProviderModal';
 import { getListOfContacts } from './utils/ProvidersUtils';
 
-import COLORS from '../../core/style/Colors';
 import EditButton from '../../components/buttons/EditButton';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { getAddress } from '../../utils/FormattingUtils';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { PROVIDER_ADDRESS, PROVIDER_STAFF } = APP_TYPE_FQNS;
 const {
   DESCRIPTION,
@@ -34,7 +33,6 @@ const labels :string[] = [
 ];
 
 const Header = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 26px;
   font-weight: 600;
   line-height: 35px;
@@ -66,9 +64,9 @@ const ContactLabelsRow = styled.div`
 
 const TypeTag = styled.div`
   align-items: center;
-  background-color: ${COLORS.GRAY_02};
+  background-color: ${NEUTRAL.N50};
   border-radius: 2px;
-  color: ${NEUTRALS[0]};
+  color: ${NEUTRAL.N700};
   display: flex;
   font-size: 11px;
   font-weight: bold;
@@ -80,7 +78,6 @@ const TypeTag = styled.div`
 `;
 
 const PointOfContactTitle = styled.div`
-  color: ${COLORS.GRAY_01};
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
@@ -88,7 +85,6 @@ const PointOfContactTitle = styled.div`
 `;
 
 const Description = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 16px;
   line-height: 22px;
   margin-top: 20px;

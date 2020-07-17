@@ -26,8 +26,7 @@ const { getStyleVariation } = StyleUtils;
 const {
   GREEN_2,
   NEUTRAL,
-  REDS,
-  WHITE
+  REDS
 } = Colors;
 const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
 const {
@@ -87,7 +86,7 @@ const statusColorVariation = getStyleVariation('bgColor', {
 const Status = styled.div`
   ${statusStyles}
   border-radius: 4px;
-  color: ${WHITE};
+  color: white;
   font-size: 12px;
   font-weight: bold;
   padding: 4px 0;
