@@ -21,7 +21,7 @@ const NameHeader = styled(Header)`
 
 // Buttons:
 const GrayerButton = styled(Button)`
-  background-color: ${NEUTRAL.N600};
+  background-color: ${NEUTRAL.N100};
 `;
 
 // card titles:
