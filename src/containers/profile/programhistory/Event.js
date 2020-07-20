@@ -22,7 +22,12 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 
-const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
+const {
+  EFFECTIVE_DATE,
+  NAME,
+  NOTES,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 type Props = {
   contactNameByProviderEKID :Map;
@@ -43,9 +48,9 @@ const Event = ({
     setEditModalVisibility(true);
   };
 
-  const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
+  const { [EFFECTIVE_DATE]: datetime, [NOTES]: notes, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
-    [EFFECTIVE_DATE, STATUS]
+    [EFFECTIVE_DATE, NOTES, STATUS]
   );
   const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
@@ -64,6 +69,7 @@ const Event = ({
           <EventStatusText>{ status }</EventStatusText>
           <EventText>{ relatedOrganization }</EventText>
           <EventText>{ pointofContact }</EventText>
+          <EventText>{ notes }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
       <div><EditButton onClick={onOpenEditModal} /></div>
