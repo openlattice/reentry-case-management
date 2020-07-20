@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Map } from 'immutable';
 import { CardSegment } from 'lattice-ui-kit';
+import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch } from 'react-redux';
 
@@ -22,7 +23,13 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 
-const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
+const { isNonEmptyArray } = LangUtils;
+const {
+  EFFECTIVE_DATE,
+  NAME,
+  NOTES,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 type Props = {
   contactNameByProviderEKID :Map;
@@ -43,16 +50,19 @@ const Event = ({
     setEditModalVisibility(true);
   };
 
-  const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
+  const { [EFFECTIVE_DATE]: datetime, [NOTES]: notes, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
-    [EFFECTIVE_DATE, STATUS]
+    [EFFECTIVE_DATE, NOTES, STATUS]
   );
   const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
-  const { [NAME]: name } = getEntityProperties(provider, [NAME]);
-  const providerName :string = typeof name === 'string' ? name : name[0];
-  const relatedOrganization :string = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  let relatedOrganization;
+  if (!provider.isEmpty()) {
+    const { [NAME]: name } = getEntityProperties(provider, [NAME]);
+    const providerName :string = isNonEmptyArray(name) ? name[0] : name;
+    relatedOrganization = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  }
   const providerEKID :UUID = getEKID(provider);
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
@@ -62,8 +72,9 @@ const Event = ({
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
           <EventStatusText>{ status }</EventStatusText>
-          <EventText>{ relatedOrganization }</EventText>
-          <EventText>{ pointofContact }</EventText>
+          { relatedOrganization && <EventText>{ relatedOrganization }</EventText> }
+          { relatedOrganization && <EventText>{ pointofContact }</EventText> }
+          <EventText>{ notes }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
       <div><EditButton onClick={onOpenEditModal} /></div>
