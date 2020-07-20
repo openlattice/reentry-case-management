@@ -55,9 +55,12 @@ const Event = ({
   const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
-  const { [NAME]: name } = getEntityProperties(provider, [NAME]);
-  const providerName :string = typeof name === 'string' ? name : name[0];
-  const relatedOrganization :string = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  let relatedOrganization;
+  if (!provider.isEmpty()) {
+    const { [NAME]: name } = getEntityProperties(provider, [NAME]);
+    const providerName :string = typeof name === 'string' ? name : name[0];
+    relatedOrganization = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  }
   const providerEKID :UUID = getEKID(provider);
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
@@ -67,8 +70,8 @@ const Event = ({
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
           <EventStatusText>{ status }</EventStatusText>
-          <EventText>{ relatedOrganization }</EventText>
-          <EventText>{ pointofContact }</EventText>
+          { relatedOrganization && <EventText>{ relatedOrganization }</EventText> }
+          { relatedOrganization && <EventText>{ pointofContact }</EventText> }
           <EventText>{ notes }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
