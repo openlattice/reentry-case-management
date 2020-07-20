@@ -1,6 +1,7 @@
 // @flow
 import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { ValidationUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
@@ -9,6 +10,7 @@ import { isDefined } from '../../../../utils/LangUtils';
 import { getValuesFromEntityList } from '../../../../utils/Utils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const { isValidUUID } = ValidationUtils;
 const {
   ENROLLMENT_STATUS,
   HAS,
@@ -67,7 +69,7 @@ const prepareFormDataForProcessing = (formData :Object, personEKID :UUID) :Objec
   const associations :Array<Array<*>> = [
     [HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}]
   ];
-  if (isDefined(providerEKID)) {
+  if (isValidUUID(providerEKID)) {
     associations.push([MANUAL_ASSIGNED_TO, providerEKID, PROVIDER, 0, ENROLLMENT_STATUS, {}]);
   }
   return { entityDataToProcess, associations };

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Map } from 'immutable';
 import { CardSegment } from 'lattice-ui-kit';
+import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch } from 'react-redux';
 
@@ -22,6 +23,7 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 
+const { isNonEmptyArray } = LangUtils;
 const {
   EFFECTIVE_DATE,
   NAME,
@@ -58,7 +60,7 @@ const Event = ({
   let relatedOrganization;
   if (!provider.isEmpty()) {
     const { [NAME]: name } = getEntityProperties(provider, [NAME]);
-    const providerName :string = typeof name === 'string' ? name : name[0];
+    const providerName :string = isNonEmptyArray(name) ? name[0] : name;
     relatedOrganization = `Related Organization: ${providerName || EMPTY_FIELD}`;
   }
   const providerEKID :UUID = getEKID(provider);
