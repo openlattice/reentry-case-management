@@ -3,10 +3,10 @@ import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
 
-import { getValuesFromEntityList } from '../../../../utils/Utils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { deleteKeyFromFormData } from '../../../../utils/FormUtils';
 import { isDefined } from '../../../../utils/LangUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
+import { getValuesFromEntityList } from '../../../../utils/Utils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
@@ -65,9 +65,11 @@ const prepareFormDataForProcessing = (formData :Object, personEKID :UUID) :Objec
   }
 
   const associations :Array<Array<*>> = [
-    [HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}],
-    [MANUAL_ASSIGNED_TO, providerEKID, PROVIDER, 0, ENROLLMENT_STATUS, {}],
+    [HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}]
   ];
+  if (isDefined(providerEKID)) {
+    associations.push([MANUAL_ASSIGNED_TO, providerEKID, PROVIDER, 0, ENROLLMENT_STATUS, {}]);
+  }
   return { entityDataToProcess, associations };
 };
 
