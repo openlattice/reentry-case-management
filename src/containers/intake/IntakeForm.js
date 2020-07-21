@@ -10,6 +10,7 @@ import {
   Card,
   CardHeader,
 } from 'lattice-ui-kit';
+import { AsYouType } from 'libphonenumber-js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -127,7 +128,19 @@ type Props = {
   selectedReleaseDate :string;
 };
 
-class IntakeForm extends Component<Props> {
+type State = {
+  formData :Object;
+};
+
+class IntakeForm extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
@@ -225,6 +238,10 @@ class IntakeForm extends Component<Props> {
     actions.submitIntakeForm({ associationEntityData, entityData });
   }
 
+  onChange = ({ formData } :Object) => {
+    this.setState({ formData });
+  }
+
   render() {
     const {
       incarcerationFacilities,
@@ -232,6 +249,9 @@ class IntakeForm extends Component<Props> {
       selectedPerson,
       selectedReleaseDate,
     } = this.props;
+    const { formData } = this.state;
+    console.log('formData ', formData);
+    console.log('asyoutype ', new AsYouType('US').input('2133734231'));
     const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
     const initialFormData = prepopulateFormData(selectedPerson, selectedReleaseDate);
     return (
@@ -254,6 +274,11 @@ class IntakeForm extends Component<Props> {
             let primaryButtonText :string = 'Continue to Needs Assessment';
             if (needsAssessmentPage) primaryButtonText = 'Review Form';
             if (reviewPage) primaryButtonText = 'Submit';
+
+            console.log('pagedData ', pagedData);
+            const onChange = ({ formData: internalFormData }) => {
+              this.setState({ formData: internalFormData });
+            };
 
             const submitForm = () => {
               this.onSubmit({ formData: pagedData });
@@ -288,6 +313,7 @@ class IntakeForm extends Component<Props> {
                       formData={pagedData}
                       ref={formRef}
                       hideSubmit
+                      onChange={onChange}
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
                       uiSchema={uiSchemas[page]} />
