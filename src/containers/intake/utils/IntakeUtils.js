@@ -59,6 +59,7 @@ const {
   GENDER,
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
+  IS_CELL_PHONE,
   LAST_NAME,
   MARITAL_STATUS,
   MIDDLE_NAME,
@@ -175,17 +176,74 @@ const setClientContactInfoIndices = (formData :Object) :Object => {
   const contactInfoCount :number = getClientContactInfoCount(formData);
   if (!contactInfoCount) return updatedFormData;
 
-  if (!isDefined(getIn(formData, [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]))
-    && contactInfoCount === 1) {
-    const currentEmailPath :string[] = [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, EMAIL)];
-    const emailValue :string = getIn(formData, currentEmailPath);
-    updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+  const currentHomePhonePath :string[] = [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)];
+  const homePhoneNumber = getIn(formData, [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]);
+  const currentCellPath :string[] = [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)];
+  const cellPhoneNumber = getIn(formData, [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)]);
+  const currentEmailPath :string[] = [sectionTwoKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)];
+  const email = getIn(formData, [sectionTwoKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)]);
+
+  if (contactInfoCount === 3) {
     updatedFormData = updateFormData(
       updatedFormData,
-      [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, EMAIL)],
-      emailValue
+      [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, IS_CELL_PHONE)],
+      true
     );
   }
+  else if (contactInfoCount === 2) {
+    if (!isDefined(homePhoneNumber) || !isDefined(cellPhoneNumber)) {
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, EMAIL)],
+        email
+      );
+
+      if (isDefined(cellPhoneNumber)) {
+        updatedFormData = deleteKeyFromFormData(updatedFormData, currentCellPath);
+        updatedFormData = updateFormData(
+          updatedFormData,
+          [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)],
+          cellPhoneNumber
+        );
+        updatedFormData = updateFormData(
+          updatedFormData,
+          [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, IS_CELL_PHONE)],
+          true
+        );
+      }
+    }
+    if (!isDefined(email)) {
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+    }
+  }
+  else if (contactInfoCount === 1) {
+    const contactInfoValues = [homePhoneNumber, cellPhoneNumber, email];
+    const indexToKeep = contactInfoValues.findIndex((listValue) => isDefined(listValue));
+    if (indexToKeep === 1) {
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)],
+        cellPhoneNumber
+      );
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, IS_CELL_PHONE)],
+        true
+      );
+    }
+    if (indexToKeep === 2) {
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, EMAIL)],
+        email
+      );
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentHomePhonePath);
+    }
+    updatedFormData = deleteKeyFromFormData(updatedFormData, currentCellPath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+  }
+
   return updatedFormData;
 };
 
