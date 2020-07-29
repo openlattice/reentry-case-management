@@ -188,7 +188,11 @@ const personInformationSchema :Object = {
         },
         [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
           type: 'string',
-          title: 'Phone number',
+          title: 'Home phone number',
+        },
+        [getEntityAddressKey(6, CONTACT_INFO, PHONE_NUMBER)]: {
+          type: 'string',
+          title: 'Cell phone number',
         },
         [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
           type: 'string',
@@ -441,22 +445,25 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, LOCATION, US_STATE)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, LOCATION, ZIP)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(6, CONTACT_INFO, PHONE_NUMBER)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     'ui:order': [
       getEntityAddressKey(0, LOCATION, STREET),
@@ -464,6 +471,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, LOCATION, US_STATE),
       getEntityAddressKey(0, LOCATION, ZIP),
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
+      getEntityAddressKey(6, CONTACT_INFO, PHONE_NUMBER),
       getEntityAddressKey(1, CONTACT_INFO, EMAIL),
       getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
       getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
