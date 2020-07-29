@@ -265,37 +265,39 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
   updatedFormData = deleteKeyFromFormData(updatedFormData, preferredMethodOfContactPath);
   if (!contactInfoCount) return updatedFormData;
 
-  const emailIndex :number = contactInfoCount - 1;
-  if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
-    const emailAsPreferredMethodKey :string = getEntityAddressKey(
-      emailIndex,
-      CONTACT_INFO,
-      PREFERRED_METHOD_OF_CONTACT
-    );
-    updatedFormData = updateFormData(
-      updatedFormData,
-      [pageSectionKey, emailAsPreferredMethodKey],
-      preferredMethodOfContactValue
-    );
-    const emailAsPreferredKey :string = getEntityAddressKey(emailIndex, CONTACT_INFO, PREFERRED);
-    updatedFormData = updateFormData(
-      updatedFormData,
-      [pageSectionKey, emailAsPreferredKey],
-      true
-    );
+  const contactInfoSection = get(formData, pageSectionKey);
+  let indexToSet;
+  if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[1]
+    || preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
+
+    const cellPhoneProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
+      const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      return propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
+    });
+    const [cellPhoneEntityKeyAddress] = cellPhoneProperty;
+    // CHECK WHAT ACTUAL PROP IS CALLED:
+    const { entityIndex } = parseEntityAddressKey(cellPhoneEntityKeyAddress);
+    indexToSet = entityIndex;
+  }
+  else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
+    const emailProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
+      const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      return propertyTypeFQN.toString() === EMAIL.toString();
+    });
+    const [emailEntityKeyAddress] = emailProperty;
+    // CHECK WHAT ACTUAL PROP IS CALLED:
+    const { entityIndex } = parseEntityAddressKey(emailEntityKeyAddress);
+    indexToSet = entityIndex;
   }
   else {
-    const phoneAsPreferredMethodKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+    indexToSet = 0;
+  }
+
+  if (isDefined(indexToSet)) {
     updatedFormData = updateFormData(
       updatedFormData,
-      [pageSectionKey, phoneAsPreferredMethodKey],
+      [pageSectionKey, getEntityAddressKey(indexToSet, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
       preferredMethodOfContactValue
-    );
-    const phoneAsPreferredKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED);
-    updatedFormData = updateFormData(
-      updatedFormData,
-      [pageSectionKey, phoneAsPreferredKey],
-      true
     );
   }
 
