@@ -299,6 +299,11 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       [pageSectionKey, getEntityAddressKey(indexToSet, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
       preferredMethodOfContactValue
     );
+    updatedFormData = updateFormData(
+      updatedFormData,
+      [pageSectionKey, getEntityAddressKey(indexToSet, CONTACT_INFO, PREFERRED)],
+      true
+    );
   }
 
   return updatedFormData;
