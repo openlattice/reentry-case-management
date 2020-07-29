@@ -161,7 +161,8 @@ const getClientContactInfoCount = (formData :Object) :number => {
     const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
     const propertyIsAboutPreferred :boolean = propertyTypeFQN.toString() === PREFERRED.toString()
       || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString()
-      || propertyTypeFQN.toString() === GENERAL_NOTES.toString();
+      || propertyTypeFQN.toString() === GENERAL_NOTES.toString()
+      || propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
 
     return entitySetName === CONTACT_INFO.toString()
       && isDefined(get(contactSection, entityAddressKey))
@@ -275,7 +276,6 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       return propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
     });
     const [cellPhoneEntityKeyAddress] = cellPhoneProperty;
-    // CHECK WHAT ACTUAL PROP IS CALLED:
     const { entityIndex } = parseEntityAddressKey(cellPhoneEntityKeyAddress);
     indexToSet = entityIndex;
   }
@@ -285,7 +285,6 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       return propertyTypeFQN.toString() === EMAIL.toString();
     });
     const [emailEntityKeyAddress] = emailProperty;
-    // CHECK WHAT ACTUAL PROP IS CALLED:
     const { entityIndex } = parseEntityAddressKey(emailEntityKeyAddress);
     indexToSet = entityIndex;
   }
@@ -320,7 +319,6 @@ const setPreferredTimeOfContact = (formData :Object) :Object => {
   let updatedFormData = formData;
   updatedFormData = deleteKeyFromFormData(updatedFormData, preferredTimeOfContactPath);
   if (!contactInfoCount) return updatedFormData;
-
   let contactIndex :number = 0;
   while (contactIndex < contactInfoCount) {
     updatedFormData = updateFormData(
