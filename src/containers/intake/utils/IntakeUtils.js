@@ -346,10 +346,10 @@ const setContactIndices = (formData :Object) :Map => {
 
   const sectionFourKey :string = getPageSectionKey(1, 4);
   const sectionSevenKey :string = getPageSectionKey(1, 7);
-  const attorneyPhoneKey :string = getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER);
-  const attorneyEmailKey :string = getEntityAddressKey(3, CONTACT_INFO, EMAIL);
-  const officerPhoneKey :string = getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER);
-  const officerEmailKey :string = getEntityAddressKey(5, CONTACT_INFO, EMAIL);
+  const attorneyPhoneKey :string = getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER);
+  const attorneyEmailKey :string = getEntityAddressKey(-3, CONTACT_INFO, EMAIL);
+  const officerPhoneKey :string = getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER);
+  const officerEmailKey :string = getEntityAddressKey(-5, CONTACT_INFO, EMAIL);
 
   const clientContactEntitiesCount :number = getClientContactInfoCount(formData);
   const countAfterAttorneyPhone :number = isDefined(
@@ -639,11 +639,11 @@ const getOfficerAndAttorneyContactAssociations = (
     probationPath.concat([getEntityAddressKey(0, EMPLOYMENT, NAME)])
   ));
   if (attorneyIsDefined) {
-    if (isDefined(get(originalProbationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)))) {
       associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
-    if (isDefined(get(originalProbationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-3, CONTACT_INFO, EMAIL)))) {
       associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
@@ -654,12 +654,12 @@ const getOfficerAndAttorneyContactAssociations = (
     probationPath.concat([getEntityAddressKey(0, EMPLOYEE, TITLE)])
   ));
   if (officerIsDefined) {
-    if (isDefined(get(originalProbationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)))) {
       associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
-    if (isDefined(get(originalProbationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-5, CONTACT_INFO, EMAIL)))) {
       associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
