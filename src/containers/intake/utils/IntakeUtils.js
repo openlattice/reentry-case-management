@@ -279,7 +279,7 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
     const { entityIndex } = parseEntityAddressKey(cellPhoneEntityKeyAddress);
     indexToSet = entityIndex;
   }
-  else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
+  else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[3]) {
     const emailProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
       const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
       return propertyTypeFQN.toString() === EMAIL.toString();
