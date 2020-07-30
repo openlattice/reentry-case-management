@@ -83,7 +83,7 @@ function* editContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
 
     let newAddress :Map = address || Map();
-    let newContacts :List = contactInfoEntities;
+    let updatedContactInfoEntities :List = contactInfoEntities;
 
     if (Object.values(editedContactInfoData).length) {
       const response :Object = yield call(
@@ -111,11 +111,13 @@ function* editContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
       if (isDefined(contactData)) {
         fromJS(contactData).forEach((contactValues :Map, contactEKID :UUID) => {
-          const contactIndex :number = newContacts.findIndex((contact :Map) => getEKID(contact) === contactEKID);
+          const contactIndex :number = updatedContactInfoEntities
+            .findIndex((contact :Map) => getEKID(contact) === contactEKID);
           if (contactIndex !== -1) {
             contactValues.forEach((propertyValue :any, ptid :UUID) => {
               const fqn = getPropertyFqnFromEDM(edm, ptid);
-              newContacts = newContacts.updateIn([contactIndex, fqn], List(), () => propertyValue);
+              updatedContactInfoEntities = updatedContactInfoEntities
+                .updateIn([contactIndex, fqn], List(), () => propertyValue);
             });
           }
         });
@@ -153,11 +155,11 @@ function* editContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
                 map.set(fqn, propertyValue);
               });
           });
-          newContacts = newContacts.push(newContact);
+          updatedContactInfoEntities = updatedContactInfoEntities.push(newContact);
         });
       }
     }
-    yield put(editContactInfo.success(id, { newAddress, newContacts }));
+    yield put(editContactInfo.success(id, { newAddress, updatedContactInfoEntities }));
   }
   catch (error) {
     LOG.error(action.type, error);
