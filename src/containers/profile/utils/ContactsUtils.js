@@ -5,7 +5,6 @@ import {
   fromJS,
   get,
   getIn,
-  hasIn,
   remove,
   removeIn,
   set,
