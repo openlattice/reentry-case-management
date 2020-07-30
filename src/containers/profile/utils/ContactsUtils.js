@@ -226,7 +226,6 @@ const updateDataForNewSubmission = (
   const value = getIn(initialFormData, originalPath);
   updatedDataForNewSubmission = setIn(updatedDataForNewSubmission, newPath, value || ' ');
   updatedDataForEdit = removeIn(updatedDataForEdit, originalPath);
-  console.log('updatedDataForEdit ', updatedDataForEdit);
 
   if (isPreferredMethod) {
     updatedDataForNewSubmission = setIn(
@@ -290,7 +289,6 @@ const preprocessContactFormData = (
     );
     newData = updatedDataForNewSubmission;
     updatedFormData = updatedDataForEdit;
-    console.log('updatedFormData ', updatedFormData);
     associations.push([CONTACTED_VIA, personEKID, PEOPLE, 0, CONTACT_INFO, {}]);
   }
 
@@ -342,7 +340,6 @@ const preprocessContactFormData = (
   if (originalPreferredMethod !== preferredMethod && isDefined(preferredMethod)) {
     const originalPreferredMethodOptionsIndex :number = PREFERRED_COMMUNICATION_METHODS
       .findIndex((option :string) => option === originalPreferredMethod);
-    console.log('originalPreferredMethodOptionsIndex ', originalPreferredMethodOptionsIndex);
 
     if (originalPreferredMethodOptionsIndex === 0) {
       updatedFormData = setIn(
