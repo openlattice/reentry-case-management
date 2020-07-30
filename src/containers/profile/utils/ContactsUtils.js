@@ -38,6 +38,7 @@ const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   GENERAL_NOTES,
+  IS_CELL_PHONE,
   LAST_NAME,
   PHONE_NUMBER,
   PREFERRED,
@@ -71,13 +72,23 @@ const getPersonContactData = (participantNeighbors :Map) :Map => {
       map.set('email', emailAddress === ' ' ? EMPTY_FIELD : emailAddress);
       map.set('preferredTime', preferredTime);
     }
-    const phone = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
-    if (isDefined(phone)) {
+    const cellPhone = contactInfoEntities.find((contact :Map) => contact.has(IS_CELL_PHONE));
+    if (isDefined(cellPhone)) {
       const { [PHONE_NUMBER]: phoneNumber, [GENERAL_NOTES]: preferredTime } = getEntityProperties(
-        phone,
+        cellPhone,
         [PHONE_NUMBER, GENERAL_NOTES]
       );
-      map.set('phone', phoneNumber === ' ' ? EMPTY_FIELD : phoneNumber);
+      map.set('cellPhone', phoneNumber === ' ' ? EMPTY_FIELD : phoneNumber);
+      map.set('preferredTime', preferredTime);
+    }
+    const homePhone = contactInfoEntities
+      .find((contact :Map) => contact.has(PHONE_NUMBER) && !contact.has(IS_CELL_PHONE));
+    if (isDefined(homePhone)) {
+      const { [PHONE_NUMBER]: phoneNumber, [GENERAL_NOTES]: preferredTime } = getEntityProperties(
+        homePhone,
+        [PHONE_NUMBER, GENERAL_NOTES]
+      );
+      map.set('homePhone', phoneNumber === ' ' ? EMPTY_FIELD : phoneNumber);
       map.set('preferredTime', preferredTime);
     }
   });
