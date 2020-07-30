@@ -21,7 +21,12 @@ import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataCo
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { preprocessContactsData } from '../../providers/utils/ProvidersUtils';
 
-const { INDEX_MAPPERS, getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const {
+  INDEX_MAPPERS,
+  getEntityAddressKey,
+  getPageSectionKey,
+  parseEntityAddressKey,
+} = DataProcessingUtils;
 const {
   CONTACTED_VIA,
   CONTACT_INFO,
@@ -51,46 +56,73 @@ const {
 
 // Participant Contact Info:
 
+const getEmail = (contactInfoEntities :List) :string => {
+  const email = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
+  if (isDefined(email)) {
+    const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
+    return emailAddress;
+  }
+  return ' ';
+};
+
+const getCellPhone = (contactInfoEntities :List) :string => {
+  const cellPhone = contactInfoEntities.find((contact :Map) => contact.has(IS_CELL_PHONE));
+  if (isDefined(cellPhone)) {
+    const { [PHONE_NUMBER]: cellPhoneNumber } = getEntityProperties(cellPhone, [PHONE_NUMBER]);
+    return cellPhoneNumber;
+  }
+  return ' ';
+};
+
+const getHomePhone = (contactInfoEntities :List) :string => {
+  const homePhone = contactInfoEntities
+    .find((contact :Map) => contact.has(PHONE_NUMBER) && !contact.has(IS_CELL_PHONE));
+  if (isDefined(homePhone)) {
+    const { [PHONE_NUMBER]: homePhoneNumber } = getEntityProperties(homePhone, [PHONE_NUMBER]);
+    return homePhoneNumber;
+  }
+  return ' ';
+};
+
+const getPreferredTimeOfContact = (contactInfoEntities :List) :?string => {
+  const contactWithPreferredTime = contactInfoEntities.find((contact :Map) => contact.has(GENERAL_NOTES));
+  if (isDefined(contactWithPreferredTime)) {
+    const { [GENERAL_NOTES]: preferredTime } = getEntityProperties(contactWithPreferredTime, [GENERAL_NOTES]);
+    return preferredTime;
+  }
+  return undefined;
+};
+
+const getPreferredMethodOfContact = (contactInfoEntities :List) :?string => {
+  const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED)
+    && contact.getIn([PREFERRED, 0]) === true);
+  if (isDefined(preferredContact)) {
+    const { [PREFERRED_METHOD_OF_CONTACT]: preferredMethod } = getEntityProperties(
+      preferredContact,
+      [PREFERRED_METHOD_OF_CONTACT]
+    );
+    return preferredMethod;
+  }
+  return undefined;
+};
+
 const getPersonContactData = (participantNeighbors :Map) :Map => {
   const contactData :Map = Map().withMutations((map :Map) => {
     const contactInfoEntities :List = participantNeighbors.get(CONTACT_INFO, List());
-    const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED)
-      && contact.getIn([PREFERRED, 0]) === true);
-    if (isDefined(preferredContact)) {
-      const { [PREFERRED_METHOD_OF_CONTACT]: preferredMethod } = getEntityProperties(
-        preferredContact,
-        [PREFERRED_METHOD_OF_CONTACT]
-      );
-      map.set('preferredMethod', preferredMethod);
-    }
-    const email = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
-    if (isDefined(email)) {
-      const { [EMAIL]: emailAddress, [GENERAL_NOTES]: preferredTime } = getEntityProperties(
-        email,
-        [EMAIL, GENERAL_NOTES]
-      );
-      map.set('email', emailAddress === ' ' ? EMPTY_FIELD : emailAddress);
-      map.set('preferredTime', preferredTime);
-    }
-    const cellPhone = contactInfoEntities.find((contact :Map) => contact.has(IS_CELL_PHONE));
-    if (isDefined(cellPhone)) {
-      const { [PHONE_NUMBER]: phoneNumber, [GENERAL_NOTES]: preferredTime } = getEntityProperties(
-        cellPhone,
-        [PHONE_NUMBER, GENERAL_NOTES]
-      );
-      map.set('cellPhone', phoneNumber === ' ' ? EMPTY_FIELD : phoneNumber);
-      map.set('preferredTime', preferredTime);
-    }
-    const homePhone = contactInfoEntities
-      .find((contact :Map) => contact.has(PHONE_NUMBER) && !contact.has(IS_CELL_PHONE));
-    if (isDefined(homePhone)) {
-      const { [PHONE_NUMBER]: phoneNumber, [GENERAL_NOTES]: preferredTime } = getEntityProperties(
-        homePhone,
-        [PHONE_NUMBER, GENERAL_NOTES]
-      );
-      map.set('homePhone', phoneNumber === ' ' ? EMPTY_FIELD : phoneNumber);
-      map.set('preferredTime', preferredTime);
-    }
+    const preferredMethodOfContact = getPreferredMethodOfContact(contactInfoEntities);
+    map.set('preferredMethod', preferredMethodOfContact);
+
+    const email = getEmail(contactInfoEntities);
+    map.set('email', email === ' ' ? EMPTY_FIELD : email);
+
+    const cellPhoneNumber = getCellPhone(contactInfoEntities);
+    map.set('cellPhone', cellPhoneNumber === ' ' ? EMPTY_FIELD : cellPhoneNumber);
+
+    const homePhoneNumber = getHomePhone(contactInfoEntities);
+    map.set('homePhone', homePhoneNumber === ' ' ? EMPTY_FIELD : homePhoneNumber);
+
+    const preferredTimeOfContact = getPreferredTimeOfContact(contactInfoEntities);
+    map.set('preferredTime', preferredTimeOfContact);
   });
   return contactData;
 };
@@ -135,35 +167,19 @@ const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
     };
   }
 
-  const preferredContact = contactInfoEntities.find((contact :Map) => contact.has(PREFERRED)
-    && contact.getIn([PREFERRED, 0]) === true);
-  if (isDefined(preferredContact)) {
-    const {
-      [PREFERRED_METHOD_OF_CONTACT]: preferredMethod
-    } = getEntityProperties(preferredContact, [PREFERRED_METHOD_OF_CONTACT]);
+  const preferredMethodOfContact = getPreferredMethodOfContact(contactInfoEntities);
+  originalFormData[getPageSectionKey(1, 1)] = {
+    [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: preferredMethodOfContact,
+  };
+  const preferredTime = getPreferredTimeOfContact(contactInfoEntities);
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)] = preferredTime;
 
-    originalFormData[getPageSectionKey(1, 1)] = {
-      [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: preferredMethod,
-    };
-  }
-
-  const emailEntity = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
-  let email;
-  if (isDefined(emailEntity)) {
-    email = emailEntity.getIn([EMAIL, 0]);
-    const preferredTime = emailEntity.getIn([GENERAL_NOTES, 0]);
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)] = preferredTime;
-  }
-  const phoneEntity = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
-  let phone;
-  if (isDefined(phoneEntity)) {
-    phone = phoneEntity.getIn([PHONE_NUMBER, 0]);
-    const preferredTime = phoneEntity.getIn([GENERAL_NOTES, 0]);
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)] = preferredTime;
-  }
-
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = phone;
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, EMAIL)] = email;
+  const email = getEmail(contactInfoEntities);
+  const cellPhoneNumber = getCellPhone(contactInfoEntities);
+  const homePhoneNumber = getHomePhone(contactInfoEntities);
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = homePhoneNumber;
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)] = cellPhoneNumber;
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(2, CONTACT_INFO, EMAIL)] = email;
 
   return originalFormData;
 };
@@ -178,15 +194,54 @@ const getEntityIndexToIdMap = (contactInfoEntities :List, address :Map) :Map => 
     }
     map.set(CONTACT_INFO, List());
     if (isDefined(contactInfoEntities) && !contactInfoEntities.isEmpty()) {
-      const phoneEntity = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
-      if (isDefined(phoneEntity)) map.setIn([CONTACT_INFO, 0], getEKID(phoneEntity));
+      const homePhoneEntity = contactInfoEntities
+        .find((contact :Map) => contact.has(PHONE_NUMBER) && !contact.has(IS_CELL_PHONE));
+      if (isDefined(homePhoneEntity)) map.setIn([CONTACT_INFO, 0], getEKID(homePhoneEntity));
+
+      const cellPhoneEntity = contactInfoEntities.find((contact :Map) => contact.has(IS_CELL_PHONE));
+      if (isDefined(cellPhoneEntity)) map.setIn([CONTACT_INFO, 1], getEKID(cellPhoneEntity));
 
       const emailEntity = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
-      if (isDefined(emailEntity)) map.setIn([CONTACT_INFO, 1], getEKID(emailEntity));
+      if (isDefined(emailEntity)) map.setIn([CONTACT_INFO, 2], getEKID(emailEntity));
     }
   });
 
   return entityIndexToIdMap;
+};
+
+const updateDataForNewSubmission = (
+  initialFormData :Object,
+  formDataForEdit :Object,
+  formDataForNewSubmission :Object,
+  originalPath :string[],
+  newPath :string[],
+  isPreferredMethod :boolean,
+  preferredMethod ? :string,
+  entityIndex ? :number = 0,
+) => {
+
+  let updatedDataForNewSubmission = formDataForNewSubmission;
+  let updatedDataForEdit = formDataForEdit;
+
+  const value = getIn(initialFormData, originalPath);
+  updatedDataForNewSubmission = setIn(updatedDataForNewSubmission, newPath, value || ' ');
+  updatedDataForEdit = removeIn(updatedDataForEdit, originalPath);
+  console.log('updatedDataForEdit ', updatedDataForEdit);
+
+  if (isPreferredMethod) {
+    updatedDataForNewSubmission = setIn(
+      updatedDataForNewSubmission,
+      [getPageSectionKey(1, 1), getEntityAddressKey(entityIndex, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
+      preferredMethod
+    );
+    updatedDataForNewSubmission = setIn(
+      updatedDataForNewSubmission,
+      [getPageSectionKey(1, 1), getEntityAddressKey(entityIndex, CONTACT_INFO, PREFERRED)],
+      true
+    );
+  }
+
+  return { updatedDataForEdit, updatedDataForNewSubmission };
 };
 
 const preprocessContactFormData = (
@@ -218,104 +273,153 @@ const preprocessContactFormData = (
 
   const preferredMethodKey = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
   const preferredMethod = updatedFormData[pageSection1][preferredMethodKey];
-  const originalPreferredMethod = originalFormData[pageSection1][preferredMethodKey];
 
-  const existingPhone = contactInfoEntities.find((contact :Map) => contact.has(PHONE_NUMBER));
-  const phoneKey = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
-  if (!isDefined(existingPhone)) {
-    const phoneData = getIn(formData, [pageSection1, phoneKey]);
-    newData = setIn(newData, [pageSection1, phoneKey], phoneData || ' ');
-    updatedFormData = removeIn(updatedFormData, [pageSection1, phoneKey]);
+  const existingHomePhone = contactInfoEntities
+    .find((contact :Map) => contact.has(PHONE_NUMBER) && !contact.has(IS_CELL_PHONE));
+  const homePhoneKey = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
+  if (!isDefined(existingHomePhone)) {
+    const { updatedDataForEdit, updatedDataForNewSubmission } = updateDataForNewSubmission(
+      formData,
+      updatedFormData,
+      newData,
+      [pageSection1, homePhoneKey],
+      [pageSection1, homePhoneKey],
+      preferredMethod === PREFERRED_COMMUNICATION_METHODS[0],
+      preferredMethod,
+      0,
+    );
+    newData = updatedDataForNewSubmission;
+    updatedFormData = updatedDataForEdit;
+    console.log('updatedFormData ', updatedFormData);
     associations.push([CONTACTED_VIA, personEKID, PEOPLE, 0, CONTACT_INFO, {}]);
+  }
 
-    if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[0]
-      || preferredMethod === PREFERRED_COMMUNICATION_METHODS[1]) {
-      newData = setIn(
-        newData,
-        [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
-        preferredMethod
-      );
-      newData = setIn(
-        newData,
-        [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED)],
-        true
-      );
-    }
+  const existingCellPhone = contactInfoEntities.find((contact :Map) => contact.has(IS_CELL_PHONE));
+  const cellPhoneKey = getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER);
+  if (!isDefined(existingCellPhone)) {
+    const index = isDefined(existingHomePhone) ? 0 : 1;
+    const { updatedDataForEdit, updatedDataForNewSubmission } = updateDataForNewSubmission(
+      formData,
+      updatedFormData,
+      newData,
+      [pageSection1, cellPhoneKey],
+      [pageSection1, getEntityAddressKey(index, CONTACT_INFO, PHONE_NUMBER)],
+      preferredMethod === PREFERRED_COMMUNICATION_METHODS[1] || preferredMethod === PREFERRED_COMMUNICATION_METHODS[2],
+      preferredMethod,
+      index,
+    );
+    newData = updatedDataForNewSubmission;
+    newData = setIn(newData, [pageSection1, getEntityAddressKey(index, CONTACT_INFO, IS_CELL_PHONE)], true);
+    updatedFormData = updatedDataForEdit;
+    associations.push([CONTACTED_VIA, personEKID, PEOPLE, index, CONTACT_INFO, {}]);
   }
 
   const existingEmail = contactInfoEntities.find((contact :Map) => contact.has(EMAIL));
-  const emailKey = getEntityAddressKey(1, CONTACT_INFO, EMAIL);
+  const emailKey = getEntityAddressKey(2, CONTACT_INFO, EMAIL);
   if (!isDefined(existingEmail)) {
-    const index = isDefined(existingPhone) ? 0 : 1;
-    const emailData = getIn(formData, [pageSection1, emailKey]);
-    newData = setIn(newData, [pageSection1, getEntityAddressKey(index, CONTACT_INFO, EMAIL)], emailData || ' ');
-    updatedFormData = removeIn(updatedFormData, [pageSection1, emailKey]);
+    let index = 0;
+    if (isDefined(existingHomePhone) || isDefined(existingCellPhone)) index = 1;
+    if (isDefined(existingHomePhone) && isDefined(existingCellPhone)) index = 2;
+
+    const { updatedDataForEdit, updatedDataForNewSubmission } = updateDataForNewSubmission(
+      formData,
+      updatedFormData,
+      newData,
+      [pageSection1, emailKey],
+      [pageSection1, getEntityAddressKey(index, CONTACT_INFO, EMAIL)],
+      preferredMethod === PREFERRED_COMMUNICATION_METHODS[3],
+      preferredMethod,
+      index,
+    );
+    newData = updatedDataForNewSubmission;
+    updatedFormData = updatedDataForEdit;
     associations.push([CONTACTED_VIA, personEKID, PEOPLE, index, CONTACT_INFO, {}]);
-
-    if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[2]) {
-      newData = setIn(
-        newData,
-        [pageSection1, getEntityAddressKey(index, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
-        preferredMethod
-      );
-      newData = setIn(
-        newData,
-        [pageSection1, getEntityAddressKey(index, CONTACT_INFO, PREFERRED)],
-        true
-      );
-    }
   }
 
-  if (isDefined(existingPhone) && isDefined(existingEmail)) {
-    if (originalPreferredMethod !== preferredMethod && isDefined(preferredMethod)) {
-      if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[2]) {
-        const emailAsPreferredMethodKey :string = getEntityAddressKey(1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
-        updatedFormData = setIn(updatedFormData, [pageSection1, emailAsPreferredMethodKey], preferredMethod);
-        updatedFormData = setIn(updatedFormData, [pageSection1, getEntityAddressKey(1, CONTACT_INFO, PREFERRED)], true);
-        updatedFormData = setIn(
-          updatedFormData,
-          [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED)],
-          false
-        );
-      }
-      else {
-        const phoneAsPreferredMethodKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
-        updatedFormData = setIn(updatedFormData, [pageSection1, phoneAsPreferredMethodKey], preferredMethod);
-        updatedFormData = setIn(updatedFormData, [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED)], true);
-        updatedFormData = setIn(
-          updatedFormData,
-          [pageSection1, getEntityAddressKey(1, CONTACT_INFO, PREFERRED)],
-          false
-        );
-      }
+  const originalPreferredMethod = getIn(originalFormData, [pageSection1, preferredMethodKey]);
+
+  // if (isDefined(existingPhone) && isDefined(existingEmail)) {
+  if (originalPreferredMethod !== preferredMethod && isDefined(preferredMethod)) {
+    const originalPreferredMethodOptionsIndex :number = PREFERRED_COMMUNICATION_METHODS
+      .findIndex((option :string) => option === originalPreferredMethod);
+    console.log('originalPreferredMethodOptionsIndex ', originalPreferredMethodOptionsIndex);
+
+    if (originalPreferredMethodOptionsIndex === 0) {
+      updatedFormData = setIn(
+        updatedFormData,
+        [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED)],
+        false
+      );
+    }
+    if (originalPreferredMethodOptionsIndex === 1 || originalPreferredMethodOptionsIndex === 2) {
+      updatedFormData = setIn(
+        updatedFormData,
+        [pageSection1, getEntityAddressKey(1, CONTACT_INFO, PREFERRED)],
+        false
+      );
+    }
+    if (originalPreferredMethodOptionsIndex === 3) {
+      updatedFormData = setIn(
+        updatedFormData,
+        [pageSection1, getEntityAddressKey(2, CONTACT_INFO, PREFERRED)],
+        false
+      );
+    }
+
+    if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[3] && isDefined(existingEmail)) {
+      const emailAsPreferredMethodKey :string = getEntityAddressKey(2, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+      updatedFormData = setIn(updatedFormData, [pageSection1, emailAsPreferredMethodKey], preferredMethod);
+      updatedFormData = setIn(updatedFormData, [pageSection1, getEntityAddressKey(2, CONTACT_INFO, PREFERRED)], true);
+    }
+    else if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[0] && isDefined(existingHomePhone)) {
+      const homePhoneAsPreferredMethodKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+      updatedFormData = setIn(updatedFormData, [pageSection1, homePhoneAsPreferredMethodKey], preferredMethod);
+      updatedFormData = setIn(updatedFormData, [pageSection1, getEntityAddressKey(0, CONTACT_INFO, PREFERRED)], true);
+    }
+    else if (preferredMethod === PREFERRED_COMMUNICATION_METHODS[1]
+        && preferredMethod === PREFERRED_COMMUNICATION_METHODS[2]
+        && isDefined(existingCellPhone)) {
+      const cellPhoneAsPreferredMethodKey :string = getEntityAddressKey(1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+      updatedFormData = setIn(updatedFormData, [pageSection1, cellPhoneAsPreferredMethodKey], preferredMethod);
+      updatedFormData = setIn(updatedFormData, [pageSection1, getEntityAddressKey(1, CONTACT_INFO, PREFERRED)], true);
     }
   }
+  // }
   updatedFormData = removeIn(updatedFormData, [pageSection1, preferredMethodKey]);
 
   const preferredTimeKey = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
-  const preferredTime = updatedFormData[pageSection1][preferredTimeKey];
-  if (isDefined(preferredTime)) {
-    if (Object.values(newData[pageSection1]).length) {
-      newData = setIn(newData, [pageSection1, getEntityAddressKey(0, CONTACT_INFO, GENERAL_NOTES)], preferredTime);
-
-      if (hasIn(newData, [pageSection1, getEntityAddressKey(1, CONTACT_INFO, EMAIL)])) {
-        newData = setIn(newData, [pageSection1, getEntityAddressKey(1, CONTACT_INFO, GENERAL_NOTES)], preferredTime);
+  const preferredTime = getIn(updatedFormData, [pageSection1, preferredTimeKey]);
+  const originalPreferredTime = getIn(originalFormData, [pageSection1, preferredTimeKey]);
+  if (originalPreferredTime !== preferredTime && isDefined(preferredTime)) {
+    const newDataKeys = Object.keys(newData[pageSection1]);
+    newDataKeys.forEach((entityAddressKey) => {
+      const { entityIndex, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      const propertyType = propertyTypeFQN.toString();
+      if (propertyType !== PREFERRED.toString()
+        || !propertyType !== PREFERRED_METHOD_OF_CONTACT.toString()
+        || !propertyType !== IS_CELL_PHONE.toString()) {
+        newData = setIn(
+          newData,
+          [pageSection1, getEntityAddressKey(entityIndex, CONTACT_INFO, GENERAL_NOTES)],
+          preferredTime
+        );
       }
-    }
-    if (isDefined(existingPhone)) {
-      updatedFormData = setIn(
-        updatedFormData,
-        [pageSection1, getEntityAddressKey(0, CONTACT_INFO, GENERAL_NOTES)],
-        preferredTime
-      );
-    }
-    if (isDefined(existingEmail)) {
-      updatedFormData = setIn(
-        updatedFormData,
-        [pageSection1, getEntityAddressKey(1, CONTACT_INFO, GENERAL_NOTES)],
-        preferredTime
-      );
-    }
+    });
+
+    const existingDataKeys = Object.keys(updatedFormData[pageSection1]);
+    existingDataKeys.forEach((entityAddressKey) => {
+      const { entityIndex, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      const propertyType = propertyTypeFQN.toString();
+      if (propertyType !== PREFERRED.toString()
+        || !propertyType !== PREFERRED_METHOD_OF_CONTACT.toString()
+        || !propertyType !== IS_CELL_PHONE.toString()) {
+        updatedFormData = setIn(
+          updatedFormData,
+          [pageSection1, getEntityAddressKey(entityIndex, CONTACT_INFO, GENERAL_NOTES)],
+          preferredTime
+        );
+      }
+    });
   }
   updatedFormData = removeIn(updatedFormData, [pageSection1, preferredTimeKey]);
   newData = removeIn(newData, [pageSection1, preferredTimeKey]);
