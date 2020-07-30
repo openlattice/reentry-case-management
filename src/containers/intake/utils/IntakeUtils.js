@@ -184,7 +184,7 @@ const setClientContactInfoIndices = (formData :Object) :Object => {
   const currentEmailPath :string[] = [sectionTwoKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)];
   const email = getIn(formData, [sectionTwoKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)]);
 
-  if (contactInfoCount === 3) {
+  if (contactInfoCount === 3 || (isDefined(homePhoneNumber) && isDefined(cellPhoneNumber))) {
     updatedFormData = updateFormData(
       updatedFormData,
       [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, IS_CELL_PHONE)],
@@ -270,13 +270,11 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
   let indexToSet;
   if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[1]
     || preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
-
-    const cellPhoneProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
+    const cellPhoneProperty = Object.keys(contactInfoSection).find((entityAddressKey :string) => {
       const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
       return propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
     });
-    const [cellPhoneEntityKeyAddress] = cellPhoneProperty;
-    const { entityIndex } = parseEntityAddressKey(cellPhoneEntityKeyAddress);
+    const { entityIndex } = parseEntityAddressKey(cellPhoneProperty);
     indexToSet = entityIndex;
   }
   else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[3]) {
