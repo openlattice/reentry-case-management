@@ -2,7 +2,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { List, Map, getIn, setIn } from 'immutable';
+import {
+  List,
+  Map,
+  getIn,
+  setIn,
+} from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { AsYouType } from 'libphonenumber-js';
@@ -88,7 +93,8 @@ const EditContactInfoModal = ({
   const closeModal = useCallback(() => {
     dispatch(clearEditRequestState());
     onClose();
-  }, [dispatch, onClose]);
+    updateFormData(originalFormData);
+  }, [dispatch, onClose, originalFormData]);
 
   useEffect(() => {
     if (requestIsSuccess(editContactInfoReqState)) {
@@ -147,11 +153,11 @@ const EditContactInfoModal = ({
       }));
     }
     else {
-      onClose();
+      closeModal();
     }
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Contact Info" />);
+  const renderHeader = () => (<ModalHeader onClose={closeModal} title="Edit Contact Info" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(editContactInfoReqState);
     return (
