@@ -177,8 +177,16 @@ const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
   const email = getEmail(contactInfoEntities);
   const cellPhoneNumber = getCellPhone(contactInfoEntities);
   const homePhoneNumber = getHomePhone(contactInfoEntities);
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = format(homePhoneNumber, 'US', 'NATIONAL');
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)] = format(cellPhoneNumber, 'US', 'NATIONAL');;
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = format(
+    homePhoneNumber,
+    'US',
+    'NATIONAL'
+  );
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)] = format(
+    cellPhoneNumber,
+    'US',
+    'NATIONAL'
+  );
   originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(2, CONTACT_INFO, EMAIL)] = email;
 
   return originalFormData;
