@@ -11,6 +11,7 @@ import {
   setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { format } from 'libphonenumber-js';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
@@ -115,10 +116,10 @@ const getPersonContactData = (participantNeighbors :Map) :Map => {
     map.set('email', email === ' ' ? EMPTY_FIELD : email);
 
     const cellPhoneNumber = getCellPhone(contactInfoEntities);
-    map.set('cellPhone', cellPhoneNumber === ' ' ? EMPTY_FIELD : cellPhoneNumber);
+    map.set('cellPhone', cellPhoneNumber === ' ' ? EMPTY_FIELD : format(cellPhoneNumber, 'US', 'NATIONAL'));
 
     const homePhoneNumber = getHomePhone(contactInfoEntities);
-    map.set('homePhone', homePhoneNumber === ' ' ? EMPTY_FIELD : homePhoneNumber);
+    map.set('homePhone', homePhoneNumber === ' ' ? EMPTY_FIELD : format(homePhoneNumber, 'US', 'NATIONAL'));
 
     const preferredTimeOfContact = getPreferredTimeOfContact(contactInfoEntities);
     map.set('preferredTime', preferredTimeOfContact);
@@ -176,8 +177,8 @@ const getOriginalFormData = (contactInfoEntities :List, address :Map) => {
   const email = getEmail(contactInfoEntities);
   const cellPhoneNumber = getCellPhone(contactInfoEntities);
   const homePhoneNumber = getHomePhone(contactInfoEntities);
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = homePhoneNumber;
-  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)] = cellPhoneNumber;
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)] = format(homePhoneNumber, 'US', 'NATIONAL');
+  originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)] = format(cellPhoneNumber, 'US', 'NATIONAL');;
   originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(2, CONTACT_INFO, EMAIL)] = email;
 
   return originalFormData;
