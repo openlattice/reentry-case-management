@@ -2,16 +2,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
+import { List, Map, getIn, setIn } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
+import { AsYouType } from 'libphonenumber-js';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { EDIT_CONTACT_INFO, editContactInfo } from './ContactInfoActions';
 import { schema, uiSchema } from './schemas/EditContactInfoSchemas';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../../utils/LangUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
@@ -29,8 +30,11 @@ const {
   processEntityData,
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
+  getPageSectionKey,
+  getEntityAddressKey,
 } = DataProcessingUtils;
 const { CONTACT_INFO, LOCATION } = APP_TYPE_FQNS;
+const { PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
@@ -93,7 +97,14 @@ const EditContactInfoModal = ({
   }, [closeModal, editContactInfoReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
+    let formDataWithPhoneFormatter = newFormData;
+    const homePhoneKey :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)];
+    const homePhone = getIn(formDataWithPhoneFormatter, homePhoneKey) || '';
+    const cellPhoneKey :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)];
+    const cellPhone = getIn(formDataWithPhoneFormatter, cellPhoneKey) || '';
+    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, homePhoneKey, new AsYouType('US').input(homePhone));
+    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, cellPhoneKey, new AsYouType('US').input(cellPhone));
+    updateFormData(formDataWithPhoneFormatter);
   };
   const onSubmit = () => {
     const { associations, newData, updatedFormData } = preprocessContactFormData(
