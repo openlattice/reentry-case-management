@@ -188,9 +188,13 @@ const personInformationSchema :Object = {
         },
         [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
           type: 'string',
-          title: 'Phone number',
+          title: 'Home phone number',
         },
-        [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
+        [getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)]: {
+          type: 'string',
+          title: 'Cell phone number',
+        },
+        [getEntityAddressKey(2, CONTACT_INFO, EMAIL)]: {
           type: 'string',
           title: 'Email',
         },
@@ -265,11 +269,11 @@ const personInformationSchema :Object = {
                       title: 'Employee title',
                       default: 'Attorney'
                     },
-                    [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
+                    [getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
                       title: 'Attorney Phone Number',
                     },
-                    [getEntityAddressKey(3, CONTACT_INFO, EMAIL)]: {
+                    [getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
                       title: 'Attorney Email',
                     },
@@ -286,11 +290,11 @@ const personInformationSchema :Object = {
                       title: 'Employee title',
                       default: 'Probation or Parole Officer'
                     },
-                    [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
+                    [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
                       title: 'Probation/Parole Officer Phone Number',
                     },
-                    [getEntityAddressKey(5, CONTACT_INFO, EMAIL)]: {
+                    [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
                       title: 'Probation/Parole Officer Email',
                     },
@@ -441,22 +445,25 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, LOCATION, US_STATE)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, LOCATION, ZIP)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
+    [getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(2, CONTACT_INFO, EMAIL)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     'ui:order': [
       getEntityAddressKey(0, LOCATION, STREET),
@@ -464,7 +471,8 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, LOCATION, US_STATE),
       getEntityAddressKey(0, LOCATION, ZIP),
       getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER),
-      getEntityAddressKey(1, CONTACT_INFO, EMAIL),
+      getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER),
+      getEntityAddressKey(2, CONTACT_INFO, EMAIL),
       getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
       getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
     ]
@@ -497,10 +505,10 @@ const personInformationUiSchema :Object = {
       [getEntityAddressKey(0, EMPLOYMENT, NAME)]: {
         'ui:widget': 'hidden'
       },
-      [getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)]: {
+      [getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-6',
       },
-      [getEntityAddressKey(3, CONTACT_INFO, EMAIL)]: {
+      [getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]: {
         classNames: 'column-span-6',
       },
       [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
@@ -512,10 +520,10 @@ const personInformationUiSchema :Object = {
       [getEntityAddressKey(0, EMPLOYEE, TITLE)]: {
         'ui:widget': 'hidden'
       },
-      [getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)]: {
+      [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
         classNames: 'column-span-4',
       },
-      [getEntityAddressKey(5, CONTACT_INFO, EMAIL)]: {
+      [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
         classNames: 'column-span-4',
       },
       [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
@@ -526,13 +534,13 @@ const personInformationUiSchema :Object = {
         getEntityAddressKey(0, ATTORNEYS, LAST_NAME),
         getEntityAddressKey(0, ATTORNEYS, FIRST_NAME),
         getEntityAddressKey(0, EMPLOYMENT, NAME),
-        getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER),
-        getEntityAddressKey(3, CONTACT_INFO, EMAIL),
+        getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER),
+        getEntityAddressKey(-3, CONTACT_INFO, EMAIL),
         getEntityAddressKey(0, OFFICERS, LAST_NAME),
         getEntityAddressKey(0, OFFICERS, FIRST_NAME),
         getEntityAddressKey(0, EMPLOYEE, TITLE),
-        getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER),
-        getEntityAddressKey(5, CONTACT_INFO, EMAIL),
+        getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER),
+        getEntityAddressKey(-5, CONTACT_INFO, EMAIL),
         getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME),
       ]
     },
