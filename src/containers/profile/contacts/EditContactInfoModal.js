@@ -105,13 +105,16 @@ const EditContactInfoModal = ({
   const onChange = ({ formData: newFormData } :Object) => {
     let formDataWithPhoneFormatter = newFormData;
     const homePhoneKey :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)];
-    const homePhone = getIn(formDataWithPhoneFormatter, homePhoneKey) || '';
+    const homePhoneInput = getIn(formDataWithPhoneFormatter, homePhoneKey) || '';
     const cellPhoneKey :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)];
-    const cellPhone = getIn(formDataWithPhoneFormatter, cellPhoneKey) || '';
-    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, homePhoneKey, new AsYouType('US').input(homePhone));
-    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, cellPhoneKey, new AsYouType('US').input(cellPhone));
+    const cellPhoneInput = getIn(formDataWithPhoneFormatter, cellPhoneKey) || '';
+    const homePhone = homePhoneInput.length <= 4 ? homePhoneInput : new AsYouType('US').input(homePhoneInput);
+    const cellPhone = cellPhoneInput.length <= 4 ? cellPhoneInput : new AsYouType('US').input(cellPhoneInput);
+    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, homePhoneKey, homePhone);
+    formDataWithPhoneFormatter = setIn(formDataWithPhoneFormatter, cellPhoneKey, cellPhone);
     updateFormData(formDataWithPhoneFormatter);
   };
+
   const onSubmit = () => {
     const { associations, newData, updatedFormData } = preprocessContactFormData(
       formData,
