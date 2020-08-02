@@ -10,7 +10,6 @@ import {
   Card,
   CardHeader,
 } from 'lattice-ui-kit';
-import { AsYouType } from 'libphonenumber-js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -56,6 +55,7 @@ import {
   RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { formatPhoneNumbersAsYouType } from '../profile/utils/PhoneNumberUtils';
 import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -129,7 +129,7 @@ type Props = {
 };
 
 type State = {
-  formData :Object;
+  pagedData :Object;
 };
 
 class IntakeForm extends Component<Props, State> {
@@ -138,7 +138,7 @@ class IntakeForm extends Component<Props, State> {
     super(props);
 
     this.state = {
-      formData: {},
+      pagedData: {},
     };
   }
 
@@ -238,10 +238,6 @@ class IntakeForm extends Component<Props, State> {
     actions.submitIntakeForm({ associationEntityData, entityData });
   }
 
-  onChange = ({ formData } :Object) => {
-    this.setState({ formData });
-  }
-
   render() {
     const {
       incarcerationFacilities,
@@ -249,9 +245,7 @@ class IntakeForm extends Component<Props, State> {
       selectedPerson,
       selectedReleaseDate,
     } = this.props;
-    const { formData } = this.state;
-    console.log('formData ', formData);
-    console.log('asyoutype ', new AsYouType('US').input('2133734231'));
+    const { pagedData } = this.state;
     const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
     const initialFormData = prepopulateFormData(selectedPerson, selectedReleaseDate);
     return (
@@ -260,7 +254,7 @@ class IntakeForm extends Component<Props, State> {
           render={(props :Object) => {
             const {
               formRef,
-              pagedData,
+              // pagedData,
               page,
               onBack,
               onNext,
@@ -275,10 +269,14 @@ class IntakeForm extends Component<Props, State> {
             if (needsAssessmentPage) primaryButtonText = 'Review Form';
             if (reviewPage) primaryButtonText = 'Submit';
 
-            console.log('pagedData ', pagedData);
-            const onChange = ({ formData: internalFormData }) => {
-              this.setState({ formData: internalFormData });
+            const onChange = (formData) => {
+              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 2);
+              this.setState({ pagedData: dataWithFormattedPhoneNumbers });
             };
+
+            if (formRef.current) {
+              formRef.current.onChange = onChange;
+            }
 
             const submitForm = () => {
               this.onSubmit({ formData: pagedData });
@@ -313,7 +311,6 @@ class IntakeForm extends Component<Props, State> {
                       formData={pagedData}
                       ref={formRef}
                       hideSubmit
-                      onChange={onChange}
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
                       uiSchema={uiSchemas[page]} />
