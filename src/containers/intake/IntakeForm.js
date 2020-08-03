@@ -55,7 +55,7 @@ import {
   RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
-import { formatPhoneNumbersAsYouType } from '../profile/utils/PhoneNumberUtils';
+import { formatPhoneNumbersAsYouType, validateParticipantPhoneNumbers } from '../profile/utils/PhoneNumberUtils';
 import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -278,6 +278,10 @@ class IntakeForm extends Component<Props, State> {
               formRef.current.onChange = onChange;
             }
 
+            const validate = (formDataToValidate, errors) => (
+              validateParticipantPhoneNumbers(formDataToValidate, errors)
+            );
+
             const submitForm = () => {
               this.onSubmit({ formData: pagedData });
             };
@@ -313,7 +317,8 @@ class IntakeForm extends Component<Props, State> {
                       hideSubmit
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
-                      uiSchema={uiSchemas[page]} />
+                      uiSchema={uiSchemas[page]}
+                      validate={validate} />
                 </Card>
                 <ActionRow>
                   <ButtonsWrapper>
