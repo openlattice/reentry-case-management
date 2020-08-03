@@ -254,7 +254,6 @@ class IntakeForm extends Component<Props, State> {
           render={(props :Object) => {
             const {
               formRef,
-              // pagedData,
               page,
               onBack,
               onNext,
