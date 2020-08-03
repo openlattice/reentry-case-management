@@ -18,7 +18,7 @@ import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { PREFERRED_COMMUNICATION_METHODS } from '../../../utils/constants/DataConstants';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
+import { EMPTY_FIELD, SPACED_STRING } from '../../../utils/constants/GeneralConstants';
 import { preprocessContactsData } from '../../providers/utils/ProvidersUtils';
 
 const {
@@ -62,7 +62,7 @@ const getEmail = (contactInfoEntities :List) :string => {
     const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
     return emailAddress;
   }
-  return ' ';
+  return SPACED_STRING;
 };
 
 const getCellPhone = (contactInfoEntities :List) :string => {
@@ -71,7 +71,7 @@ const getCellPhone = (contactInfoEntities :List) :string => {
     const { [PHONE_NUMBER]: cellPhoneNumber } = getEntityProperties(cellPhone, [PHONE_NUMBER]);
     return cellPhoneNumber;
   }
-  return ' ';
+  return SPACED_STRING;
 };
 
 const getHomePhone = (contactInfoEntities :List) :string => {
@@ -81,7 +81,7 @@ const getHomePhone = (contactInfoEntities :List) :string => {
     const { [PHONE_NUMBER]: homePhoneNumber } = getEntityProperties(homePhone, [PHONE_NUMBER]);
     return homePhoneNumber;
   }
-  return ' ';
+  return SPACED_STRING;
 };
 
 const getPreferredTimeOfContact = (contactInfoEntities :List) :?string => {
@@ -113,13 +113,13 @@ const getPersonContactData = (participantNeighbors :Map) :Map => {
     map.set('preferredMethod', preferredMethodOfContact);
 
     const email = getEmail(contactInfoEntities);
-    map.set('email', email === ' ' ? EMPTY_FIELD : email);
+    map.set('email', email === SPACED_STRING ? EMPTY_FIELD : email);
 
     const cellPhoneNumber = getCellPhone(contactInfoEntities);
-    map.set('cellPhone', cellPhoneNumber === ' ' ? EMPTY_FIELD : format(cellPhoneNumber, 'US', 'NATIONAL'));
+    map.set('cellPhone', cellPhoneNumber === SPACED_STRING ? EMPTY_FIELD : format(cellPhoneNumber, 'US', 'NATIONAL'));
 
     const homePhoneNumber = getHomePhone(contactInfoEntities);
-    map.set('homePhone', homePhoneNumber === ' ' ? EMPTY_FIELD : format(homePhoneNumber, 'US', 'NATIONAL'));
+    map.set('homePhone', homePhoneNumber === SPACED_STRING ? EMPTY_FIELD : format(homePhoneNumber, 'US', 'NATIONAL'));
 
     const preferredTimeOfContact = getPreferredTimeOfContact(contactInfoEntities);
     map.set('preferredTime', preferredTimeOfContact);
@@ -232,7 +232,7 @@ const updateDataForNewSubmission = (
   let updatedDataForEdit = formDataForEdit;
 
   const value = getIn(initialFormData, originalPath);
-  updatedDataForNewSubmission = setIn(updatedDataForNewSubmission, newPath, value || ' ');
+  updatedDataForNewSubmission = setIn(updatedDataForNewSubmission, newPath, value || SPACED_STRING);
   updatedDataForEdit = removeIn(updatedDataForEdit, originalPath);
 
   if (isPreferredMethod) {
