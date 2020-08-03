@@ -184,7 +184,7 @@ const personInformationSchema :Object = {
         },
         [getEntityAddressKey(0, LOCATION, ZIP)]: {
           type: 'string',
-          title: 'Zip Code',
+          title: 'Zip code',
         },
         [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
           type: 'string',
@@ -258,11 +258,11 @@ const personInformationSchema :Object = {
                     },
                     [getEntityAddressKey(0, ATTORNEYS, LAST_NAME)]: {
                       type: 'string',
-                      title: 'Attorney Last Name',
+                      title: 'Attorney last name',
                     },
                     [getEntityAddressKey(0, ATTORNEYS, FIRST_NAME)]: {
                       type: 'string',
-                      title: 'Attorney First Name',
+                      title: 'Attorney first name',
                     },
                     [getEntityAddressKey(0, EMPLOYMENT, NAME)]: {
                       type: 'string',
@@ -271,19 +271,19 @@ const personInformationSchema :Object = {
                     },
                     [getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
-                      title: 'Attorney Phone Number',
+                      title: 'Attorney phone number',
                     },
                     [getEntityAddressKey(-3, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
-                      title: 'Attorney Email',
+                      title: 'Attorney email',
                     },
                     [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
                       type: 'string',
-                      title: 'Probation/Parole Officer Last Name',
+                      title: 'Probation/parole officer last name',
                     },
                     [getEntityAddressKey(0, OFFICERS, FIRST_NAME)]: {
                       type: 'string',
-                      title: 'Probation/Parole Officer First Name',
+                      title: 'Probation/parole officer first name',
                     },
                     [getEntityAddressKey(0, EMPLOYEE, TITLE)]: {
                       type: 'string',
@@ -292,15 +292,15 @@ const personInformationSchema :Object = {
                     },
                     [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
                       type: 'string',
-                      title: 'Probation/Parole Officer Phone Number',
+                      title: 'Probation/parole officer phone number',
                     },
                     [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
                       type: 'string',
-                      title: 'Probation/Parole Officer Email',
+                      title: 'Probation/parole officer email',
                     },
                     [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
                       type: 'string',
-                      title: 'Probation/Parole End Date',
+                      title: 'Probation/parole end date',
                       format: 'date'
                     },
                   },
@@ -331,11 +331,11 @@ const personInformationSchema :Object = {
         },
         [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY)]: {
           type: 'string',
-          title: 'Registered County',
+          title: 'Registered county',
         },
         [getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE)]: {
           type: 'string',
-          title: 'Registered State',
+          title: 'Registered state',
           enum: US_STATES,
           enumNames: US_STATES
         },
