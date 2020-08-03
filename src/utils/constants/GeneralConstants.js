@@ -14,6 +14,7 @@ const DST :string = 'dst';
 const SRC :string = 'src';
 
 const EMPTY_FIELD :string = '----';
+const SPACED_STRING :string = ' ';
 
 export {
   APP_NAME,
@@ -21,5 +22,6 @@ export {
   DATA_URL_PREFIX_REGEX,
   DST,
   EMPTY_FIELD,
+  SPACED_STRING,
   SRC,
 };

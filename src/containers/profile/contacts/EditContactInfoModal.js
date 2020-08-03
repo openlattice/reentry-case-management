@@ -22,6 +22,7 @@ import {
 } from '../../../utils/constants/ReduxStateConstants';
 import { clearEditRequestState } from '../needs/NeedsActions';
 import { getEntityIndexToIdMap, getOriginalFormData, preprocessContactFormData } from '../utils/ContactsUtils';
+import { formatPhoneNumbersAsYouType } from '../utils/PhoneNumberUtils';
 
 const {
   findEntityAddressKeyFromMap,
@@ -84,7 +85,8 @@ const EditContactInfoModal = ({
   const closeModal = useCallback(() => {
     dispatch(clearEditRequestState());
     onClose();
-  }, [dispatch, onClose]);
+    updateFormData(originalFormData);
+  }, [dispatch, onClose, originalFormData]);
 
   useEffect(() => {
     if (requestIsSuccess(editContactInfoReqState)) {
@@ -93,8 +95,10 @@ const EditContactInfoModal = ({
   }, [closeModal, editContactInfoReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
+    const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(newFormData, 1);
+    updateFormData(dataWithFormattedPhoneNumbers);
   };
+
   const onSubmit = () => {
     const { associations, newData, updatedFormData } = preprocessContactFormData(
       formData,
@@ -136,11 +140,11 @@ const EditContactInfoModal = ({
       }));
     }
     else {
-      onClose();
+      closeModal();
     }
   };
 
-  const renderHeader = () => (<ModalHeader onClose={onClose} title="Edit Contact Info" />);
+  const renderHeader = () => (<ModalHeader onClose={closeModal} title="Edit Contact Info" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(editContactInfoReqState);
     return (
