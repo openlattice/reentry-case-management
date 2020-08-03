@@ -167,7 +167,6 @@ class IntakeForm extends Component<Props> {
     const { actions, entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
 
     let formDataToProcess = formData;
-    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
     formDataToProcess = pipeValue(
       setClientContactInfoIndices,
       setPreferredMethodOfContact,
