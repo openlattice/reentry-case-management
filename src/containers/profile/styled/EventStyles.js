@@ -1,8 +1,6 @@
 // @flow
 import styled from 'styled-components';
 
-import COLORS from '../../../core/style/Colors';
-
 const CardInnerWrapper = styled.div`
   display: flex;
   width: 100%;
@@ -13,7 +11,6 @@ const EventDateWrapper = styled.div`
 `;
 
 const EventWrapper = styled.div`
-  color: ${COLORS.GRAY_01};
   display: flex;
   flex-direction: column;
   font-size: 14px;

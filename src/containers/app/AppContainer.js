@@ -16,6 +16,7 @@ import {
   MuiPickersUtilsProvider,
   Sizes,
   Spinner,
+  StylesProvider,
   ThemeProvider,
   lightTheme,
 } from 'lattice-ui-kit';
@@ -32,6 +33,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as AppActions from './AppActions';
 
+import ContactSupportButton from '../../components/buttons/ContactSupportButton';
 import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import IntakeForm from '../intake/IntakeForm';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
@@ -145,31 +147,34 @@ class AppContainer extends Component<Props> {
     return (
       <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
-          <AppContainerWrapper>
-            <AppHeaderWrapper
-                appIcon={OpenLatticeIcon}
-                appTitle="Re-entry Case Management"
-                logout={this.logout}
-                organizationsSelect={{
-                  isLoading: requestIsPending(requestStates[INITIALIZE_APPLICATION]),
-                  onChange: this.switchOrganization,
-                  organizations,
-                  selectedOrganizationId: selectedOrgId
-                }}
-                user={user}>
-              <AppNavigationWrapper>
-                <NavLink to={Routes.ROOT} />
-                <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
-                <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
-                <NavLink to={Routes.REPORTS}>Reports</NavLink>
-                <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
-                <NavLink to={Routes.TASKS}>Tasks</NavLink>
-              </AppNavigationWrapper>
-            </AppHeaderWrapper>
-            <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-              { this.renderAppContent() }
-            </AppContentWrapper>
-          </AppContainerWrapper>
+          <StylesProvider injectFirst>
+            <AppContainerWrapper>
+              <AppHeaderWrapper
+                  appIcon={OpenLatticeIcon}
+                  appTitle="Re-entry Case Management"
+                  logout={this.logout}
+                  organizationsSelect={{
+                    isLoading: requestIsPending(requestStates[INITIALIZE_APPLICATION]),
+                    onChange: this.switchOrganization,
+                    organizations,
+                    selectedOrganizationId: selectedOrgId
+                  }}
+                  user={user}>
+                <AppNavigationWrapper>
+                  <NavLink to={Routes.ROOT} />
+                  <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
+                  <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
+                  <NavLink to={Routes.REPORTS}>Reports</NavLink>
+                  <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
+                  <NavLink to={Routes.TASKS}>Tasks</NavLink>
+                </AppNavigationWrapper>
+              </AppHeaderWrapper>
+              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+                { this.renderAppContent() }
+              </AppContentWrapper>
+              <ContactSupportButton />
+            </AppContainerWrapper>
+          </StylesProvider>
         </MuiPickersUtilsProvider>
       </ThemeProvider>
     );

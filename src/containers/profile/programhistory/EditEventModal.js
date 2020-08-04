@@ -1,5 +1,6 @@
 // @flow
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import {
   List,
@@ -8,20 +9,18 @@ import {
   removeIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
-import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
-import { isDefined } from '../../../utils/LangUtils';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { hydrateEventSchema } from '../events/utils/EventUtils';
-import { clearEditRequestState } from '../needs/NeedsActions';
 import { EDIT_EVENT, editEvent } from './ProgramHistoryActions';
-import { GET_PROVIDERS } from '../../providers/ProvidersActions';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
@@ -29,6 +28,9 @@ import {
   PROVIDERS,
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
+import { GET_PROVIDERS } from '../../providers/ProvidersActions';
+import { hydrateEventSchema } from '../events/utils/EventUtils';
+import { clearEditRequestState } from '../needs/NeedsActions';
 
 const {
   findEntityAddressKeyFromMap,
@@ -42,6 +44,7 @@ const {
   DATETIME_COMPLETED,
   EFFECTIVE_DATE,
   ENTITY_KEY_ID,
+  NOTES,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -103,16 +106,17 @@ const EditEventModal = ({
     };
   }
   else if (isDefined(enrollmentStatus)) {
-    const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
+    const { [EFFECTIVE_DATE]: datetime, [NOTES]: notes, [STATUS]: status } = getEntityProperties(
       enrollmentStatus,
-      [EFFECTIVE_DATE, STATUS]
+      [EFFECTIVE_DATE, NOTES, STATUS]
     );
     const providerEKID :UUID = getEKID(provider);
     originalFormData = {
       [getPageSectionKey(1, 1)]: {
         [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: status,
         [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: DateTime.fromISO(datetime).toISODate(),
-        [getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)]: providerEKID
+        [getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)]: providerEKID,
+        [getEntityAddressKey(0, ENROLLMENT_STATUS, NOTES)]: notes
       }
     };
   }

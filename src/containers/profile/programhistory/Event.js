@@ -1,12 +1,20 @@
 // @flow
 import React, { useState } from 'react';
-import styled from 'styled-components';
+
 import { Map } from 'immutable';
+import { CardSegment } from 'lattice-ui-kit';
+import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
-import { CardSegment, Colors, EditButton } from 'lattice-ui-kit';
 import { useDispatch } from 'react-redux';
 
 import EditEventModal from './EditEventModal';
+
+import EditButton from '../../../components/buttons/EditButton';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
+import { getProviders } from '../../providers/ProvidersActions';
+import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -14,18 +22,14 @@ import {
   EventText,
   EventWrapper,
 } from '../styled/EventStyles';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { schema, uiSchema } from '../events/schemas/RecordEventSchemas';
-import { getProviders } from '../../providers/ProvidersActions';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
-const { NEUTRALS } = Colors;
-const { EFFECTIVE_DATE, NAME, STATUS } = PROPERTY_TYPE_FQNS;
-
-const EventCardSegment = styled(CardSegment)`
-  border-bottom: 1px solid ${NEUTRALS[4]};
-`;
+const { isNonEmptyArray } = LangUtils;
+const {
+  EFFECTIVE_DATE,
+  NAME,
+  NOTES,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 type Props = {
   contactNameByProviderEKID :Map;
@@ -46,27 +50,31 @@ const Event = ({
     setEditModalVisibility(true);
   };
 
-  const { [EFFECTIVE_DATE]: datetime, [STATUS]: status } = getEntityProperties(
+  const { [EFFECTIVE_DATE]: datetime, [NOTES]: notes, [STATUS]: status } = getEntityProperties(
     enrollmentStatus,
-    [EFFECTIVE_DATE, STATUS]
+    [EFFECTIVE_DATE, NOTES, STATUS]
   );
   const date :string = DateTime.fromISO(datetime).toLocaleString(DateTime.DATE_SHORT);
   const enrollmentStatusEKID :UUID = getEKID(enrollmentStatus);
   const provider :Map = providerByStatusEKID.get(enrollmentStatusEKID, Map());
-  const { [NAME]: name } = getEntityProperties(provider, [NAME]);
-  const providerName :string = typeof name === 'string' ? name : name[0];
-  const relatedOrganization :string = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  let relatedOrganization;
+  if (!provider.isEmpty()) {
+    const { [NAME]: name } = getEntityProperties(provider, [NAME]);
+    const providerName :string = isNonEmptyArray(name) ? name[0] : name;
+    relatedOrganization = `Related Organization: ${providerName || EMPTY_FIELD}`;
+  }
   const providerEKID :UUID = getEKID(provider);
   const contactName :string = contactNameByProviderEKID.get(providerEKID, EMPTY_FIELD);
   const pointofContact :string = `Point of Contact: ${contactName}`;
   return (
-    <EventCardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
+    <CardSegment key={enrollmentStatusEKID} padding="25px 30px" vertical={false}>
       <CardInnerWrapper>
         <EventDateWrapper>{ date }</EventDateWrapper>
         <EventWrapper>
           <EventStatusText>{ status }</EventStatusText>
-          <EventText>{ relatedOrganization }</EventText>
-          <EventText>{ pointofContact }</EventText>
+          { relatedOrganization && <EventText>{ relatedOrganization }</EventText> }
+          { relatedOrganization && <EventText>{ pointofContact }</EventText> }
+          <EventText>{ notes }</EventText>
         </EventWrapper>
       </CardInnerWrapper>
       <div><EditButton onClick={onOpenEditModal} /></div>
@@ -77,7 +85,7 @@ const Event = ({
           provider={provider}
           schema={schema}
           uiSchema={uiSchema} />
-    </EventCardSegment>
+    </CardSegment>
   );
 };
 

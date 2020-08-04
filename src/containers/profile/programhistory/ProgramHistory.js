@@ -1,17 +1,24 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Card,
   CardSegment,
   Colors,
-  EditButton,
 } from 'lattice-ui-kit';
 
-import Event from './Event';
 import EditEventModal from './EditEventModal';
 import EditReleaseInfoModal from './EditReleaseInfoModal';
+import Event from './Event';
+import { schema, uiSchema } from './schemas/EditEnrollmentDateSchemas';
+
+import EditButton from '../../../components/buttons/EditButton';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
+import { sortEntitiesByDateProperty } from '../../../utils/Utils';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import {
   CardInnerWrapper,
   EventDateWrapper,
@@ -20,14 +27,9 @@ import {
   EventWrapper,
 } from '../styled/EventStyles';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
-import { getEKID } from '../../../utils/DataUtils';
-import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { getMostRecentReleaseDate, getReentryEnrollmentDate } from '../utils/ProfileUtils';
-import { schema, uiSchema } from './schemas/EditEnrollmentDateSchemas';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const {
   ENROLLMENT_STATUS,
   MANUAL_JAIL_STAYS,
@@ -47,8 +49,8 @@ const EventsCard = styled(Card)`
 
 const GrayBar = styled(CardSegment)`
   align-items: center;
-  background-color: ${NEUTRALS[6]};
-  color: ${NEUTRALS[0]};
+  background-color: ${NEUTRAL.N50};
+  color: ${NEUTRAL.N600};
   justify-content: space-between;
   font-size: 14px;
   line-height: 1.35;

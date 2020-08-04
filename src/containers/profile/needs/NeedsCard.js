@@ -1,27 +1,28 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   Card,
   CardSegment,
   Colors,
-  EditButton,
 } from 'lattice-ui-kit';
 
 import EditNeedsModal from './EditNeedsModal';
-import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
-import COLORS from '../../../core/style/Colors';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { NEUTRALS } = Colors;
+import EditButton from '../../../components/buttons/EditButton';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
+
+const { NEUTRAL } = Colors;
 const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const { NOTES, TYPE } = PROPERTY_TYPE_FQNS;
 
 const NeedsTag = styled.div`
-  background-color: ${NEUTRALS[6]};
+  background-color: ${NEUTRAL.N50};
   border-radius: 3px;
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N700};
   font-size: 14px;
   margin-right: 20px;
   padding: 12px 20px;
@@ -29,7 +30,6 @@ const NeedsTag = styled.div`
 `;
 
 const Notes = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 14px;
 `;
 

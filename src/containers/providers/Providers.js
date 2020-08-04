@@ -18,7 +18,6 @@ import AddProviderModal from './AddProviderModal';
 import ProviderCard from './ProviderCard';
 import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 
-import COLORS from '../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
@@ -40,7 +39,6 @@ const HeaderRow = styled.div`
 `;
 
 const Header = styled.div`
-  color: ${COLORS.GRAY_01};
   font-size: 26px;
   font-weight: 600;
   line-height: 35px;
@@ -96,7 +94,7 @@ const Providers = ({
     <>
       <HeaderRow>
         <Header>Service Providers</Header>
-        <Button mode="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
+        <Button color="primary" onClick={() => setAddModalVisibility(true)}>Add a Provider</Button>
       </HeaderRow>
       <SelectWrapper>
         <Label>Filter by Provider Type:</Label>

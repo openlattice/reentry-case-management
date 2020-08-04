@@ -7,7 +7,12 @@ import { ENROLLMENT_STATUSES } from '../EventConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { ENROLLMENT_STATUS, PROVIDER } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, ENTITY_KEY_ID, STATUS } = PROPERTY_TYPE_FQNS;
+const {
+  EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
+  NOTES,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 const schema :Object = {
   type: 'object',
@@ -35,6 +40,10 @@ const schema :Object = {
           enum: [],
           enumNames: []
         },
+        [getEntityAddressKey(0, ENROLLMENT_STATUS, NOTES)]: {
+          type: 'string',
+          title: 'Notes',
+        }
       }
     },
   }
@@ -51,6 +60,10 @@ const uiSchema :Object = {
     },
     [getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)]: {
       classNames: 'column-span-12',
+    },
+    [getEntityAddressKey(0, ENROLLMENT_STATUS, NOTES)]: {
+      classNames: 'column-span-12',
+      'ui:widget': 'TextareaWidget'
     },
   }
 };

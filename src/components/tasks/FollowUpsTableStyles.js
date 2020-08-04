@@ -2,14 +2,12 @@
 import styled from 'styled-components';
 import { Colors, StyleUtils } from 'lattice-ui-kit';
 
-import COLORS from '../../core/style/Colors';
-
-const { WHITE } = Colors;
 const { getStickyPosition } = StyleUtils;
+const { NEUTRAL } = Colors;
 
 const StyledTableRow = styled.tr`
-  background-color: ${WHITE};
-  border-bottom: 1px solid ${COLORS.GRAY_04};
+  background-color: white;
+  border-bottom: 1px solid ${NEUTRAL.N100};
   font-size: 14px;
   padding: 20px 34px;
 

@@ -1,5 +1,6 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import {
   Card,
@@ -12,12 +13,13 @@ import {
   Table,
 } from 'lattice-ui-kit';
 
-import NoResults from '../noresults/NoResults';
 import TableHeaderRow from './TableHeaderRow';
 import TableRow from './TableRow';
 
+import NoResults from '../noresults/NoResults';
+
 const { getStyleVariation } = StyleUtils;
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const tableHeaders :Object[] = ['taskName', 'taskDescription', 'dueDate', 'taskStatus']
   .map((header :string) => ({ key: header, label: '', sortable: false }));
 
@@ -27,7 +29,7 @@ const SpinnerWrapper = styled(CardSegment)`
 `;
 
 const TableCardHeader = styled(CardHeader)`
-  background-color: ${NEUTRALS[6]};
+  background-color: ${NEUTRAL.N100};
   padding: 20px 30px;
 `;
 

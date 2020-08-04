@@ -24,6 +24,7 @@ const {
   HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
   MARITAL_STATUS,
+  MIDDLE_NAME,
   OL_ID_FQN,
   PERSON_SEX,
   PROJECTED_RELEASE_DATETIME,
@@ -39,11 +40,12 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [ETHNICITY]: ethnicity,
     [FIRST_NAME]: firstName,
     [LAST_NAME]: lastName,
+    [MIDDLE_NAME]: middleName,
     [PERSON_SEX]: sex,
     [RACE]: race,
   } = getEntityProperties(
     participant,
-    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, PERSON_SEX, RACE],
+    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, PERSON_SEX, RACE],
     EMPTY_FIELD
   );
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
@@ -71,6 +73,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   const participantData = Map({
     lastName,
     firstName,
+    middleName,
     dob,
     age,
     sex,

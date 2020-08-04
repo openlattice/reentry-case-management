@@ -59,6 +59,7 @@ const {
   GENDER,
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
+  IS_CELL_PHONE,
   LAST_NAME,
   MARITAL_STATUS,
   MIDDLE_NAME,
@@ -93,7 +94,7 @@ const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List)
     schema,
     [
       'properties',
-      getPageSectionKey(1, 4),
+      getPageSectionKey(1, 5),
       'properties',
       getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
       'enum'
@@ -104,7 +105,7 @@ const hydrateIncarcerationFacilitiesSchemas = (schema :Object, facilities :List)
     newSchema,
     [
       'properties',
-      getPageSectionKey(1, 4),
+      getPageSectionKey(1, 5),
       'properties',
       getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
       'enumNames'
@@ -143,7 +144,7 @@ const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :
   }
 
   if (selectedReleaseDate) {
-    formData[getPageSectionKey(1, 4)] = {
+    formData[getPageSectionKey(1, 5)] = {
       [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: selectedReleaseDate
     };
   }
@@ -154,13 +155,14 @@ const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :
 
 const getClientContactInfoCount = (formData :Object) :number => {
 
-  const contactSection :Object = get(formData, getPageSectionKey(1, 2));
+  const contactSection :Object = get(formData, getPageSectionKey(1, 4));
   const contactInfoKeysOnly :string[] = Object.keys(contactSection).filter((entityAddressKey :string) => {
 
     const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
     const propertyIsAboutPreferred :boolean = propertyTypeFQN.toString() === PREFERRED.toString()
       || propertyTypeFQN.toString() === PREFERRED_METHOD_OF_CONTACT.toString()
-      || propertyTypeFQN.toString() === GENERAL_NOTES.toString();
+      || propertyTypeFQN.toString() === GENERAL_NOTES.toString()
+      || propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
 
     return entitySetName === CONTACT_INFO.toString()
       && isDefined(get(contactSection, entityAddressKey))
@@ -171,28 +173,85 @@ const getClientContactInfoCount = (formData :Object) :number => {
 
 const setClientContactInfoIndices = (formData :Object) :Object => {
   let updatedFormData = formData;
-  const sectionTwoKey :string = getPageSectionKey(1, 2);
+  const pageSectionKey :string = getPageSectionKey(1, 4);
   const contactInfoCount :number = getClientContactInfoCount(formData);
   if (!contactInfoCount) return updatedFormData;
 
-  if (!isDefined(getIn(formData, [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]))
-    && contactInfoCount === 1) {
-    const currentEmailPath :string[] = [sectionTwoKey, getEntityAddressKey(1, CONTACT_INFO, EMAIL)];
-    const emailValue :string = getIn(formData, currentEmailPath);
-    updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+  const currentHomePhonePath :string[] = [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)];
+  const homePhoneNumber = getIn(formData, [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]);
+  const currentCellPath :string[] = [pageSectionKey, getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)];
+  const cellPhoneNumber = getIn(formData, [pageSectionKey, getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER)]);
+  const currentEmailPath :string[] = [pageSectionKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)];
+  const email = getIn(formData, [pageSectionKey, getEntityAddressKey(2, CONTACT_INFO, EMAIL)]);
+
+  if (contactInfoCount === 3 || (isDefined(homePhoneNumber) && isDefined(cellPhoneNumber))) {
     updatedFormData = updateFormData(
       updatedFormData,
-      [sectionTwoKey, getEntityAddressKey(0, CONTACT_INFO, EMAIL)],
-      emailValue
+      [pageSectionKey, getEntityAddressKey(1, CONTACT_INFO, IS_CELL_PHONE)],
+      true
     );
   }
+  else if (contactInfoCount === 2) {
+    if (!isDefined(homePhoneNumber) || !isDefined(cellPhoneNumber)) {
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [pageSectionKey, getEntityAddressKey(1, CONTACT_INFO, EMAIL)],
+        email
+      );
+
+      if (isDefined(cellPhoneNumber)) {
+        updatedFormData = deleteKeyFromFormData(updatedFormData, currentCellPath);
+        updatedFormData = updateFormData(
+          updatedFormData,
+          [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)],
+          cellPhoneNumber
+        );
+        updatedFormData = updateFormData(
+          updatedFormData,
+          [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, IS_CELL_PHONE)],
+          true
+        );
+      }
+    }
+    if (!isDefined(email)) {
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+    }
+  }
+  else if (contactInfoCount === 1) {
+    const contactInfoValues = [homePhoneNumber, cellPhoneNumber, email];
+    const indexToKeep = contactInfoValues.findIndex((listValue) => isDefined(listValue));
+    if (indexToKeep === 1) {
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)],
+        cellPhoneNumber
+      );
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, IS_CELL_PHONE)],
+        true
+      );
+    }
+    if (indexToKeep === 2) {
+      updatedFormData = updateFormData(
+        updatedFormData,
+        [pageSectionKey, getEntityAddressKey(0, CONTACT_INFO, EMAIL)],
+        email
+      );
+      updatedFormData = deleteKeyFromFormData(updatedFormData, currentHomePhonePath);
+    }
+    updatedFormData = deleteKeyFromFormData(updatedFormData, currentCellPath);
+    updatedFormData = deleteKeyFromFormData(updatedFormData, currentEmailPath);
+  }
+
   return updatedFormData;
 };
 
 const setPreferredMethodOfContact = (formData :Object) :Object => {
 
   const preferredMethodOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
-  const pageSectionKey :string = getPageSectionKey(1, 2);
+  const pageSectionKey :string = getPageSectionKey(1, 4);
   const preferredMethodOfContactPath :string[] = [pageSectionKey, preferredMethodOfContactKey];
   const preferredMethodOfContactValue :string = getIn(formData, preferredMethodOfContactPath);
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -207,36 +266,39 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
   updatedFormData = deleteKeyFromFormData(updatedFormData, preferredMethodOfContactPath);
   if (!contactInfoCount) return updatedFormData;
 
-  const emailIndex :number = contactInfoCount - 1;
-  if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
-    const emailAsPreferredMethodKey :string = getEntityAddressKey(
-      emailIndex,
-      CONTACT_INFO,
-      PREFERRED_METHOD_OF_CONTACT
-    );
-    updatedFormData = updateFormData(
-      updatedFormData,
-      [pageSectionKey, emailAsPreferredMethodKey],
-      preferredMethodOfContactValue
-    );
-    const emailAsPreferredKey :string = getEntityAddressKey(emailIndex, CONTACT_INFO, PREFERRED);
-    updatedFormData = updateFormData(
-      updatedFormData,
-      [pageSectionKey, emailAsPreferredKey],
-      true
-    );
+  const contactInfoSection = get(formData, pageSectionKey);
+  let indexToSet;
+  if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[1]
+    || preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[2]) {
+    const cellPhoneProperty = Object.keys(contactInfoSection).find((entityAddressKey :string) => {
+      const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      return propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
+    });
+    const { entityIndex } = parseEntityAddressKey(cellPhoneProperty);
+    indexToSet = entityIndex;
+  }
+  else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[3]) {
+    const emailProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
+      const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      return propertyTypeFQN.toString() === EMAIL.toString();
+    });
+    const [emailEntityKeyAddress] = emailProperty;
+    const { entityIndex } = parseEntityAddressKey(emailEntityKeyAddress);
+    indexToSet = entityIndex;
   }
   else {
-    const phoneAsPreferredMethodKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
+    indexToSet = 0;
+  }
+
+  if (isDefined(indexToSet)) {
     updatedFormData = updateFormData(
       updatedFormData,
-      [pageSectionKey, phoneAsPreferredMethodKey],
+      [pageSectionKey, getEntityAddressKey(indexToSet, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT)],
       preferredMethodOfContactValue
     );
-    const phoneAsPreferredKey :string = getEntityAddressKey(0, CONTACT_INFO, PREFERRED);
     updatedFormData = updateFormData(
       updatedFormData,
-      [pageSectionKey, phoneAsPreferredKey],
+      [pageSectionKey, getEntityAddressKey(indexToSet, CONTACT_INFO, PREFERRED)],
       true
     );
   }
@@ -247,7 +309,7 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
 const setPreferredTimeOfContact = (formData :Object) :Object => {
 
   const preferredTimeOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
-  const pageSectionKey :string = getPageSectionKey(1, 2);
+  const pageSectionKey :string = getPageSectionKey(1, 4);
   const preferredTimeOfContactPath :string[] = [pageSectionKey, preferredTimeOfContactKey];
   const preferredTimeOfContactValue :string = getIn(formData, preferredTimeOfContactPath);
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -255,7 +317,6 @@ const setPreferredTimeOfContact = (formData :Object) :Object => {
   let updatedFormData = formData;
   updatedFormData = deleteKeyFromFormData(updatedFormData, preferredTimeOfContactPath);
   if (!contactInfoCount) return updatedFormData;
-
   let contactIndex :number = 0;
   while (contactIndex < contactInfoCount) {
     updatedFormData = updateFormData(
@@ -292,11 +353,13 @@ const resetKey = (
 const setProbationOrParoleValues = (formData :Object) :Object => {
 
   let updatedFormData :Object = formData;
-  const probationParolePath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
+  const probationParolePath :string[] = [getPageSectionKey(1, 5), getPageSectionKey(1, 6)];
   const probationOrParoleData :Object = getIn(formData, probationParolePath, {});
   const attorneyEmploymentKey :string = getEntityAddressKey(0, EMPLOYMENT, NAME);
   const officerEmployeeKey :string = getEntityAddressKey(0, EMPLOYEE, TITLE);
   const keys :string[] = Object.keys(probationOrParoleData);
+
+  updatedFormData = deleteKeyFromFormData(updatedFormData, [getPageSectionKey(1, 5), 'onProbationOrParole']);
 
   if ((keys.length === 2 && keys.includes(attorneyEmploymentKey) && keys.includes(officerEmployeeKey))
     || !keys.length) {
@@ -344,28 +407,28 @@ const setProbationOrParoleValues = (formData :Object) :Object => {
 // fabricate's index mappers don't work for these, because these values are not in arrays
 const setContactIndices = (formData :Object) :Map => {
 
-  const sectionFourKey :string = getPageSectionKey(1, 4);
-  const sectionSevenKey :string = getPageSectionKey(1, 7);
-  const attorneyPhoneKey :string = getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER);
-  const attorneyEmailKey :string = getEntityAddressKey(3, CONTACT_INFO, EMAIL);
-  const officerPhoneKey :string = getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER);
-  const officerEmailKey :string = getEntityAddressKey(5, CONTACT_INFO, EMAIL);
+  const outerPageSectionKey :string = getPageSectionKey(1, 5);
+  const innerPageSectionKey :string = getPageSectionKey(1, 6);
+  const attorneyPhoneKey :string = getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER);
+  const attorneyEmailKey :string = getEntityAddressKey(-3, CONTACT_INFO, EMAIL);
+  const officerPhoneKey :string = getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER);
+  const officerEmailKey :string = getEntityAddressKey(-5, CONTACT_INFO, EMAIL);
 
   const clientContactEntitiesCount :number = getClientContactInfoCount(formData);
   const countAfterAttorneyPhone :number = isDefined(
-    getIn(formData, [sectionFourKey, sectionSevenKey, attorneyPhoneKey])
+    getIn(formData, [outerPageSectionKey, innerPageSectionKey, attorneyPhoneKey])
   )
     ? clientContactEntitiesCount + 1 : clientContactEntitiesCount;
   const countAfterAttorneyEmail :number = isDefined(
-    getIn(formData, [sectionFourKey, sectionSevenKey, attorneyEmailKey])
+    getIn(formData, [outerPageSectionKey, innerPageSectionKey, attorneyEmailKey])
   )
     ? countAfterAttorneyPhone + 1 : countAfterAttorneyPhone;
   const countAfterOfficerPhone :number = isDefined(
-    getIn(formData, [sectionFourKey, sectionSevenKey, officerPhoneKey])
+    getIn(formData, [outerPageSectionKey, innerPageSectionKey, officerPhoneKey])
   )
     ? countAfterAttorneyEmail + 1 : countAfterAttorneyEmail;
   const countAfterOfficerEmail :number = isDefined(
-    getIn(formData, [sectionFourKey, sectionSevenKey, officerEmailKey])
+    getIn(formData, [outerPageSectionKey, innerPageSectionKey, officerEmailKey])
   )
     ? countAfterOfficerPhone + 1 : countAfterOfficerPhone;
 
@@ -378,7 +441,7 @@ const setContactIndices = (formData :Object) :Map => {
   if (countAfterAttorneyPhone > clientContactEntitiesCount) {
     updatedFormData = resetKey(
       updatedFormData,
-      [sectionFourKey, sectionSevenKey, attorneyPhoneKey],
+      [outerPageSectionKey, innerPageSectionKey, attorneyPhoneKey],
       countAfterAttorneyPhone - 1,
       { appTypeFqn: CONTACT_INFO, propertyTypeFQN: PHONE_NUMBER }
     );
@@ -386,7 +449,7 @@ const setContactIndices = (formData :Object) :Map => {
   if (countAfterAttorneyEmail > countAfterAttorneyPhone) {
     updatedFormData = resetKey(
       updatedFormData,
-      [sectionFourKey, sectionSevenKey, attorneyEmailKey],
+      [outerPageSectionKey, innerPageSectionKey, attorneyEmailKey],
       countAfterAttorneyEmail - 1,
       { appTypeFqn: CONTACT_INFO, propertyTypeFQN: EMAIL }
     );
@@ -394,7 +457,7 @@ const setContactIndices = (formData :Object) :Map => {
   if (countAfterOfficerPhone > countAfterAttorneyEmail) {
     updatedFormData = resetKey(
       updatedFormData,
-      [sectionFourKey, sectionSevenKey, officerPhoneKey],
+      [outerPageSectionKey, innerPageSectionKey, officerPhoneKey],
       countAfterOfficerPhone - 1,
       { appTypeFqn: CONTACT_INFO, propertyTypeFQN: PHONE_NUMBER }
     );
@@ -402,7 +465,7 @@ const setContactIndices = (formData :Object) :Map => {
   if (countAfterOfficerEmail > countAfterOfficerPhone) {
     updatedFormData = resetKey(
       updatedFormData,
-      [sectionFourKey, sectionSevenKey, officerEmailKey],
+      [outerPageSectionKey, innerPageSectionKey, officerEmailKey],
       countAfterOfficerEmail - 1,
       { appTypeFqn: CONTACT_INFO, propertyTypeFQN: EMAIL }
     );
@@ -416,13 +479,13 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
   const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
 
   const releaseDatePath :string[] = [
-    getPageSectionKey(1, 4),
+    getPageSectionKey(1, 5),
     getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
   ];
   const releaseDate :any = getIn(formData, releaseDatePath);
   const recognizedEndDatePath :string[] = [
-    getPageSectionKey(1, 4),
-    getPageSectionKey(1, 7),
+    getPageSectionKey(1, 5),
+    getPageSectionKey(1, 6),
     getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)
   ];
   const recgonizedDate :any = getIn(formData, recognizedEndDatePath);
@@ -443,19 +506,20 @@ const setRegisteredSexOffender = (formData :Object) :Object => {
   let updatedFormData = formData;
   const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
 
-  const isSexOffenderPath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)];
+  const pageSectionKey = getPageSectionKey(1, 7);
+  const isSexOffenderPath :string[] = [pageSectionKey, getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)];
   const isSexOffenderValue :any = getIn(formData, isSexOffenderPath);
   const registeredCountyPath :string[] = [
-    getPageSectionKey(1, 5),
+    pageSectionKey,
     getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, COUNTY)
   ];
   const registeredStatePath :string[] = [
-    getPageSectionKey(1, 5),
+    pageSectionKey,
     getEntityAddressKey(0, SEX_OFFENDER_REGISTRATION_LOCATION, US_STATE)
   ];
-  const registeredDatePath :string[] = [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
+  const registeredDatePath :string[] = [pageSectionKey, getEntityAddressKey(0, SEX_OFFENDER, OL_DATETIME)];
   const registryEndDatePath :string[] = [
-    getPageSectionKey(1, 5),
+    pageSectionKey,
     getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME)
   ];
 
@@ -498,7 +562,7 @@ const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
 const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*>> => {
 
   const associations = [];
-  const contactsAndAddress :Object = get(formData, getPageSectionKey(1, 2));
+  const contactsAndAddress :Object = get(formData, getPageSectionKey(1, 4));
   if (!Object.values(contactsAndAddress).length) return associations;
 
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -530,14 +594,15 @@ const getClientEducationAssociations = (formData :Object) :Array<Array<*>> => {
 
 const getClientSexOffenderAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
+  const pageSectionKey = getPageSectionKey(1, 7);
   const isSexOffenderValue :any = getIn(
     formData,
-    [getPageSectionKey(1, 5), getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
+    [pageSectionKey, getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
   );
   if (!isDefined(isSexOffenderValue)) return associations;
 
   associations.push([REPORTED, 0, PEOPLE, 0, SEX_OFFENDER, {}]);
-  const sexOffenderSection :Object = get(formData, getPageSectionKey(1, 5));
+  const sexOffenderSection :Object = get(formData, pageSectionKey);
   const countyKey = Object.keys(sexOffenderSection).find((key :string) => {
     const { entitySetName } = parseEntityAddressKey(key);
     return entitySetName === SEX_OFFENDER_REGISTRATION_LOCATION.toString();
@@ -552,7 +617,8 @@ const getClientSexOffenderAssociations = (formData :Object) :Array<Array<*>> => 
 
 const getClientReleaseAssociations = (formData :Object) => {
   const associations = [];
-  const outerPageSectionKey :string = getPageSectionKey(1, 4);
+  const outerPageSectionKey :string = getPageSectionKey(1, 5);
+  const innerPageSectionKey :string = getPageSectionKey(1, 6);
   const releaseDate :any = getIn(
     formData,
     [outerPageSectionKey, getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
@@ -576,7 +642,7 @@ const getClientReleaseAssociations = (formData :Object) => {
     associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, REFERRAL_REQUEST, {}]);
   }
 
-  const probationData = getIn(formData, [outerPageSectionKey, getPageSectionKey(1, 7)]);
+  const probationData = getIn(formData, [outerPageSectionKey, innerPageSectionKey]);
   if (!isDefined(probationData) || Object.values(probationData).every((value :any) => !isDefined(value))) {
     return associations;
   }
@@ -631,7 +697,7 @@ const getOfficerAndAttorneyContactAssociations = (
 
   const associations :Array<Array<*>> = [];
   let clientContactInfoCount :number = getClientContactInfoCount(originalFormData);
-  const probationPath :string[] = [getPageSectionKey(1, 4), getPageSectionKey(1, 7)];
+  const probationPath :string[] = [getPageSectionKey(1, 5), getPageSectionKey(1, 6)];
   const originalProbationData :Object = getIn(originalFormData, probationPath);
 
   const attorneyIsDefined :boolean = isDefined(getIn(
@@ -639,11 +705,11 @@ const getOfficerAndAttorneyContactAssociations = (
     probationPath.concat([getEntityAddressKey(0, EMPLOYMENT, NAME)])
   ));
   if (attorneyIsDefined) {
-    if (isDefined(get(originalProbationData, getEntityAddressKey(2, CONTACT_INFO, PHONE_NUMBER)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)))) {
       associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
-    if (isDefined(get(originalProbationData, getEntityAddressKey(3, CONTACT_INFO, EMAIL)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-3, CONTACT_INFO, EMAIL)))) {
       associations.push([CONTACTED_VIA, 0, ATTORNEYS, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
@@ -654,12 +720,12 @@ const getOfficerAndAttorneyContactAssociations = (
     probationPath.concat([getEntityAddressKey(0, EMPLOYEE, TITLE)])
   ));
   if (officerIsDefined) {
-    if (isDefined(get(originalProbationData, getEntityAddressKey(4, CONTACT_INFO, PHONE_NUMBER)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)))) {
       associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
     }
-    if (isDefined(get(originalProbationData, getEntityAddressKey(5, CONTACT_INFO, EMAIL)))) {
+    if (isDefined(get(originalProbationData, getEntityAddressKey(-5, CONTACT_INFO, EMAIL)))) {
       associations.push([CONTACTED_VIA, 0, OFFICERS, clientContactInfoCount, CONTACT_INFO, {}]);
       associations.push([CONTACTED_VIA, 0, EMPLOYEE, clientContactInfoCount, CONTACT_INFO, {}]);
       clientContactInfoCount += 1;
@@ -671,7 +737,7 @@ const getOfficerAndAttorneyContactAssociations = (
 
 const getClientHearingAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
-  const hearing = get(formData, getPageSectionKey(1, 6));
+  const hearing = get(formData, getPageSectionKey(1, 8));
   if (!Object.values(hearing).length) return associations;
 
   associations.push([APPEARS_IN, 0, PEOPLE, 0, HEARINGS, {}]);
@@ -688,7 +754,7 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
 
 const getStateIDAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
-  const ids = get(formData, getPageSectionKey(1, 9));
+  const ids = get(formData, getPageSectionKey(1, 2));
   if (!isDefined(ids) || !Object.values(ids).length) return associations;
   if (isDefined(get(ids, getEntityAddressKey(0, STATE_ID, OL_ID_FQN)))) {
     associations.push([HAS, 0, PEOPLE, 0, STATE_ID, {}]);

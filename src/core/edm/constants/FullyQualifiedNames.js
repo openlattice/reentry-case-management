@@ -94,6 +94,7 @@ const PROPERTY_TYPE_FQNS = {
   GENERAL_NOTES: new FullyQualifiedName('general.notes'),
   GENERAL_STATUS: new FullyQualifiedName('general.status'),
   HIGHEST_EDUCATION_LEVEL: new FullyQualifiedName('person.highesteducation'),
+  IS_CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
   LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
   MARITAL_STATUS: new FullyQualifiedName('person.maritalstatus'),
   MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),

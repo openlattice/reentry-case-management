@@ -56,7 +56,7 @@ const NoReleasesFound = () => (
   </Card>
 );
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
 const {
   JAIL_STAYS_BY_PERSON_EKID,
@@ -87,7 +87,7 @@ const ButtonGrid = styled.div`
 `;
 
 const Label = styled.div`
-  color: ${NEUTRALS[0]};
+  color: ${NEUTRAL.N600};
   font-size: 14px;
   line-height: 19px;
   margin-bottom: 10px;

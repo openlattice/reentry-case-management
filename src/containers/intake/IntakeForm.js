@@ -9,7 +9,6 @@ import {
   Button,
   Card,
   CardHeader,
-  Colors,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -43,7 +42,6 @@ import {
   setRegisteredSexOffender,
 } from './utils/IntakeUtils';
 
-import COLORS from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -57,10 +55,10 @@ import {
   RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { formatPhoneNumbersAsYouType, validateParticipantPhoneNumbers } from '../profile/utils/PhoneNumberUtils';
 import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-const { NEUTRALS } = Colors;
 const {
   KEY_MAPPERS,
   VALUE_MAPPERS,
@@ -77,6 +75,10 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const { MANUAL_JAILS_PRISONS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPE_FQNS;
 
+const FormWrapper = styled.div`
+  padding-bottom: 50px;
+`;
+
 const ActionRow = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -91,18 +93,9 @@ const ButtonsWrapper = styled.div`
 `;
 
 const CustomCardHeader = styled(CardHeader)`
-  color: ${COLORS.GRAY_01};
   font-weight: 500;
   font-size: 22px;
   line-height: 30px;
-`;
-
-const DarkerButton = styled(Button)`
-  background-color: ${NEUTRALS[6]};
-
-  :disabled {
-    background-color: ${NEUTRALS[6]};
-  }
 `;
 
 const BannerContent = styled.div`
@@ -135,7 +128,19 @@ type Props = {
   selectedReleaseDate :string;
 };
 
-class IntakeForm extends Component<Props> {
+type State = {
+  pagedData :Object;
+};
+
+class IntakeForm extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      pagedData: {},
+    };
+  }
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
@@ -175,7 +180,6 @@ class IntakeForm extends Component<Props> {
     const { actions, entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
 
     let formDataToProcess = formData;
-    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
     formDataToProcess = pipeValue(
       setClientContactInfoIndices,
       setPreferredMethodOfContact,
@@ -240,6 +244,7 @@ class IntakeForm extends Component<Props> {
       selectedPerson,
       selectedReleaseDate,
     } = this.props;
+    const { pagedData } = this.state;
     const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
     const initialFormData = prepopulateFormData(selectedPerson, selectedReleaseDate);
     return (
@@ -248,7 +253,6 @@ class IntakeForm extends Component<Props> {
           render={(props :Object) => {
             const {
               formRef,
-              pagedData,
               page,
               onBack,
               onNext,
@@ -262,6 +266,19 @@ class IntakeForm extends Component<Props> {
             let primaryButtonText :string = 'Continue to Needs Assessment';
             if (needsAssessmentPage) primaryButtonText = 'Review Form';
             if (reviewPage) primaryButtonText = 'Submit';
+
+            const onChange = (formData) => {
+              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 2);
+              this.setState({ pagedData: dataWithFormattedPhoneNumbers });
+            };
+
+            if (formRef.current) {
+              formRef.current.onChange = onChange;
+            }
+
+            const validate = (formDataToValidate, errors) => (
+              validateParticipantPhoneNumbers(formDataToValidate, errors)
+            );
 
             const submitForm = () => {
               this.onSubmit({ formData: pagedData });
@@ -278,7 +295,7 @@ class IntakeForm extends Component<Props> {
             const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
 
             return (
-              <>
+              <FormWrapper>
                 <Banner
                     maxHeight="100px"
                     isOpen={submissionSuccessful}
@@ -298,24 +315,25 @@ class IntakeForm extends Component<Props> {
                       hideSubmit
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
-                      uiSchema={uiSchemas[page]} />
+                      uiSchema={uiSchemas[page]}
+                      validate={validate} />
                 </Card>
                 <ActionRow>
                   <ButtonsWrapper>
-                    <DarkerButton
+                    <Button
                         disabled={!(page > 0)}
                         onClick={onBack}>
                       Back
-                    </DarkerButton>
+                    </Button>
                     <Button
+                        color="primary"
                         isLoading={requestIsPending(requestStates[SUBMIT_INTAKE_FORM])}
-                        mode="primary"
                         onClick={handleNext}>
                       { primaryButtonText }
                     </Button>
                   </ButtonsWrapper>
                 </ActionRow>
-              </>
+              </FormWrapper>
             );
           }} />
     );

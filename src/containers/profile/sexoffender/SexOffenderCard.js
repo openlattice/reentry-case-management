@@ -1,19 +1,21 @@
 // @flow
 import React, { useState } from 'react';
+
 import { List, Map } from 'immutable';
 import {
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   Label,
 } from 'lattice-ui-kit';
 
 import EditSexOffenderModal from './EditSexOffenderModal';
+
+import EditButton from '../../../components/buttons/EditButton';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { checkWhetherIsSexOffender, formatSexOffenderData } from '../utils/SexOffenderUtils';
-import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { SEX_OFFENDER, SEX_OFFENDER_REGISTRATION_LOCATION } = APP_TYPE_FQNS;
 
