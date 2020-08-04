@@ -66,7 +66,6 @@ const {
   NAME,
   OL_DATETIME,
   OL_ID_FQN,
-  PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
@@ -126,18 +125,16 @@ const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :
       [FIRST_NAME]: firstName,
       [LAST_NAME]: lastName,
       [MIDDLE_NAME]: middleName,
-      [PERSON_SEX]: sex,
       [RACE]: race,
     } = getEntityProperties(
       selectedPerson,
-      [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, PERSON_SEX, RACE],
+      [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE],
     );
     formData[getPageSectionKey(1, 1)] = {
       [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: lastName,
       [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: firstName,
       [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: middleName,
       [getEntityAddressKey(0, PEOPLE, DOB)]: DateTime.fromISO(dobISO).toISODate(),
-      [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: sex,
       [getEntityAddressKey(0, PEOPLE, RACE)]: race,
       [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: ethnicity,
     };
