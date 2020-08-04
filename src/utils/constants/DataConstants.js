@@ -68,8 +68,9 @@ const EDUCATION_LEVELS :string[] = [
 // Contact
 
 const PREFERRED_COMMUNICATION_METHODS :string[] = [
-  'Phone',
-  'Text Message',
+  'Home Phone',
+  'Cell Phone',
+  'Text Message (Cell)',
   'Email',
 ];
 

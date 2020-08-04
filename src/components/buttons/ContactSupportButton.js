@@ -8,7 +8,7 @@ import { Button, Colors } from 'lattice-ui-kit';
 
 const { NEUTRAL } = Colors;
 
-const ButtonWrapper = styled.div`
+const SupportButton = styled(Button)`
   bottom: 16px;
   position: fixed;
   right: 16px;
@@ -25,15 +25,13 @@ const QuestionMarkIcon = styled(FontAwesomeIcon).attrs(() => ({
 `;
 
 const ContactSupportButton = () => (
-  <ButtonWrapper>
-    <Button
-        href="https://support.openlattice.com/servicedesk/customer/portal/1"
-        target="_blank"
-        variant="outlined">
-      <QuestionMarkIcon />
-      <span>Contact Support</span>
-    </Button>
-  </ButtonWrapper>
+  <SupportButton
+      href="https://support.openlattice.com/servicedesk/customer/portal/1"
+      target="_blank"
+      variant="outlined">
+    <QuestionMarkIcon />
+    <span>Contact Support</span>
+  </SupportButton>
 );
 
 export default ContactSupportButton;

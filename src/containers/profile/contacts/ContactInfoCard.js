@@ -28,7 +28,8 @@ import { formatEmergencyContactData, getAddress, getPersonContactData } from '..
 const { LOCATION } = APP_TYPE_FQNS;
 const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 const personLabelMap = Map({
-  phone: 'Phone number',
+  homePhone: 'Home phone',
+  cellPhone: 'Cell phone',
   email: 'Email',
   preferredMethod: 'Preferred method',
   preferredTime: 'Preferred time',
@@ -84,6 +85,7 @@ const ContactInfoCard = ({ emergencyContactInfoByContact, participantNeighbors, 
       </CardHeaderWithButtons>
       <CardSegment>
         <DataGrid
+            columns={3}
             data={contactData}
             emptyString={EMPTY_FIELD}
             labelMap={personLabelMap}

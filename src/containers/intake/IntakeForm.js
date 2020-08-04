@@ -55,6 +55,7 @@ import {
   RELEASES,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { formatPhoneNumbersAsYouType, validateParticipantPhoneNumbers } from '../profile/utils/PhoneNumberUtils';
 import { clearReleaseResult } from '../releases/ReleasesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -127,7 +128,19 @@ type Props = {
   selectedReleaseDate :string;
 };
 
-class IntakeForm extends Component<Props> {
+type State = {
+  pagedData :Object;
+};
+
+class IntakeForm extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      pagedData: {},
+    };
+  }
 
   componentDidMount() {
     const { actions, entitySetIdsByFqn } = this.props;
@@ -167,7 +180,6 @@ class IntakeForm extends Component<Props> {
     const { actions, entitySetIdsByFqn, propertyTypeIdsByFqn } = this.props;
 
     let formDataToProcess = formData;
-    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [getPageSectionKey(1, 4), 'onProbationOrParole']);
     formDataToProcess = pipeValue(
       setClientContactInfoIndices,
       setPreferredMethodOfContact,
@@ -232,6 +244,7 @@ class IntakeForm extends Component<Props> {
       selectedPerson,
       selectedReleaseDate,
     } = this.props;
+    const { pagedData } = this.state;
     const hydratedSchema = hydrateIncarcerationFacilitiesSchemas(schemas[0], incarcerationFacilities);
     const initialFormData = prepopulateFormData(selectedPerson, selectedReleaseDate);
     return (
@@ -240,7 +253,6 @@ class IntakeForm extends Component<Props> {
           render={(props :Object) => {
             const {
               formRef,
-              pagedData,
               page,
               onBack,
               onNext,
@@ -254,6 +266,19 @@ class IntakeForm extends Component<Props> {
             let primaryButtonText :string = 'Continue to Needs Assessment';
             if (needsAssessmentPage) primaryButtonText = 'Review Form';
             if (reviewPage) primaryButtonText = 'Submit';
+
+            const onChange = (formData) => {
+              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 2);
+              this.setState({ pagedData: dataWithFormattedPhoneNumbers });
+            };
+
+            if (formRef.current) {
+              formRef.current.onChange = onChange;
+            }
+
+            const validate = (formDataToValidate, errors) => (
+              validateParticipantPhoneNumbers(formDataToValidate, errors)
+            );
 
             const submitForm = () => {
               this.onSubmit({ formData: pagedData });
@@ -290,7 +315,8 @@ class IntakeForm extends Component<Props> {
                       hideSubmit
                       onSubmit={onNext}
                       schema={personInformationPage ? hydratedSchema : schemas[page]}
-                      uiSchema={uiSchemas[page]} />
+                      uiSchema={uiSchemas[page]}
+                      validate={validate} />
                 </Card>
                 <ActionRow>
                   <ButtonsWrapper>
