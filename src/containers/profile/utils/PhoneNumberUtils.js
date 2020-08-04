@@ -71,7 +71,7 @@ const formatPhoneNumbersAsYouType = (
 };
 
 const validateParticipantPhoneNumbers = (formData :Object, errors :Object) => {
-  const participantContactsPageSectionKey = getPageSectionKey(1, 2);
+  const participantContactsPageSectionKey = getPageSectionKey(1, 4);
   const homePhoneKey = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
   const cellPhoneKey = getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER);
 
