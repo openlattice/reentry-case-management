@@ -51,6 +51,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
+  DATETIME_COMPLETED,
   DOB,
   EMAIL,
   ENTITY_KEY_ID,
@@ -475,6 +476,12 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
   let updatedFormData = formData;
   const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
 
+  const needsAssessmentDatePath :string[] = [
+    getPageSectionKey(1, 1),
+    getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
+  ];
+  const needsAssessmentDate :any = getIn(formData, needsAssessmentDatePath);
+
   const releaseDatePath :string[] = [
     getPageSectionKey(1, 5),
     getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
@@ -487,6 +494,10 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
   ];
   const recgonizedDate :any = getIn(formData, recognizedEndDatePath);
 
+  if (isDefined(needsAssessmentDate)) {
+    const datetimeISO :string = DateTime.fromSQL(needsAssessmentDate.concat(' ', currentTime)).toISO();
+    updatedFormData = updateFormData(updatedFormData, needsAssessmentDatePath, datetimeISO);
+  }
   if (isDefined(releaseDate)) {
     const datetimeISO :string = DateTime.fromSQL(releaseDate.concat(' ', currentTime)).toISO();
     updatedFormData = updateFormData(updatedFormData, releaseDatePath, datetimeISO);
