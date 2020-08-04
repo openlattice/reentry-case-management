@@ -65,7 +65,6 @@ const participantGridLabels = OrderedMap({
   middleName: 'Middle name',
   dob: 'Date of birth',
   age: 'Age',
-  sex: 'Sex',
   gender: 'Gender',
   race: 'Race',
   ethnicity: 'Ethnicity',

@@ -26,7 +26,6 @@ const {
   MARITAL_STATUS,
   MIDDLE_NAME,
   OL_ID_FQN,
-  PERSON_SEX,
   PROJECTED_RELEASE_DATETIME,
   RACE,
 } = PROPERTY_TYPE_FQNS;
@@ -41,11 +40,10 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [FIRST_NAME]: firstName,
     [LAST_NAME]: lastName,
     [MIDDLE_NAME]: middleName,
-    [PERSON_SEX]: sex,
     [RACE]: race,
   } = getEntityProperties(
     participant,
-    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, PERSON_SEX, RACE],
+    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, RACE],
     EMPTY_FIELD
   );
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
@@ -76,7 +74,6 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     middleName,
     dob,
     age,
-    sex,
     gender,
     race,
     ethnicity,
