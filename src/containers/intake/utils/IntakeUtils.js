@@ -480,19 +480,19 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
     getPageSectionKey(1, 1),
     getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
   ];
-  const needsAssessmentDate :any = getIn(formData, needsAssessmentDatePath);
+  const needsAssessmentDate :?string = getIn(formData, needsAssessmentDatePath);
 
   const releaseDatePath :string[] = [
     getPageSectionKey(1, 5),
     getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
   ];
-  const releaseDate :any = getIn(formData, releaseDatePath);
+  const releaseDate :?string = getIn(formData, releaseDatePath);
   const recognizedEndDatePath :string[] = [
     getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
     getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)
   ];
-  const recgonizedDate :any = getIn(formData, recognizedEndDatePath);
+  const recgonizedDate :?string = getIn(formData, recognizedEndDatePath);
 
   if (isDefined(needsAssessmentDate)) {
     const datetimeISO :string = DateTime.fromSQL(needsAssessmentDate.concat(' ', currentTime)).toISO();
