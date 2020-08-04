@@ -8,7 +8,6 @@ import {
   GENDERS,
   MARITAL_STATUSES,
   RACES,
-  SEXES,
 } from '../../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -29,7 +28,6 @@ const {
   MARITAL_STATUS,
   MIDDLE_NAME,
   OL_ID_FQN,
-  PERSON_SEX,
   RACE,
 } = PROPERTY_TYPE_FQNS;
 
@@ -58,15 +56,6 @@ const personSchema :Object = {
           title: 'Date of birth',
           format: 'date'
         },
-        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-          type: 'string',
-          title: 'County ID number',
-        },
-        [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: {
-          type: 'string',
-          title: 'Sex',
-          enum: SEXES,
-        },
         [getEntityAddressKey(0, PEOPLE, RACE)]: {
           type: 'string',
           title: 'Race',
@@ -78,6 +67,10 @@ const personSchema :Object = {
           title: 'Ethnicity',
           enum: ETHNICITIES,
           enumNames: ETHNICITIES
+        },
+        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+          type: 'string',
+          title: 'County ID number',
         },
       },
     }
@@ -100,13 +93,7 @@ const personUiSchema = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, PEOPLE, DOB)]: {
-      classNames: 'column-span-4',
-    },
-    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-      classNames: 'column-span-4',
-    },
-    [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, PEOPLE, RACE)]: {
       classNames: 'column-span-6',
@@ -114,15 +101,17 @@ const personUiSchema = {
     [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
       classNames: 'column-span-6',
     },
+    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+      classNames: 'column-span-6',
+    },
     'ui:order': [
       getEntityAddressKey(0, PEOPLE, LAST_NAME),
       getEntityAddressKey(0, PEOPLE, FIRST_NAME),
       getEntityAddressKey(0, PEOPLE, MIDDLE_NAME),
       getEntityAddressKey(0, PEOPLE, DOB),
-      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
-      getEntityAddressKey(0, PEOPLE, PERSON_SEX),
       getEntityAddressKey(0, PEOPLE, RACE),
       getEntityAddressKey(0, PEOPLE, ETHNICITY),
+      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
     ]
   },
 };
