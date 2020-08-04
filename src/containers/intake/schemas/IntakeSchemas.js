@@ -82,6 +82,12 @@ const personInformationSchema :Object = {
       type: 'object',
       title: '',
       properties: {
+        [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
+          type: 'string',
+          title: 'Enrollment date',
+          format: 'date',
+          default: DateTime.local().toISODate()
+        },
         [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
           type: 'string',
           title: 'Last name',
@@ -119,6 +125,7 @@ const personInformationSchema :Object = {
         },
       },
       required: [
+        getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
         getEntityAddressKey(0, PEOPLE, LAST_NAME),
         getEntityAddressKey(0, PEOPLE, FIRST_NAME),
         getEntityAddressKey(0, PEOPLE, DOB)
@@ -366,6 +373,9 @@ const personInformationSchema :Object = {
 const personInformationUiSchema :Object = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
+      classNames: 'column-span-12',
+    },
     [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
       classNames: 'column-span-4',
     },
@@ -388,6 +398,7 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-6',
     },
     'ui:order': [
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
       getEntityAddressKey(0, PEOPLE, LAST_NAME),
       getEntityAddressKey(0, PEOPLE, FIRST_NAME),
       getEntityAddressKey(0, PEOPLE, MIDDLE_NAME),
@@ -605,11 +616,6 @@ const needsAssessmentSchema = {
           type: 'string',
           title: 'Notes',
         },
-        [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
-          type: 'string',
-          title: 'Intake Date',
-          default: DateTime.local().toISO()
-        },
       },
     }
   }
@@ -626,13 +632,9 @@ const needsAssessmentUiSchema = {
       classNames: 'column-span-12',
       'ui:widget': 'TextareaWidget'
     },
-    [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
-      'ui:widget': 'hidden',
-    },
     'ui:order': [
       getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE),
-      getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES),
-      getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)
     ]
   }
 };
