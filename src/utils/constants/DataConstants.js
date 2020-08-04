@@ -78,6 +78,7 @@ const PREFERRED_COMMUNICATION_TIMES :string[] = [
   'Morning',
   'Afternoon',
   'Evening',
+  'Anytime',
 ];
 
 const CONTACT_RELATIONSHIPS :string[] = [
