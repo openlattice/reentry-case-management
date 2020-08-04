@@ -15,7 +15,6 @@ import {
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
-  SEXES,
   US_STATES,
 } from '../../../utils/constants/DataConstants';
 
@@ -61,7 +60,6 @@ const {
   NOTES,
   OL_DATETIME,
   OL_ID_FQN,
-  PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
@@ -84,6 +82,12 @@ const personInformationSchema :Object = {
       type: 'object',
       title: '',
       properties: {
+        [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
+          type: 'string',
+          title: 'Enrollment date',
+          format: 'date',
+          default: DateTime.local().toISODate()
+        },
         [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
           type: 'string',
           title: 'Last name',
@@ -100,12 +104,6 @@ const personInformationSchema :Object = {
           type: 'string',
           title: 'Date of birth',
           format: 'date'
-        },
-        [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: {
-          type: 'string',
-          title: 'Sex',
-          enum: SEXES,
-          enumNames: SEXES
         },
         [getEntityAddressKey(0, PERSON_DETAILS, GENDER)]: {
           type: 'string',
@@ -127,6 +125,7 @@ const personInformationSchema :Object = {
         },
       },
       required: [
+        getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
         getEntityAddressKey(0, PEOPLE, LAST_NAME),
         getEntityAddressKey(0, PEOPLE, FIRST_NAME),
         getEntityAddressKey(0, PEOPLE, DOB)
@@ -374,6 +373,9 @@ const personInformationSchema :Object = {
 const personInformationUiSchema :Object = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
+      classNames: 'column-span-12',
+    },
     [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
       classNames: 'column-span-4',
     },
@@ -384,13 +386,10 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, PEOPLE, DOB)]: {
-      classNames: 'column-span-4',
-    },
-    [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, PERSON_DETAILS, GENDER)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
     [getEntityAddressKey(0, PEOPLE, RACE)]: {
       classNames: 'column-span-6',
@@ -399,11 +398,11 @@ const personInformationUiSchema :Object = {
       classNames: 'column-span-6',
     },
     'ui:order': [
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
       getEntityAddressKey(0, PEOPLE, LAST_NAME),
       getEntityAddressKey(0, PEOPLE, FIRST_NAME),
       getEntityAddressKey(0, PEOPLE, MIDDLE_NAME),
       getEntityAddressKey(0, PEOPLE, DOB),
-      getEntityAddressKey(0, PEOPLE, PERSON_SEX),
       getEntityAddressKey(0, PERSON_DETAILS, GENDER),
       getEntityAddressKey(0, PEOPLE, RACE),
       getEntityAddressKey(0, PEOPLE, ETHNICITY),
@@ -617,11 +616,6 @@ const needsAssessmentSchema = {
           type: 'string',
           title: 'Notes',
         },
-        [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
-          type: 'string',
-          title: 'Intake Date',
-          default: DateTime.local().toISO()
-        },
       },
     }
   }
@@ -638,13 +632,9 @@ const needsAssessmentUiSchema = {
       classNames: 'column-span-12',
       'ui:widget': 'TextareaWidget'
     },
-    [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
-      'ui:widget': 'hidden',
-    },
     'ui:order': [
       getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE),
-      getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES),
-      getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
+      getEntityAddressKey(0, NEEDS_ASSESSMENT, NOTES)
     ]
   }
 };

@@ -51,6 +51,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   COUNTY,
+  DATETIME_COMPLETED,
   DOB,
   EMAIL,
   ENTITY_KEY_ID,
@@ -66,7 +67,6 @@ const {
   NAME,
   OL_DATETIME,
   OL_ID_FQN,
-  PERSON_SEX,
   PHONE_NUMBER,
   PREFERRED,
   PREFERRED_METHOD_OF_CONTACT,
@@ -126,18 +126,16 @@ const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :
       [FIRST_NAME]: firstName,
       [LAST_NAME]: lastName,
       [MIDDLE_NAME]: middleName,
-      [PERSON_SEX]: sex,
       [RACE]: race,
     } = getEntityProperties(
       selectedPerson,
-      [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, PERSON_SEX, RACE],
+      [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE],
     );
     formData[getPageSectionKey(1, 1)] = {
       [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: lastName,
       [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: firstName,
       [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: middleName,
       [getEntityAddressKey(0, PEOPLE, DOB)]: DateTime.fromISO(dobISO).toISODate(),
-      [getEntityAddressKey(0, PEOPLE, PERSON_SEX)]: sex,
       [getEntityAddressKey(0, PEOPLE, RACE)]: race,
       [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: ethnicity,
     };
@@ -478,18 +476,28 @@ const setDatesAsDateTimes = (formData :Object) :Object => {
   let updatedFormData = formData;
   const currentTime :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
 
+  const needsAssessmentDatePath :string[] = [
+    getPageSectionKey(1, 1),
+    getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)
+  ];
+  const needsAssessmentDate :?string = getIn(formData, needsAssessmentDatePath);
+
   const releaseDatePath :string[] = [
     getPageSectionKey(1, 5),
     getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
   ];
-  const releaseDate :any = getIn(formData, releaseDatePath);
+  const releaseDate :?string = getIn(formData, releaseDatePath);
   const recognizedEndDatePath :string[] = [
     getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
     getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)
   ];
-  const recgonizedDate :any = getIn(formData, recognizedEndDatePath);
+  const recgonizedDate :?string = getIn(formData, recognizedEndDatePath);
 
+  if (isDefined(needsAssessmentDate)) {
+    const datetimeISO :string = DateTime.fromSQL(needsAssessmentDate.concat(' ', currentTime)).toISO();
+    updatedFormData = updateFormData(updatedFormData, needsAssessmentDatePath, datetimeISO);
+  }
   if (isDefined(releaseDate)) {
     const datetimeISO :string = DateTime.fromSQL(releaseDate.concat(' ', currentTime)).toISO();
     updatedFormData = updateFormData(updatedFormData, releaseDatePath, datetimeISO);
