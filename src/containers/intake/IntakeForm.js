@@ -268,7 +268,7 @@ class IntakeForm extends Component<Props, State> {
             if (reviewPage) primaryButtonText = 'Submit';
 
             const onChange = (formData) => {
-              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 2);
+              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 4);
               this.setState({ pagedData: dataWithFormattedPhoneNumbers });
             };
 
