@@ -15,6 +15,7 @@ import {
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
+  SUPERVISION_LEVELS,
   US_STATES,
 } from '../../../utils/constants/DataConstants';
 
@@ -319,6 +320,7 @@ const personInformationSchema :Object = {
                     [getEntityAddressKey(0, PROBATION_PAROLE, LEVEL)]: {
                       type: 'string',
                       title: 'Probation/parole level',
+                      enum: SUPERVISION_LEVELS,
                     },
                   },
                   required: [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]
