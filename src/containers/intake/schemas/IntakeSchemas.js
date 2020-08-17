@@ -146,38 +146,6 @@ const personInformationSchema :Object = {
         getEntityAddressKey(0, PEOPLE, DOB)
       ]
     },
-    [getPageSectionKey(1, 3)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-          type: 'string',
-          title: 'County ID number',
-        },
-        [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
-          type: 'string',
-          title: 'OPUS number',
-        },
-      }
-    },
-    [getPageSectionKey(1, 4)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-          type: 'string',
-          title: 'Marital status',
-          enum: MARITAL_STATUSES,
-          enumNames: MARITAL_STATUSES
-        },
-        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-          type: 'string',
-          title: 'Highest level of education completed',
-          enum: EDUCATION_LEVELS,
-          enumNames: EDUCATION_LEVELS
-        },
-      }
-    },
     [getPageSectionKey(1, 5)]: {
       type: 'object',
       title: 'Contact',
@@ -226,9 +194,41 @@ const personInformationSchema :Object = {
         },
       },
     },
-    [getPageSectionKey(1, 6)]: {
+    [getPageSectionKey(1, 4)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+          type: 'string',
+          title: 'Marital status',
+          enum: MARITAL_STATUSES,
+          enumNames: MARITAL_STATUSES
+        },
+        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+          type: 'string',
+          title: 'Highest level of education completed',
+          enum: EDUCATION_LEVELS,
+          enumNames: EDUCATION_LEVELS
+        },
+      }
+    },
+    [getPageSectionKey(1, 3)]: {
       type: 'object',
       title: 'Release Information',
+      properties: {
+        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+          type: 'string',
+          title: 'County ID number',
+        },
+        [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+          type: 'string',
+          title: 'OPUS number',
+        },
+      }
+    },
+    [getPageSectionKey(1, 6)]: {
+      type: 'object',
+      title: '',
       properties: {
         [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
           type: 'string',
@@ -436,32 +436,6 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PEOPLE, OL_ID_FQN),
     ]
   },
-  [getPageSectionKey(1, 3)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-      classNames: 'column-span-6',
-    },
-    [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:order': [
-      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
-      getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
-    ]
-  },
-  [getPageSectionKey(1, 4)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-      classNames: 'column-span-6',
-    },
-    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:order': [
-      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
-      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
-    ]
-  },
   [getPageSectionKey(1, 5)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, LOCATION, STREET)]: {
@@ -501,6 +475,32 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(2, CONTACT_INFO, EMAIL),
       getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT),
       getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
+    ]
+  },
+  [getPageSectionKey(1, 4)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
+      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
+    ]
+  },
+  [getPageSectionKey(1, 3)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
+      getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
     ]
   },
   [getPageSectionKey(1, 6)]: {
