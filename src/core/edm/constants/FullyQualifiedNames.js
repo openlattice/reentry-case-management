@@ -96,6 +96,7 @@ const PROPERTY_TYPE_FQNS = {
   HIGHEST_EDUCATION_LEVEL: new FullyQualifiedName('person.highesteducation'),
   IS_CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
   LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
+  LEVEL: new FullyQualifiedName('ol.level'),
   MARITAL_STATUS: new FullyQualifiedName('person.maritalstatus'),
   MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),
   NAME: new FullyQualifiedName('ol.name'),

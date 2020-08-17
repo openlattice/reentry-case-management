@@ -54,6 +54,7 @@ const {
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
+  LEVEL,
   MARITAL_STATUS,
   MIDDLE_NAME,
   NAME,
@@ -315,6 +316,10 @@ const personInformationSchema :Object = {
                       title: 'Probation/parole end date',
                       format: 'date'
                     },
+                    [getEntityAddressKey(0, PROBATION_PAROLE, LEVEL)]: {
+                      type: 'string',
+                      title: 'Probation/parole level',
+                    },
                   },
                   required: [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]
                 }
@@ -540,13 +545,16 @@ const personInformationUiSchema :Object = {
         'ui:widget': 'hidden'
       },
       [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
       },
       [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
       },
       [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
+      },
+      [getEntityAddressKey(0, PROBATION_PAROLE, LEVEL)]: {
+        classNames: 'column-span-6',
       },
       'ui:order': [
         getEntityAddressKey(0, PROBATION_PAROLE, TYPE),
@@ -561,6 +569,7 @@ const personInformationUiSchema :Object = {
         getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER),
         getEntityAddressKey(-5, CONTACT_INFO, EMAIL),
         getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME),
+        getEntityAddressKey(0, PROBATION_PAROLE, LEVEL),
       ]
     },
     'ui:order': [
