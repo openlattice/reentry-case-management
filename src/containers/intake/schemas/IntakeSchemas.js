@@ -146,7 +146,7 @@ const personInformationSchema :Object = {
         getEntityAddressKey(0, PEOPLE, DOB)
       ]
     },
-    [getPageSectionKey(1, 5)]: {
+    [getPageSectionKey(1, 3)]: {
       type: 'object',
       title: 'Contact',
       properties: {
@@ -212,7 +212,7 @@ const personInformationSchema :Object = {
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
+    [getPageSectionKey(1, 5)]: {
       type: 'object',
       title: 'Release Information',
       properties: {
@@ -436,7 +436,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PEOPLE, OL_ID_FQN),
     ]
   },
-  [getPageSectionKey(1, 5)]: {
+  [getPageSectionKey(1, 3)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, LOCATION, STREET)]: {
       classNames: 'column-span-8',
@@ -490,7 +490,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
     ]
   },
-  [getPageSectionKey(1, 3)]: {
+  [getPageSectionKey(1, 5)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
       classNames: 'column-span-6',

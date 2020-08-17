@@ -153,7 +153,7 @@ const prepopulateFormData = (selectedPerson :Map, selectedReleaseDate :string) :
 
 const getClientContactInfoCount = (formData :Object) :number => {
 
-  const contactSection :Object = get(formData, getPageSectionKey(1, 5));
+  const contactSection :Object = get(formData, getPageSectionKey(1, 3));
   const contactInfoKeysOnly :string[] = Object.keys(contactSection).filter((entityAddressKey :string) => {
 
     const { entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
@@ -171,7 +171,7 @@ const getClientContactInfoCount = (formData :Object) :number => {
 
 const setClientContactInfoIndices = (formData :Object) :Object => {
   let updatedFormData = formData;
-  const pageSectionKey :string = getPageSectionKey(1, 5);
+  const pageSectionKey :string = getPageSectionKey(1, 3);
   const contactInfoCount :number = getClientContactInfoCount(formData);
   if (!contactInfoCount) return updatedFormData;
 
@@ -249,7 +249,7 @@ const setClientContactInfoIndices = (formData :Object) :Object => {
 const setPreferredMethodOfContact = (formData :Object) :Object => {
 
   const preferredMethodOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
-  const pageSectionKey :string = getPageSectionKey(1, 5);
+  const pageSectionKey :string = getPageSectionKey(1, 3);
   const preferredMethodOfContactPath :string[] = [pageSectionKey, preferredMethodOfContactKey];
   const preferredMethodOfContactValue :string = getIn(formData, preferredMethodOfContactPath);
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -307,7 +307,7 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
 const setPreferredTimeOfContact = (formData :Object) :Object => {
 
   const preferredTimeOfContactKey :string = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
-  const pageSectionKey :string = getPageSectionKey(1, 5);
+  const pageSectionKey :string = getPageSectionKey(1, 3);
   const preferredTimeOfContactPath :string[] = [pageSectionKey, preferredTimeOfContactKey];
   const preferredTimeOfContactValue :string = getIn(formData, preferredTimeOfContactPath);
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -570,7 +570,7 @@ const getClientDetailsAssociations = (formData :Object) :Array<Array<*>> => {
 const getClientContactAndAddressAssociations = (formData :Object) :Array<Array<*>> => {
 
   const associations = [];
-  const contactsAndAddress :Object = get(formData, getPageSectionKey(1, 5));
+  const contactsAndAddress :Object = get(formData, getPageSectionKey(1, 3));
   if (!Object.values(contactsAndAddress).length) return associations;
 
   const contactInfoCount :number = getClientContactInfoCount(formData);
@@ -762,7 +762,7 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
 
 const getStateIDAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
-  const ids = get(formData, getPageSectionKey(1, 3));
+  const ids = get(formData, getPageSectionKey(1, 5));
   if (!isDefined(ids) || !Object.values(ids).length) return associations;
   if (isDefined(get(ids, getEntityAddressKey(0, STATE_ID, OL_ID_FQN)))) {
     associations.push([HAS, 0, PEOPLE, 0, STATE_ID, {}]);
