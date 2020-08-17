@@ -104,6 +104,7 @@ const PROPERTY_TYPE_FQNS = {
   OL_ID_FQN: new FullyQualifiedName('ol.id'),
   OL_TITLE: new FullyQualifiedName('ol.title'),
   PERSON_SEX: new FullyQualifiedName('nc.PersonSex'),
+  PERSON_SUFFIX: new FullyQualifiedName('nc.PersonSuffix'),
   PHONE_NUMBER: new FullyQualifiedName('contact.phonenumber'),
   PREFERRED: new FullyQualifiedName('ol.preferred'),
   PREFERRED_METHOD_OF_CONTACT: new FullyQualifiedName('ol.preferredmethod'),
