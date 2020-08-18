@@ -2,6 +2,9 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const DELETE_PARTICIPANT_AND_NEIGHBORS :'DELETE_PARTICIPANT_AND_NEIGHBORS' = 'DELETE_PARTICIPANT_AND_NEIGHBORS';
+const deleteParticipantAndNeighbors :RequestSequence = newRequestSequence(DELETE_PARTICIPANT_AND_NEIGHBORS);
+
 const GET_ENROLLMENT_STATUS_NEIGHBORS :'GET_ENROLLMENT_STATUS_NEIGHBORS' = 'GET_ENROLLMENT_STATUS_NEIGHBORS';
 const getEnrollmentStatusNeighbors :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUS_NEIGHBORS);
 
@@ -18,11 +21,13 @@ const LOAD_PERSON_INFO_FOR_EDIT :'LOAD_PERSON_INFO_FOR_EDIT' = 'LOAD_PERSON_INFO
 const loadPersonInfoForEdit :RequestSequence = newRequestSequence(LOAD_PERSON_INFO_FOR_EDIT);
 
 export {
+  DELETE_PARTICIPANT_AND_NEIGHBORS,
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
+  deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
