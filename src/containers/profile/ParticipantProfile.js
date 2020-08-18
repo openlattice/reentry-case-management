@@ -23,6 +23,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ContactInfoCard from './contacts/ContactInfoCard';
 import CourtDatesCard from './court/CourtDatesCard';
+import DeleteProfileModal from './DeleteProfileModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
 import RecordEventModal from './events/RecordEventModal';
@@ -95,6 +96,11 @@ const PictureWrapper = styled.div`
   margin-right: 45px;
 `;
 
+const CenteredCardSegment = styled(CardSegment)`
+  align-items: center;
+  justify-content: center;
+`;
+
 type Props = {
   actions :{
     goToRoute :GoToRoute;
@@ -112,6 +118,7 @@ type Props = {
 };
 
 type State = {
+  deleteModalIsOpen :boolean;
   eventModalIsOpen :boolean;
 };
 
@@ -121,6 +128,7 @@ class ParticipantProfile extends Component<Props, State> {
     super(props);
 
     this.state = {
+      deleteModalIsOpen: false,
       eventModalIsOpen: false,
     };
   }
@@ -141,6 +149,14 @@ class ParticipantProfile extends Component<Props, State> {
 
   closeEventModal = () => {
     this.setState({ eventModalIsOpen: false });
+  }
+
+  openDeleteModal = () => {
+    this.setState({ deleteModalIsOpen: true });
+  }
+
+  closeDeleteModal = () => {
+    this.setState({ deleteModalIsOpen: false });
   }
 
   goToEditPersonPage = () => {
@@ -170,7 +186,7 @@ class ParticipantProfile extends Component<Props, State> {
       providerByStatusEKID,
       requestStates
     } = this.props;
-    const { eventModalIsOpen } = this.state;
+    const { deleteModalIsOpen, eventModalIsOpen } = this.state;
 
     if (requestIsPending(requestStates[LOAD_PROFILE])) {
       return (
@@ -229,9 +245,21 @@ class ParticipantProfile extends Component<Props, State> {
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
+        <CenteredCardSegment vertical={false}>
+          <Button
+              color="error"
+              onClick={this.openDeleteModal}
+              variant="text">
+            Delete Profile
+          </Button>
+        </CenteredCardSegment>
         <RecordEventModal
             isVisible={eventModalIsOpen}
             onClose={this.closeEventModal}
+            personEKID={personEKID} />
+        <DeleteProfileModal
+            isVisible={deleteModalIsOpen}
+            onClose={this.closeDeleteModal}
             personEKID={personEKID} />
       </>
     );
