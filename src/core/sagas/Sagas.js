@@ -87,6 +87,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.searchParticipantsWatcher),
 
     // ProfileSagas
+    fork(ProfileSagas.deleteParticipantAndNeighborsWatcher),
     fork(ProfileSagas.getEnrollmentStatusNeighborsWatcher),
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),

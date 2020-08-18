@@ -4,11 +4,13 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DELETE_PARTICIPANT_AND_NEIGHBORS,
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
+  deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
@@ -106,6 +108,9 @@ const {
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [DELETE_PARTICIPANT_AND_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -264,6 +269,20 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_EMERGENCY_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_EMERGENCY_CONTACT, action.id]),
+      });
+    }
+
+    case deleteParticipantAndNeighbors.case(action.type): {
+      return deleteParticipantAndNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .set(state, INITIAL_STATE)
+          .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, action.id]),
       });
     }
 
