@@ -20,7 +20,10 @@ const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
 
+const CASE_NOTES_FORM :string = `${TASKS}/${PARTICIPANT_ID}/casemanagementnotes`;
+
 export {
+  CASE_NOTES_FORM,
   EDIT_PARTICIPANT,
   LOGIN,
   NEW_INTAKE,

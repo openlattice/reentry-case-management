@@ -89,6 +89,7 @@ const PROPERTY_TYPE_FQNS = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
+  FUTURE_PLANS: new FullyQualifiedName('ol.futureplans'),
   GENDER: new FullyQualifiedName('person.gender'),
   GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
   GENERAL_NOTES: new FullyQualifiedName('general.notes'),
@@ -124,6 +125,7 @@ const PROPERTY_TYPE_FQNS = {
   TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
   US_STATE: new FullyQualifiedName('location.state'),
+  VISIT_REASON: new FullyQualifiedName('visit.reason'),
   ZIP: new FullyQualifiedName('location.zip'),
 };
 
