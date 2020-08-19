@@ -1,12 +1,12 @@
 // @flow
-import { getIn, setIn } from 'immutable';
+import { get, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { AsYouType, parsePhoneNumberFromString } from 'libphonenumber-js';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { CONTACT_INFO } = APP_TYPE_FQNS;
+const { CONTACT_INFO, EMERGENCY_CONTACT_INFO } = APP_TYPE_FQNS;
 const { PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
 
 const formatPhoneNumbersAsYouType = (
@@ -118,7 +118,34 @@ const validateParticipantPhoneNumbers = (formData :Object, errors :Object) => {
   return errors;
 };
 
+// Emergency Contact Info:
+
+const formatEmergencyContactPhoneAsYouType = (
+  formData :Object,
+  defaultValue :?string = undefined
+) :Object => {
+
+  let formDataWithPhoneNumbersFormatted = formData;
+
+  const contacts = get(formDataWithPhoneNumbersFormatted, getPageSectionKey(1, 1));
+
+  contacts.forEach((contact :Object, index :number) => {
+    const phoneInput = get(contact, getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER)) || defaultValue;
+    if (phoneInput) {
+      const phone = phoneInput.length <= 4 ? phoneInput : new AsYouType('US').input(phoneInput);
+      formDataWithPhoneNumbersFormatted = setIn(
+        formDataWithPhoneNumbersFormatted,
+        [getPageSectionKey(1, 1), index, getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER)],
+        phone
+      );
+    }
+  });
+
+  return formDataWithPhoneNumbersFormatted;
+};
+
 export {
+  formatEmergencyContactPhoneAsYouType,
   formatPhoneNumbersAsYouType,
   validateParticipantPhoneNumbers,
 };
