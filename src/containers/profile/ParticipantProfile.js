@@ -23,11 +23,12 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ContactInfoCard from './contacts/ContactInfoCard';
 import CourtDatesCard from './court/CourtDatesCard';
+import DeleteProfileModal from './DeleteProfileModal';
 import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
 import RecordEventModal from './events/RecordEventModal';
 import SexOffenderCard from './sexoffender/SexOffenderCard';
-import { LOAD_PROFILE, loadProfile } from './ProfileActions';
+import { LOAD_PROFILE, clearDeleteRequestState, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
@@ -95,8 +96,14 @@ const PictureWrapper = styled.div`
   margin-right: 45px;
 `;
 
+const CenteredCardSegment = styled(CardSegment)`
+  align-items: center;
+  justify-content: center;
+`;
+
 type Props = {
   actions :{
+    clearDeleteRequestState :() => { type :string };
     goToRoute :GoToRoute;
     loadProfile :RequestSequence;
   };
@@ -112,6 +119,7 @@ type Props = {
 };
 
 type State = {
+  deleteModalIsOpen :boolean;
   eventModalIsOpen :boolean;
 };
 
@@ -121,6 +129,7 @@ class ParticipantProfile extends Component<Props, State> {
     super(props);
 
     this.state = {
+      deleteModalIsOpen: false,
       eventModalIsOpen: false,
     };
   }
@@ -135,12 +144,25 @@ class ParticipantProfile extends Component<Props, State> {
     if (participantId) actions.loadProfile({ participantEKID: participantId });
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearDeleteRequestState();
+  }
+
   openEventModal = () => {
     this.setState({ eventModalIsOpen: true });
   }
 
   closeEventModal = () => {
     this.setState({ eventModalIsOpen: false });
+  }
+
+  openDeleteModal = () => {
+    this.setState({ deleteModalIsOpen: true });
+  }
+
+  closeDeleteModal = () => {
+    this.setState({ deleteModalIsOpen: false });
   }
 
   goToEditPersonPage = () => {
@@ -170,7 +192,7 @@ class ParticipantProfile extends Component<Props, State> {
       providerByStatusEKID,
       requestStates
     } = this.props;
-    const { eventModalIsOpen } = this.state;
+    const { deleteModalIsOpen, eventModalIsOpen } = this.state;
 
     if (requestIsPending(requestStates[LOAD_PROFILE])) {
       return (
@@ -229,9 +251,21 @@ class ParticipantProfile extends Component<Props, State> {
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
+        <CenteredCardSegment vertical={false}>
+          <Button
+              color="error"
+              onClick={this.openDeleteModal}
+              variant="text">
+            Delete Profile
+          </Button>
+        </CenteredCardSegment>
         <RecordEventModal
             isVisible={eventModalIsOpen}
             onClose={this.closeEventModal}
+            personEKID={personEKID} />
+        <DeleteProfileModal
+            isVisible={deleteModalIsOpen}
+            onClose={this.closeDeleteModal}
             personEKID={personEKID} />
       </>
     );
@@ -254,6 +288,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearDeleteRequestState,
     goToRoute,
     loadProfile,
   }, dispatch)
