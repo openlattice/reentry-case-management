@@ -65,6 +65,14 @@ const EDUCATION_LEVELS :string[] = [
   'Postsecondary',
 ];
 
+const SUPERVISION_LEVELS :string[] = [
+  'L1',
+  'L2',
+  'L3',
+  'L4',
+  'L5',
+];
+
 // Contact
 
 const PREFERRED_COMMUNICATION_METHODS :string[] = [
@@ -213,5 +221,6 @@ export {
   RACES,
   REFERRAL_SOURCES,
   SEXES,
+  SUPERVISION_LEVELS,
   US_STATES,
 };
