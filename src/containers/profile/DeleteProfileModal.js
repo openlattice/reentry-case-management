@@ -3,16 +3,23 @@ import React from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { ActionModal, CardSegment, Colors } from 'lattice-ui-kit';
+import {
+  ActionModal,
+  Breadcrumbs,
+  CardSegment,
+  Colors,
+} from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 
 import { DELETE_PARTICIPANT_AND_NEIGHBORS, deleteParticipantAndNeighbors } from './ProfileActions';
 
 import ModalHeader from '../../components/modal/ModalHeader';
+import { PARTICIPANTS } from '../../core/router/Routes';
 import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { RED } = Colors;
+const { PURPLE, RED } = Colors;
 
 const DeleteMessage = styled(CardSegment)`
   max-width: 500px;
@@ -21,6 +28,15 @@ const DeleteMessage = styled(CardSegment)`
 const Warning = styled.div`
   color: ${RED.R300};
   margin-top: 20px;
+`;
+
+const BreadcrumbsWrapper = styled.div`
+  margin-top: 20px;
+`;
+
+const Breadcrumb = styled(NavLink)`
+  color: ${PURPLE.P300};
+  text-decoration: none;
 `;
 
 type Props = {
@@ -36,14 +52,25 @@ const DeleteProfileModal = ({ isVisible, onClose, personEKID } :Props) => {
     DELETE_PARTICIPANT_AND_NEIGHBORS,
     REQUEST_STATE
   ]));
-  const standbyComponent = (
+  const standByComponent = (
     <DeleteMessage padding="30px 0">
       <div>Are you sure you want to delete this profile?</div>
-      <Warning>This action cannot be undone and will remove all records of this person.</Warning>
+      <Warning>This action cannot be undone and will remove all records related to this person.</Warning>
+    </DeleteMessage>
+  );
+  const successComponent = (
+    <DeleteMessage padding="30px 0">
+      <div>Success!</div>
+      <BreadcrumbsWrapper>
+        <Breadcrumbs>
+          <Breadcrumb to={PARTICIPANTS}>Back to participants</Breadcrumb>
+        </Breadcrumbs>
+      </BreadcrumbsWrapper>
     </DeleteMessage>
   );
   const requestStateComponents = {
-    STANDBY: standbyComponent
+    STANDBY: standByComponent,
+    SUCCESS: successComponent,
   };
   const withHeader = <ModalHeader onClose={onClose} title="Delete Person Profile" />;
 
