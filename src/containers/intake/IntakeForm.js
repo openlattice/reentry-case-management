@@ -206,7 +206,7 @@ class IntakeForm extends Component<Props, State> {
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
       formDataToProcess,
-      [getPageSectionKey(1, 4), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
+      [getPageSectionKey(1, 6), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
     );
 
     const needsAssessmentTypeKey :string = getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE);
@@ -268,7 +268,7 @@ class IntakeForm extends Component<Props, State> {
             if (reviewPage) primaryButtonText = 'Submit';
 
             const onChange = (formData) => {
-              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 4);
+              const dataWithFormattedPhoneNumbers = formatPhoneNumbersAsYouType(formData, 3);
               this.setState({ pagedData: dataWithFormattedPhoneNumbers });
             };
 

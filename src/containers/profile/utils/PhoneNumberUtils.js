@@ -29,14 +29,14 @@ const formatPhoneNumbersAsYouType = (
   const cellPhoneInput = getIn(formDataWithPhoneNumbersFormatted, cellPhoneKey) || defaultValue;
 
   const attorneyPhoneKey :string[] = [
-    getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
+    getPageSectionKey(1, 7),
     getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)
   ];
   const attorneyPhoneInput = getIn(formDataWithPhoneNumbersFormatted, attorneyPhoneKey) || defaultValue;
   const probationOfficerPhoneKey :string[] = [
-    getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
+    getPageSectionKey(1, 7),
     getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)
   ];
   const probationOfficerPhoneInput = getIn(formDataWithPhoneNumbersFormatted, probationOfficerPhoneKey) || defaultValue;
@@ -71,11 +71,11 @@ const formatPhoneNumbersAsYouType = (
 };
 
 const validateParticipantPhoneNumbers = (formData :Object, errors :Object) => {
-  const participantContactsPageSectionKey = getPageSectionKey(1, 4);
+  const participantContactsPageSectionKey = getPageSectionKey(1, 3);
   const homePhoneKey = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
   const cellPhoneKey = getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER);
 
-  const otherContactsPageSectionKeys = [getPageSectionKey(1, 5), getPageSectionKey(1, 6)];
+  const otherContactsPageSectionKeys = [getPageSectionKey(1, 6), getPageSectionKey(1, 7)];
   const attorneyPhonePath :string[] = otherContactsPageSectionKeys
     .concat([getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]);
   const probationOfficerPath :string[] = otherContactsPageSectionKeys
