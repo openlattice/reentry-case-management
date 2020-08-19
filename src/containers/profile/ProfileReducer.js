@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_DELETE_REQUEST_STATE,
   DELETE_PARTICIPANT_AND_NEIGHBORS,
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
@@ -108,6 +109,9 @@ const {
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [CLEAR_DELETE_REQUEST_STATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [DELETE_PARTICIPANT_AND_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -186,6 +190,11 @@ const INITIAL_STATE :Map = fromJS({
 export default function profileReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_DELETE_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case CLEAR_EDIT_REQUEST_STATE: {
       return state

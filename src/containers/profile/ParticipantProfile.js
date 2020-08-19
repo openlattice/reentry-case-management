@@ -28,7 +28,7 @@ import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
 import RecordEventModal from './events/RecordEventModal';
 import SexOffenderCard from './sexoffender/SexOffenderCard';
-import { LOAD_PROFILE, loadProfile } from './ProfileActions';
+import { LOAD_PROFILE, clearDeleteRequestState, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
   CardHeaderTitle,
@@ -103,6 +103,7 @@ const CenteredCardSegment = styled(CardSegment)`
 
 type Props = {
   actions :{
+    clearDeleteRequestState :() => { type :string };
     goToRoute :GoToRoute;
     loadProfile :RequestSequence;
   };
@@ -141,6 +142,11 @@ class ParticipantProfile extends Component<Props, State> {
       }
     } = this.props;
     if (participantId) actions.loadProfile({ participantEKID: participantId });
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearDeleteRequestState();
   }
 
   openEventModal = () => {
@@ -282,6 +288,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearDeleteRequestState,
     goToRoute,
     loadProfile,
   }, dispatch)
