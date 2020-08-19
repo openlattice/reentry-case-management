@@ -206,7 +206,7 @@ class IntakeForm extends Component<Props, State> {
     // delete incarcerationFacility EKID from formData
     formDataToProcess = deleteKeyFromFormData(
       formDataToProcess,
-      [getPageSectionKey(1, 6), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
+      [getPageSectionKey(1, 5), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
     );
 
     const needsAssessmentTypeKey :string = getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE);

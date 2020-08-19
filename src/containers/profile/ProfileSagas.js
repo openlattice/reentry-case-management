@@ -22,11 +22,13 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DELETE_PARTICIPANT_AND_NEIGHBORS,
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
+  deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
@@ -43,6 +45,8 @@ import {
 } from './utils/EditPersonUtils';
 
 import Logger from '../../utils/Logger';
+import { deleteEntities } from '../../core/data/DataActions';
+import { deleteEntitiesWorker } from '../../core/data/DataSagas';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   getAssociationDetails,
@@ -69,6 +73,7 @@ const {
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
+  EMERGENCY_CONTACT_INFO,
   ENROLLMENT_STATUS,
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
@@ -86,6 +91,101 @@ const {
 } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
+
+/*
+ *
+ * ProfileActions.deleteParticipantAndNeighbors()
+ *
+ */
+
+function* deleteParticipantAndNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(deleteParticipantAndNeighbors.request(id, value));
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const personEKID :UUID = value;
+
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
+
+    const dataToDelete = [
+      { entitySetId: peopleESID, entityKeyIds: [personEKID] },
+    ];
+
+    let searchFilter = {
+      entityKeyIds: [personEKID],
+    };
+    let response :Object = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+    const neighbors = fromJS(response.data);
+
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const emergencyContactInfoESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT_INFO);
+    const emergencyContactEKIDs :UUID[] = [];
+
+    const neighborEKIDsByESID = Map().withMutations((mutator :Map) => {
+      neighbors.forEach((neighborList :List) => {
+        neighborList.forEach((neighbor :Map) => {
+          const neighborESID :UUID = getNeighborESID(neighbor);
+          const neighborEKID :UUID = getEKID(getNeighborDetails(neighbor));
+
+          if (neighborESID === emergencyContactESID) emergencyContactEKIDs.push(neighborEKID);
+
+          let ekidList :List = mutator.get(neighborESID, List());
+          ekidList = ekidList.push(neighborEKID);
+          mutator.set(neighborESID, ekidList);
+        });
+      });
+    });
+
+    neighborEKIDsByESID.forEach((ekidList :List, neighborESID :UUID) => {
+      dataToDelete.push({ entitySetId: neighborESID, entityKeyIds: ekidList.toJS() });
+    });
+
+    if (emergencyContactEKIDs.length) {
+      searchFilter = {
+        entityKeyIds: emergencyContactEKIDs,
+        sourceEntitySetIds: [],
+        destinationEntitySetIds: [emergencyContactInfoESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: emergencyContactESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const emergencyContactInfoEKIDs :UUID[] = [];
+      fromJS(response.data).forEach((neighborList :List) => {
+        neighborList.forEach((neighbor :Map) => {
+          emergencyContactInfoEKIDs.push(getEKID(getNeighborDetails(neighbor)));
+        });
+      });
+      dataToDelete.push({ entitySetId: emergencyContactInfoESID, entityKeyIds: emergencyContactInfoEKIDs });
+    }
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(dataToDelete));
+    if (response.error) throw response.error;
+
+    yield put(deleteParticipantAndNeighbors.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(deleteParticipantAndNeighbors.failure(id, error));
+  }
+  finally {
+    yield put(deleteParticipantAndNeighbors.finally(id));
+  }
+}
+
+function* deleteParticipantAndNeighborsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_PARTICIPANT_AND_NEIGHBORS, deleteParticipantAndNeighborsWorker);
+}
 
 /*
  *
@@ -430,14 +530,16 @@ function* loadProfileWatcher() :Generator<*, *, *> {
 }
 
 export {
+  deleteParticipantAndNeighborsWatcher,
+  deleteParticipantAndNeighborsWorker,
   getEnrollmentStatusNeighborsWatcher,
   getEnrollmentStatusNeighborsWorker,
-  getParticipantWatcher,
-  getParticipantWorker,
   getParticipantNeighborsWatcher,
   getParticipantNeighborsWorker,
-  loadProfileWatcher,
-  loadProfileWorker,
+  getParticipantWatcher,
+  getParticipantWorker,
   loadPersonInfoForEditWatcher,
   loadPersonInfoForEditWorker,
+  loadProfileWatcher,
+  loadProfileWorker,
 };
