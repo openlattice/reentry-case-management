@@ -457,7 +457,7 @@ const formatEmergencyContactData = (emergencyContactInfoByContact :Map, particip
         contactInfo.forEach((contact :Map) => {
           if (contact.has(PHONE_NUMBER)) {
             const { [PHONE_NUMBER]: phone } = getEntityProperties(contact, [PHONE_NUMBER]);
-            map.set('phone', phone);
+            map.set('phone', phone === SPACED_STRING ? EMPTY_FIELD : format(phone, 'US', 'NATIONAL'));
           }
           if (contact.has(EMAIL)) {
             const { [EMAIL]: email } = getEntityProperties(contact, [EMAIL]);
