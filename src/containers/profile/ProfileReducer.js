@@ -278,7 +278,15 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, action.id], action)
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => state
-          .set(state, INITIAL_STATE)
+          .set(CONTACT_NAME_BY_PROVIDER_EKID, Map())
+          .set(EDUCATION_FORM_DATA, Map())
+          .set(EMERGENCY_CONTACT_INFO_BY_CONTACT, Map())
+          .set(PARTICIPANT, Map())
+          .set(PARTICIPANT_NEIGHBORS, Map())
+          .set(PERSON_DETAILS_FORM_DATA, Map())
+          .set(PERSON_FORM_DATA, Map())
+          .set(PROVIDER_BY_STATUS_EKID, Map())
+          .set(STATE_ID_FORM_DATA, Map())
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
