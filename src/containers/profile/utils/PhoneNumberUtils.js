@@ -1,12 +1,12 @@
 // @flow
-import { getIn, setIn } from 'immutable';
+import { get, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { AsYouType, parsePhoneNumberFromString } from 'libphonenumber-js';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { CONTACT_INFO } = APP_TYPE_FQNS;
+const { CONTACT_INFO, EMERGENCY_CONTACT_INFO } = APP_TYPE_FQNS;
 const { PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
 
 const formatPhoneNumbersAsYouType = (
@@ -29,14 +29,14 @@ const formatPhoneNumbersAsYouType = (
   const cellPhoneInput = getIn(formDataWithPhoneNumbersFormatted, cellPhoneKey) || defaultValue;
 
   const attorneyPhoneKey :string[] = [
-    getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
+    getPageSectionKey(1, 7),
     getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)
   ];
   const attorneyPhoneInput = getIn(formDataWithPhoneNumbersFormatted, attorneyPhoneKey) || defaultValue;
   const probationOfficerPhoneKey :string[] = [
-    getPageSectionKey(1, 5),
     getPageSectionKey(1, 6),
+    getPageSectionKey(1, 7),
     getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)
   ];
   const probationOfficerPhoneInput = getIn(formDataWithPhoneNumbersFormatted, probationOfficerPhoneKey) || defaultValue;
@@ -71,11 +71,11 @@ const formatPhoneNumbersAsYouType = (
 };
 
 const validateParticipantPhoneNumbers = (formData :Object, errors :Object) => {
-  const participantContactsPageSectionKey = getPageSectionKey(1, 4);
+  const participantContactsPageSectionKey = getPageSectionKey(1, 3);
   const homePhoneKey = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
   const cellPhoneKey = getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER);
 
-  const otherContactsPageSectionKeys = [getPageSectionKey(1, 5), getPageSectionKey(1, 6)];
+  const otherContactsPageSectionKeys = [getPageSectionKey(1, 6), getPageSectionKey(1, 7)];
   const attorneyPhonePath :string[] = otherContactsPageSectionKeys
     .concat([getEntityAddressKey(-2, CONTACT_INFO, PHONE_NUMBER)]);
   const probationOfficerPath :string[] = otherContactsPageSectionKeys
@@ -118,7 +118,34 @@ const validateParticipantPhoneNumbers = (formData :Object, errors :Object) => {
   return errors;
 };
 
+// Emergency Contact Info:
+
+const formatEmergencyContactPhoneAsYouType = (
+  formData :Object,
+  defaultValue :?string = undefined
+) :Object => {
+
+  let formDataWithPhoneNumbersFormatted = formData;
+
+  const contacts = get(formDataWithPhoneNumbersFormatted, getPageSectionKey(1, 1));
+
+  contacts.forEach((contact :Object, index :number) => {
+    const phoneInput = get(contact, getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER)) || defaultValue;
+    if (phoneInput) {
+      const phone = phoneInput.length <= 4 ? phoneInput : new AsYouType('US').input(phoneInput);
+      formDataWithPhoneNumbersFormatted = setIn(
+        formDataWithPhoneNumbersFormatted,
+        [getPageSectionKey(1, 1), index, getEntityAddressKey(-1, EMERGENCY_CONTACT_INFO, PHONE_NUMBER)],
+        phone
+      );
+    }
+  });
+
+  return formDataWithPhoneNumbersFormatted;
+};
+
 export {
+  formatEmergencyContactPhoneAsYouType,
   formatPhoneNumbersAsYouType,
   validateParticipantPhoneNumbers,
 };

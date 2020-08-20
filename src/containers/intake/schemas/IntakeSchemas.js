@@ -15,6 +15,7 @@ import {
   PROVIDER_TYPES,
   RACES,
   REFERRAL_SOURCES,
+  SUPERVISION_LEVELS,
   US_STATES,
 } from '../../../utils/constants/DataConstants';
 
@@ -54,12 +55,14 @@ const {
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
   LAST_NAME,
+  LEVEL,
   MARITAL_STATUS,
   MIDDLE_NAME,
   NAME,
   NOTES,
   OL_DATETIME,
   OL_ID_FQN,
+  PERSON_SUFFIX,
   PHONE_NUMBER,
   PREFERRED_METHOD_OF_CONTACT,
   PROJECTED_RELEASE_DATETIME,
@@ -88,10 +91,15 @@ const personInformationSchema :Object = {
           format: 'date',
           default: DateTime.local().toISODate()
         },
-        [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
-          type: 'string',
-          title: 'Last name',
-        },
+      },
+      required: [
+        getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
+      ]
+    },
+    [getPageSectionKey(1, 2)]: {
+      type: 'object',
+      title: '',
+      properties: {
         [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
           type: 'string',
           title: 'First name',
@@ -99,6 +107,14 @@ const personInformationSchema :Object = {
         [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: {
           type: 'string',
           title: 'Middle name',
+        },
+        [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
+          type: 'string',
+          title: 'Last name',
+        },
+        [getEntityAddressKey(0, PEOPLE, PERSON_SUFFIX)]: {
+          type: 'string',
+          title: 'Suffix',
         },
         [getEntityAddressKey(0, PEOPLE, DOB)]: {
           type: 'string',
@@ -125,45 +141,12 @@ const personInformationSchema :Object = {
         },
       },
       required: [
-        getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
         getEntityAddressKey(0, PEOPLE, LAST_NAME),
         getEntityAddressKey(0, PEOPLE, FIRST_NAME),
         getEntityAddressKey(0, PEOPLE, DOB)
       ]
     },
-    [getPageSectionKey(1, 2)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-          type: 'string',
-          title: 'County ID number',
-        },
-        [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
-          type: 'string',
-          title: 'OPUS number',
-        },
-      }
-    },
     [getPageSectionKey(1, 3)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-          type: 'string',
-          title: 'Marital status',
-          enum: MARITAL_STATUSES,
-          enumNames: MARITAL_STATUSES
-        },
-        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-          type: 'string',
-          title: 'Highest level of education completed',
-          enum: EDUCATION_LEVELS,
-          enumNames: EDUCATION_LEVELS
-        },
-      }
-    },
-    [getPageSectionKey(1, 4)]: {
       type: 'object',
       title: 'Contact',
       properties: {
@@ -211,9 +194,41 @@ const personInformationSchema :Object = {
         },
       },
     },
+    [getPageSectionKey(1, 4)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+          type: 'string',
+          title: 'Marital status',
+          enum: MARITAL_STATUSES,
+          enumNames: MARITAL_STATUSES
+        },
+        [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+          type: 'string',
+          title: 'Highest level of education completed',
+          enum: EDUCATION_LEVELS,
+          enumNames: EDUCATION_LEVELS
+        },
+      }
+    },
     [getPageSectionKey(1, 5)]: {
       type: 'object',
       title: 'Release Information',
+      properties: {
+        [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+          type: 'string',
+          title: 'County ID number',
+        },
+        [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+          type: 'string',
+          title: 'OPUS number',
+        },
+      }
+    },
+    [getPageSectionKey(1, 6)]: {
+      type: 'object',
+      title: '',
       properties: {
         [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
           type: 'string',
@@ -246,7 +261,7 @@ const personInformationSchema :Object = {
                 onProbationOrParole: {
                   enum: [true]
                 },
-                [getPageSectionKey(1, 6)]: {
+                [getPageSectionKey(1, 7)]: {
                   type: 'object',
                   title: '',
                   properties: {
@@ -302,6 +317,11 @@ const personInformationSchema :Object = {
                       title: 'Probation/parole end date',
                       format: 'date'
                     },
+                    [getEntityAddressKey(0, PROBATION_PAROLE, LEVEL)]: {
+                      type: 'string',
+                      title: 'Probation/parole level',
+                      enum: SUPERVISION_LEVELS,
+                    },
                   },
                   required: [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]
                 }
@@ -318,7 +338,7 @@ const personInformationSchema :Object = {
         }
       }
     },
-    [getPageSectionKey(1, 7)]: {
+    [getPageSectionKey(1, 8)]: {
       type: 'object',
       title: 'Sex Offender Information',
       properties: {
@@ -351,7 +371,7 @@ const personInformationSchema :Object = {
       },
       required: [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]
     },
-    [getPageSectionKey(1, 8)]: {
+    [getPageSectionKey(1, 9)]: {
       type: 'object',
       title: 'Court Hearings',
       properties: {
@@ -374,16 +394,22 @@ const personInformationUiSchema :Object = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED)]: {
-      classNames: 'column-span-12',
-    },
-    [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
       classNames: 'column-span-4',
     },
+  },
+  [getPageSectionKey(1, 2)]: {
+    classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-3',
     },
     [getEntityAddressKey(0, PEOPLE, MIDDLE_NAME)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-3',
+    },
+    [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
+      classNames: 'column-span-3',
+    },
+    [getEntityAddressKey(0, PEOPLE, PERSON_SUFFIX)]: {
+      classNames: 'column-span-3',
     },
     [getEntityAddressKey(0, PEOPLE, DOB)]: {
       classNames: 'column-span-6',
@@ -399,9 +425,10 @@ const personInformationUiSchema :Object = {
     },
     'ui:order': [
       getEntityAddressKey(0, NEEDS_ASSESSMENT, DATETIME_COMPLETED),
-      getEntityAddressKey(0, PEOPLE, LAST_NAME),
       getEntityAddressKey(0, PEOPLE, FIRST_NAME),
       getEntityAddressKey(0, PEOPLE, MIDDLE_NAME),
+      getEntityAddressKey(0, PEOPLE, LAST_NAME),
+      getEntityAddressKey(0, PEOPLE, PERSON_SUFFIX),
       getEntityAddressKey(0, PEOPLE, DOB),
       getEntityAddressKey(0, PERSON_DETAILS, GENDER),
       getEntityAddressKey(0, PEOPLE, RACE),
@@ -409,33 +436,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, PEOPLE, OL_ID_FQN),
     ]
   },
-  [getPageSectionKey(1, 2)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
-      classNames: 'column-span-6',
-    },
-    [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:order': [
-      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
-      getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
-    ]
-  },
   [getPageSectionKey(1, 3)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
-      classNames: 'column-span-6',
-    },
-    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:order': [
-      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
-      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
-    ]
-  },
-  [getPageSectionKey(1, 4)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, LOCATION, STREET)]: {
       classNames: 'column-span-8',
@@ -476,7 +477,33 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES),
     ]
   },
+  [getPageSectionKey(1, 4)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PERSON_DETAILS, MARITAL_STATUS),
+      getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION_LEVEL)
+    ]
+  },
   [getPageSectionKey(1, 5)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, PEOPLE, COUNTY_ID)]: {
+      classNames: 'column-span-6',
+    },
+    [getEntityAddressKey(0, STATE_ID, OL_ID_FQN)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:order': [
+      getEntityAddressKey(0, PEOPLE, COUNTY_ID),
+      getEntityAddressKey(0, STATE_ID, OL_ID_FQN)
+    ]
+  },
+  [getPageSectionKey(1, 6)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
       classNames: 'column-span-4',
@@ -490,7 +517,7 @@ const personInformationUiSchema :Object = {
     onProbationOrParole: {
       classNames: 'column-span-12'
     },
-    [getPageSectionKey(1, 6)]: {
+    [getPageSectionKey(1, 7)]: {
       classNames: 'column-span-12 grid-container',
       [getEntityAddressKey(0, PROBATION_PAROLE, TYPE)]: {
         classNames: 'column-span-4',
@@ -520,13 +547,16 @@ const personInformationUiSchema :Object = {
         'ui:widget': 'hidden'
       },
       [getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
       },
       [getEntityAddressKey(-5, CONTACT_INFO, EMAIL)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
       },
       [getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME)]: {
-        classNames: 'column-span-4',
+        classNames: 'column-span-6',
+      },
+      [getEntityAddressKey(0, PROBATION_PAROLE, LEVEL)]: {
+        classNames: 'column-span-6',
       },
       'ui:order': [
         getEntityAddressKey(0, PROBATION_PAROLE, TYPE),
@@ -541,6 +571,7 @@ const personInformationUiSchema :Object = {
         getEntityAddressKey(-4, CONTACT_INFO, PHONE_NUMBER),
         getEntityAddressKey(-5, CONTACT_INFO, EMAIL),
         getEntityAddressKey(0, PROBATION_PAROLE, RECOGNIZED_END_DATETIME),
+        getEntityAddressKey(0, PROBATION_PAROLE, LEVEL),
       ]
     },
     'ui:order': [
@@ -548,10 +579,10 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME),
       getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE),
       'onProbationOrParole',
-      getPageSectionKey(1, 6)
+      getPageSectionKey(1, 7)
     ]
   },
-  [getPageSectionKey(1, 7)]: {
+  [getPageSectionKey(1, 8)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, SEX_OFFENDER, REGISTERED_FLAG)]: {
       classNames: 'column-span-8',
@@ -580,7 +611,7 @@ const personInformationUiSchema :Object = {
       getEntityAddressKey(0, SEX_OFFENDER, RECOGNIZED_END_DATETIME),
     ]
   },
-  [getPageSectionKey(1, 8)]: {
+  [getPageSectionKey(1, 9)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, HEARINGS, DATE)]: {
       classNames: 'column-span-6',
@@ -599,7 +630,7 @@ const needsAssessmentSchema = {
   type: 'object',
   title: '',
   properties: {
-    [getPageSectionKey(1, 9)]: {
+    [getPageSectionKey(1, 10)]: {
       type: 'object',
       title: '',
       properties: {
@@ -622,7 +653,7 @@ const needsAssessmentSchema = {
 };
 
 const needsAssessmentUiSchema = {
-  [getPageSectionKey(1, 9)]: {
+  [getPageSectionKey(1, 10)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE)]: {
       classNames: 'column-span-12',

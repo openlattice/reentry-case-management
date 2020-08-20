@@ -28,6 +28,7 @@ import {
   preprocessNewEmergencyContactData,
   removeRelationshipFromFormData,
 } from '../utils/ContactsUtils';
+import { formatEmergencyContactPhoneAsYouType } from '../utils/PhoneNumberUtils';
 
 const {
   findEntityAddressKeyFromMap,
@@ -97,7 +98,8 @@ const EditEmergencyContactsModal = ({
   }, [closeModal, editEmergencyContactsReqState]);
 
   const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
+    const dataWithFormattedPhoneNumber = formatEmergencyContactPhoneAsYouType(newFormData);
+    updateFormData(dataWithFormattedPhoneNumber);
   };
 
   const onSubmit = () => {
