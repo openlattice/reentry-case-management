@@ -45,7 +45,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { deleteKeyFromFormData } from '../../utils/FormUtils';
+import { deleteKeyFromFormData, generateReviewSchemas } from '../../utils/FormUtils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
 import {
@@ -294,6 +294,14 @@ class IntakeForm extends Component<Props, State> {
 
             const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
 
+            // be sure review page facility dropdown is hydrated, so dropdown doesn't show UUID
+            let schemaToUse = schemas[page];
+            if (personInformationPage) schemaToUse = hydratedSchema;
+            const { schemas: reviewSchemas } = generateReviewSchemas(
+              [hydratedSchema, schemas[1]],
+              [uiSchemas[0], uiSchemas[1]]
+            );
+            if (reviewPage) schemaToUse = reviewSchemas[page];
             return (
               <FormWrapper>
                 <Banner
@@ -314,7 +322,7 @@ class IntakeForm extends Component<Props, State> {
                       ref={formRef}
                       hideSubmit
                       onSubmit={onNext}
-                      schema={personInformationPage ? hydratedSchema : schemas[page]}
+                      schema={schemaToUse}
                       uiSchema={uiSchemas[page]}
                       validate={validate} />
                 </Card>
