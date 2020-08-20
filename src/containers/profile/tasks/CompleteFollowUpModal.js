@@ -1,24 +1,29 @@
 // @flow
 import React, { useCallback, useEffect } from 'react';
+
 import { Map } from 'immutable';
+import { CardSegment, Modal, ModalFooter } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEKID } from '../../../utils/DataUtils';
 import { MARK_FOLLOW_UP_AS_COMPLETE, clearSubmissionRequestStates, markFollowUpAsComplete } from './FollowUpsActions';
+import { FOLLOW_UPS_STATUSES } from './FollowUpsConstants';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CASE_NOTES_FORM } from '../../../core/router/Routes';
+import { goToRoute } from '../../../core/router/RoutingActions';
+import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PARTICIPANT_FOLLOW_UPS,
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { FOLLOW_UPS_STATUSES } from './FollowUpsConstants';
+import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
@@ -34,6 +39,7 @@ const {
 type Props = {
   actions :{
     clearSubmissionRequestStates :() => ({ type :string });
+    goToRoute :GoToRoute;
     markFollowUpAsComplete :RequestSequence;
   };
   entitySetIdsByFqn :Map;
@@ -109,23 +115,23 @@ const CompleteFollowUpModal = ({
       <ModalFooter
           isPendingPrimary={isSubmitting}
           onClickPrimary={onSubmit}
-          onClickSecondary={closeModal}
-          textPrimary="Yes"
-          textSecondary="No" />
+          onClickSecondary={goToCaseNotesForm}
+          textPrimary="Mark as complete"
+          textSecondary="Fill out notes first" />
     );
   };
   return (
     <Modal
         isVisible={isVisible}
         onClickPrimary={onSubmit}
-        onClickSecondary={closeModal}
+        onClickSecondary={goToCaseNotesForm}
         onClose={closeModal}
-        textPrimary="Save"
-        textSecondary="Discard"
+        textPrimary="Mark as Complete"
+        textSecondary="Fill out notes first"
         viewportScrolling
         withFooter={renderFooter}
         withHeader={renderHeader}>
-      <div>Are you sure you want to mark this follow-up as complete?</div>
+      <CardSegment padding="30px 0">Are you sure you want to mark this follow-up as complete?</CardSegment>
     </Modal>
   );
 };
@@ -145,6 +151,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     clearSubmissionRequestStates,
+    goToRoute,
     markFollowUpAsComplete,
   }, dispatch)
 });
