@@ -41,6 +41,7 @@ type Props = {
   isVisible :boolean;
   meeting :Map;
   onClose :() => void;
+  personEKID :UUID;
   propertyTypeIdsByFqn :Map;
   requestStates :{
     MARK_FOLLOW_UP_AS_COMPLETE :RequestState;
@@ -54,6 +55,7 @@ const CompleteFollowUpModal = ({
   isVisible,
   meeting,
   onClose,
+  personEKID,
   propertyTypeIdsByFqn,
   requestStates,
 } :Props) => {
@@ -94,6 +96,10 @@ const CompleteFollowUpModal = ({
       };
     }
     actions.markFollowUpAsComplete({ entityData: dataToEdit });
+  };
+
+  const goToCaseNotesForm = () => {
+    actions.goToRoute(CASE_NOTES_FORM.replace(':participantId', personEKID));
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Mark as Complete" />);

@@ -125,7 +125,7 @@ class ParticipantTasks extends Component<Props, State> {
     const participantName :string = getPersonFullName(participant);
     const header :string = isLoading ? '' : `${participantName}'s Tasks`;
     const tasks :List = participantNeighbors.get(FOLLOW_UPS, List());
-    const tasksData :Object[] = formatTableData(tasks, participantName);
+    const tasksData :Object[] = formatTableData(tasks, participantName, participantId);
     return (
       <>
         <Breadcrumbs>

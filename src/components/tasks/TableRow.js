@@ -151,12 +151,13 @@ type Props = {
 
 const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
   const {
+    dateCompleted,
     dueDate,
     id,
-    taskName,
+    personEKID,
     taskDescription,
+    taskName,
     taskStatus,
-    dateCompleted,
     taskTitle,
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
@@ -223,7 +224,8 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
             followUpEKID={id}
             isVisible={completionModalVisible}
             meeting={meeting}
-            onClose={() => setCompletionModalVisibility(false)} />
+            onClose={() => setCompletionModalVisibility(false)}
+            personEKID={personEKID} />
       </StyledTableRow>
     );
   }
