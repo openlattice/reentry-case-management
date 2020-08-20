@@ -114,6 +114,7 @@ export const STATE_ID_EAK = getEntityAddressKey(0, STATE_ID, OL_ID_FQN);
 export const RELEASE_PSK = getPageSectionKey(1, 6);
 export const JAILS_PRISONS_EAK = getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID);
 export const JAIL_STAYS_EAK = getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME);
+export const JAIL_STAYS_NOTES = getEntityAddressKey(0, MANUAL_JAIL_STAYS, NOTES);
 export const REFERRAL_EAK = getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE);
 
 export const SUPERVISION_INNER_PSK = getPageSectionKey(1, 7);

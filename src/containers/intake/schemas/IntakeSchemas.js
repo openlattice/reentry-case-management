@@ -241,6 +241,11 @@ const personInformationSchema :Object = {
           title: 'Release date:',
           format: 'date'
         },
+        [getEntityAddressKey(0, MANUAL_JAIL_STAYS, NOTES)]: {
+          type: 'string',
+          title: 'Purpose of this property is to always create jailstay entity on submission',
+          default: ''
+        },
         [getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]: {
           type: 'string',
           title: 'Referred from:',
@@ -511,6 +516,9 @@ const personInformationUiSchema :Object = {
     [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-4',
     },
+    [getEntityAddressKey(0, MANUAL_JAIL_STAYS, NOTES)]: {
+      'ui:widget': 'hidden',
+    },
     [getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]: {
       classNames: 'column-span-4',
     },
@@ -577,6 +585,7 @@ const personInformationUiSchema :Object = {
     'ui:order': [
       getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID),
       getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME),
+      getEntityAddressKey(0, MANUAL_JAIL_STAYS, NOTES),
       getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE),
       'onProbationOrParole',
       getPageSectionKey(1, 7)

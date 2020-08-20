@@ -627,10 +627,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   const associations = [];
   const outerPageSectionKey :string = getPageSectionKey(1, 6);
   const innerPageSectionKey :string = getPageSectionKey(1, 7);
-  const releaseDate :any = getIn(
-    formData,
-    [outerPageSectionKey, getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]
-  );
+
   const incarcerationFacilityEKID :any = getIn(
     formData,
     [outerPageSectionKey, getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
@@ -640,9 +637,8 @@ const getClientReleaseAssociations = (formData :Object) => {
     [outerPageSectionKey, getEntityAddressKey(0, REFERRAL_REQUEST, SOURCE)]
   );
 
-  if (isDefined(releaseDate)) {
-    associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, MANUAL_JAIL_STAYS, {}]);
-  }
+  associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, MANUAL_JAIL_STAYS, {}]);
+
   if (isDefined(incarcerationFacilityEKID) && incarcerationFacilityEKID.length) {
     associations.push([MANUAL_LOCATED_AT, 0, MANUAL_JAIL_STAYS, incarcerationFacilityEKID, MANUAL_JAILS_PRISONS, {}]);
   }
