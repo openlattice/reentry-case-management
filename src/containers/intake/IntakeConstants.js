@@ -38,6 +38,7 @@ const {
   GENDER,
   GENERAL_NOTES,
   HIGHEST_EDUCATION_LEVEL,
+  IS_CELL_PHONE,
   LAST_NAME,
   LEVEL,
   MARITAL_STATUS,
@@ -90,6 +91,7 @@ export const US_STATE_EAK = getEntityAddressKey(0, LOCATION, US_STATE);
 export const ZIP_EAK = getEntityAddressKey(0, LOCATION, ZIP);
 export const HOME_PHONE_EAK = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
 export const CELL_PHONE_EAK = getEntityAddressKey(1, CONTACT_INFO, PHONE_NUMBER);
+export const IS_CELL_PHONE_EAK = getEntityAddressKey(1, CONTACT_INFO, IS_CELL_PHONE);
 export const EMAIL_EAK = getEntityAddressKey(2, CONTACT_INFO, EMAIL);
 export const PREFERRED_METHOD_EAK = getEntityAddressKey(-1, CONTACT_INFO, PREFERRED_METHOD_OF_CONTACT);
 export const PREFERRED_TIME_EAK = getEntityAddressKey(-1, CONTACT_INFO, GENERAL_NOTES);
