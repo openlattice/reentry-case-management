@@ -83,7 +83,7 @@ export const ETHNICITY_EAK = getEntityAddressKey(0, PEOPLE, ETHNICITY);
 /*
  * contact info
  */
-export const CONTACT_INFO_PSK = getPageSectionKey(1, 2);
+export const CONTACT_INFO_PSK = getPageSectionKey(1, 3);
 export const STREET_EAK = getEntityAddressKey(0, LOCATION, STREET);
 export const CITY_EAK = getEntityAddressKey(0, LOCATION, CITY);
 export const US_STATE_EAK = getEntityAddressKey(0, LOCATION, US_STATE);
