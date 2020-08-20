@@ -20,6 +20,7 @@ import {
   getIncarcerationFacilities,
   submitIntakeForm
 } from './IntakeActions';
+import { JAILS_PRISONS_EAK, NEEDS_EAK, RELEASE_PSK } from './IntakeConstants';
 import { schemas, uiSchemas } from './schemas/IntakeSchemas';
 import {
   getClientContactAndAddressAssociations,
@@ -43,9 +44,9 @@ import {
 } from './utils/IntakeUtils';
 
 import * as Routes from '../../core/router/Routes';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { deleteKeyFromFormData } from '../../utils/FormUtils';
+import { deleteKeyFromFormData, generateReviewSchemas } from '../../utils/FormUtils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { pipeConcat, pipeValue } from '../../utils/Utils';
 import {
@@ -62,8 +63,6 @@ import type { GoToRoute } from '../../core/router/RoutingActions';
 const {
   KEY_MAPPERS,
   VALUE_MAPPERS,
-  getEntityAddressKey,
-  getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
@@ -72,8 +71,7 @@ const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { INCARCERATION_FACILITIES, NEW_PARTICIPANT_EKID } = INTAKE;
 const { SELECTED_PERSON, SELECTED_RELEASE_DATE } = RELEASES;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { MANUAL_JAILS_PRISONS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
-const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS } = APP_TYPE_FQNS;
 
 const FormWrapper = styled.div`
   padding-bottom: 50px;
@@ -204,20 +202,16 @@ class IntakeForm extends Component<Props, State> {
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
 
     // delete incarcerationFacility EKID from formData
-    formDataToProcess = deleteKeyFromFormData(
-      formDataToProcess,
-      [getPageSectionKey(1, 5), getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]
-    );
+    formDataToProcess = deleteKeyFromFormData(formDataToProcess, [RELEASE_PSK, JAILS_PRISONS_EAK]);
 
-    const needsAssessmentTypeKey :string = getEntityAddressKey(0, NEEDS_ASSESSMENT, TYPE);
     const allTheMappers = Map().withMutations((mappers :Map) => {
       const keyMappers = Map().withMutations((map :Map) => {
-        map.set(needsAssessmentTypeKey, (value) => JSON.stringify(value));
+        map.set(NEEDS_EAK, (value) => JSON.stringify(value));
       });
       mappers.set(KEY_MAPPERS, keyMappers);
 
       const valueMappers = Map().withMutations((map :Map) => {
-        map.set(needsAssessmentTypeKey, (value) => JSON.parse(value));
+        map.set(NEEDS_EAK, (value) => JSON.parse(value));
       });
       mappers.set(VALUE_MAPPERS, valueMappers);
     });
@@ -294,6 +288,14 @@ class IntakeForm extends Component<Props, State> {
 
             const submissionSuccessful :boolean = requestIsSuccess(requestStates[SUBMIT_INTAKE_FORM]);
 
+            // be sure review page facility dropdown is hydrated, so dropdown doesn't show UUID
+            let schemaToUse = schemas[page];
+            if (personInformationPage) schemaToUse = hydratedSchema;
+            const { schemas: reviewSchemas } = generateReviewSchemas(
+              [hydratedSchema, schemas[1]],
+              [uiSchemas[0], uiSchemas[1]]
+            );
+            if (reviewPage) schemaToUse = reviewSchemas[page];
             return (
               <FormWrapper>
                 <Banner
@@ -314,7 +316,7 @@ class IntakeForm extends Component<Props, State> {
                       ref={formRef}
                       hideSubmit
                       onSubmit={onNext}
-                      schema={personInformationPage ? hydratedSchema : schemas[page]}
+                      schema={schemaToUse}
                       uiSchema={uiSchemas[page]}
                       validate={validate} />
                 </Card>
