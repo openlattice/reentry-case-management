@@ -15,6 +15,10 @@ const APP :Object = {
   SELECTED_ORG_ID: 'selectedOrgId',
 };
 
+const CASE_NOTES :Object = {
+  CASE_NOTES: 'caseNotes',
+};
+
 const EDM :Object = {
   ASSOCIATION_TYPES: 'associationTypes',
   EDM: 'edm',
@@ -95,6 +99,7 @@ const TASK_MANAGER :Object = {
 
 export {
   APP,
+  CASE_NOTES,
   EDM,
   EVENT,
   INTAKE,
