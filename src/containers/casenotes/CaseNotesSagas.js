@@ -10,11 +10,22 @@ import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { GET_REENTRY_STAFF, getReentryStaff } from './CaseNotesActions';
+import {
+  GET_MEETING,
+  GET_REENTRY_STAFF,
+  SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
+  getMeeting,
+  getReentryStaff,
+  submitCaseNotesAndCompleteTask,
+} from './CaseNotesActions';
 
 import Logger from '../../utils/Logger';
+import { createOrReplaceAssociation, submitPartialReplace } from '../../core/data/DataActions';
+import { createOrReplaceAssociationWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getESIDFromApp } from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -76,6 +87,7 @@ function* getMeetingWatcher() :Generator<*, *, *> {
 
 function* getReentryStaffWorker(action :SequenceAction) :Saga<*> {
   const { id } = action;
+  const sagaResponse = {};
 
   try {
     yield put(getReentryStaff.request(id));
@@ -104,9 +116,47 @@ function* getReentryStaffWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_REENTRY_STAFF, getReentryStaffWorker);
 }
 
+/*
+ *
+ * CaseNotesActions.submitCaseNotesAndCompleteTask()
+ *
+ */
+
+function* submitCaseNotesAndCompleteTaskWorker(action :SequenceAction) :Saga<*> {
+  const { id } = action;
+
+  try {
+    yield put(submitCaseNotesAndCompleteTask.request(id));
+    const { value } = action;
+    const { associations, entityData } = value;
+
+    let response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) throw response.error;
+
+    response = yield call(createOrReplaceAssociationWorker, createOrReplaceAssociation({ associations }));
+    if (response.error) throw response.error;
+
+    yield put(submitCaseNotesAndCompleteTask.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitCaseNotesAndCompleteTask.failure(id, error));
+  }
+  finally {
+    yield put(submitCaseNotesAndCompleteTask.finally(id));
+  }
+}
+
+function* submitCaseNotesAndCompleteTaskWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, submitCaseNotesAndCompleteTaskWorker);
+}
+
 export {
   getMeetingWatcher,
   getMeetingWorker,
   getReentryStaffWatcher,
   getReentryStaffWorker,
+  submitCaseNotesAndCompleteTaskWatcher,
+  submitCaseNotesAndCompleteTaskWorker,
 };

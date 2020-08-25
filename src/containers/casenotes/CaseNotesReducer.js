@@ -3,7 +3,14 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { GET_REENTRY_STAFF, getReentryStaff } from './CaseNotesActions';
+import {
+  GET_MEETING,
+  GET_REENTRY_STAFF,
+  SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
+  getMeeting,
+  getReentryStaff,
+  submitCaseNotesAndCompleteTask,
+} from './CaseNotesActions';
 
 import { CASE_NOTES, PARTICIPANT_FOLLOW_UPS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
@@ -17,6 +24,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_REENTRY_STAFF]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_CASE_NOTES_AND_COMPLETE_TASK]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -53,6 +63,20 @@ export default function caseNotesReducer(state :Map = INITIAL_STATE, action :Seq
           .setIn([ACTIONS, GET_REENTRY_STAFF, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, GET_REENTRY_STAFF, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_REENTRY_STAFF, action.id]),
+      });
+    }
+
+    case submitCaseNotesAndCompleteTask.case(action.type): {
+
+      return submitCaseNotesAndCompleteTask.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, action.id], action)
+          .setIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, action.id]),
       });
     }
 
