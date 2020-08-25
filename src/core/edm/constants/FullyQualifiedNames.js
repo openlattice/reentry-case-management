@@ -60,6 +60,7 @@ const APP_TYPE_FQNS :Object = {
   PROVIDER_CONTACT_INFO: new FullyQualifiedName('app.providercontactinformation'),
   PROVIDER_EMPLOYEES: new FullyQualifiedName('app.serviceprovideremployees'), // ol.employee
   PROVIDER_STAFF: new FullyQualifiedName('app.serviceproviderstaff'), // general.person
+  RECORDED_BY: new FullyQualifiedName('app.recordedby'),
   REENTRY_EMPLOYEES: new FullyQualifiedName('app.staff_employee'), // ol.employee
   REENTRY_STAFF: new FullyQualifiedName('app.staff'), // general.person
   REFERRAL_REQUEST: new FullyQualifiedName('app.referralrequest'),
