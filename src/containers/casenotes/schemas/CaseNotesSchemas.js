@@ -44,7 +44,8 @@ const schema :Object = {
           enum: [],
           enumNames: []
         },
-      }
+      },
+      required: [getEntityAddressKey(0, REENTRY_STAFF, ENTITY_KEY_ID)]
     }
   }
 };
