@@ -20,12 +20,15 @@ const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
 
-const CASE_NOTES_FORM :string = `${TASKS}/${PARTICIPANT_ID}/casemanagementnotes`;
+const MEETING_ID :':meetingId' = ':meetingId';
+
+const CASE_NOTES_FORM :string = `/${PARTICIPANT_ID}/tasks/${MEETING_ID}/casemanagementnotes`;
 
 export {
   CASE_NOTES_FORM,
   EDIT_PARTICIPANT,
   LOGIN,
+  MEETING_ID,
   NEW_INTAKE,
   NEW_INTAKE_FORM,
   PARTICIPANTS,
