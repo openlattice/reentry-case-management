@@ -105,7 +105,8 @@ const CompleteFollowUpModal = ({
   };
 
   const goToCaseNotesForm = () => {
-    actions.goToRoute(CASE_NOTES_FORM.replace(':participantId', personEKID));
+    const meetingEKID :UUID = getEKID(meeting);
+    actions.goToRoute(CASE_NOTES_FORM.replace(':participantId', personEKID).replace(':meetingId', meetingEKID));
   };
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Mark as Complete" />);
