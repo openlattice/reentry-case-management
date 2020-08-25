@@ -17,6 +17,7 @@ const APP :Object = {
 
 const CASE_NOTES :Object = {
   CASE_NOTES: 'caseNotes',
+  MEETING: 'meeting',
 };
 
 const EDM :Object = {
