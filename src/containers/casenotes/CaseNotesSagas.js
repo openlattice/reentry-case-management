@@ -155,7 +155,9 @@ function* submitCaseNotesAndCompleteTaskWorker(action :SequenceAction) :Saga<*> 
   try {
     yield put(submitCaseNotesAndCompleteTask.request(id));
     const { value } = action;
-    const { associations, entityData } = value;
+    const { associations, meetingEntityData, taskEntityData } = value;
+
+    const entityData = merge(meetingEntityData, taskEntityData);
 
     let response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
     if (response.error) throw response.error;

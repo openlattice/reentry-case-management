@@ -154,17 +154,28 @@ const CaseNotesForm = ({ history, match } :Props) => {
   }, [submitRequestState]);
 
   const onSubmit = () => {
-    const { staffMemberEKID, updatedFormData } = preprocessCaseNotesFormData(formData);
-    const draftWithKeys :Object = replaceEntityAddressKeys(
-      updatedFormData,
+    const { meetingData, staffMemberEKID, taskData } = preprocessCaseNotesFormData(formData);
+    const meetingDraftWithKeys :Object = replaceEntityAddressKeys(
+      meetingData,
       findEntityAddressKeyFromMap(entityIndexToIdMap)
     );
-    const entityData = processEntityDataForPartialReplace(
-      draftWithKeys,
+    const meetingEntityData = processEntityDataForPartialReplace(
+      meetingDraftWithKeys,
       replaceEntityAddressKeys({}, findEntityAddressKeyFromMap(entityIndexToIdMap)),
       entitySetIds,
       propertyTypeIds,
     );
+    const taskDraftWithKeys :Object = replaceEntityAddressKeys(
+      taskData,
+      findEntityAddressKeyFromMap(entityIndexToIdMap)
+    );
+    const taskEntityData = processEntityDataForPartialReplace(
+      taskDraftWithKeys,
+      replaceEntityAddressKeys({}, findEntityAddressKeyFromMap(entityIndexToIdMap)),
+      entitySetIds,
+      propertyTypeIds,
+    );
+
     const associations = {
       [recordedByESID]: [
         {
@@ -180,7 +191,7 @@ const CaseNotesForm = ({ history, match } :Props) => {
         }
       ]
     };
-    dispatch(submitCaseNotesAndCompleteTask({ associations, entityData }));
+    dispatch(submitCaseNotesAndCompleteTask({ associations, meetingEntityData, taskEntityData }));
   };
 
   const gotToParticipantTasks = () => {
