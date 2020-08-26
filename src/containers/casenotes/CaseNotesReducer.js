@@ -4,6 +4,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_SUBMIT_REQUEST_STATE,
   GET_MEETING_AND_TASK,
   GET_REENTRY_STAFF,
   GET_STAFF_WHO_RECORDED_NOTES,
@@ -41,6 +42,11 @@ const INITIAL_STATE :Map = fromJS({
 export default function caseNotesReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case CLEAR_SUBMIT_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case getMeetingAndTask.case(action.type): {
 
