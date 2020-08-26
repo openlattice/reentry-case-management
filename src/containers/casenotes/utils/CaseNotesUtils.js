@@ -1,8 +1,8 @@
 // @flow
 import {
   List,
+  get,
   getIn,
-  remove,
   setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
@@ -35,14 +35,18 @@ const hydrateCaseNotesForm = (schema :Object, reentryStaff :List) :Object => {
 };
 
 const preprocessCaseNotesFormData = (formData :Object) :Object => {
-  let updatedFormData = formData;
-
+  const meetingData = {
+    [getPageSectionKey(1, 1)]: get(formData, getPageSectionKey(1, 1))
+  };
+  const taskData = {
+    [getPageSectionKey(1, 3)]: get(formData, getPageSectionKey(1, 3))
+  };
   const staffMemberEKID = getIn(
-    updatedFormData,
+    formData,
     [getPageSectionKey(1, 2), getEntityAddressKey(0, REENTRY_STAFF, ENTITY_KEY_ID)]
   );
-  updatedFormData = remove(updatedFormData, getPageSectionKey(1, 2));
-  return { staffMemberEKID, updatedFormData };
+
+  return { meetingData, staffMemberEKID, taskData };
 };
 
 export {
