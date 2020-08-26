@@ -11,12 +11,14 @@ import {
   CardSegment,
 } from 'lattice-ui-kit';
 import { RoutingUtils } from 'lattice-utils';
-import { useDispatch, useSelector } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { Match } from 'react-router';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
+  clearSubmitRequestState,
   getMeetingAndTask,
   getReentryStaff,
   submitCaseNotesAndCompleteTask,
@@ -36,6 +38,7 @@ import {
   PARTICIPANT_FOLLOW_UPS,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   findEntityAddressKeyFromMap,
@@ -73,24 +76,27 @@ const BannerButtonWrapper = styled.div`
 `;
 
 type Props = {
+  actions :{
+    clearSubmitRequestState :() => void;
+    getMeetingAndTask :RequestSequence;
+    getReentryStaff :RequestSequence;
+    goToRoute :GoToRoute;
+    submitCaseNotesAndCompleteTask :RequestSequence;
+  };
   history :Object;
   match :Match;
-  requestStates :{
-    SUBMIT_CASE_NOTES_AND_COMPLETE_TASK :RequestState;
-  };
 };
 
-const CaseNotesForm = ({ history, match } :Props) => {
+const CaseNotesForm = ({ actions, history, match } :Props) => {
 
   const [formData, updateFormData] = useState({});
   const personEKID = getParamFromMatch(match, Routes.PARTICIPANT_ID);
   const meetingEKID = getParamFromMatch(match, Routes.MEETING_ID);
-  const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getReentryStaff());
-    dispatch(getMeetingAndTask(meetingEKID));
-  }, [dispatch, meetingEKID]);
+    actions.getReentryStaff();
+    actions.getMeetingAndTask(meetingEKID);
+  }, [actions, meetingEKID]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
@@ -151,7 +157,9 @@ const CaseNotesForm = ({ history, match } :Props) => {
     if (requestIsSuccess(submitRequestState)) {
       window.scrollTo(0, 0);
     }
-  }, [submitRequestState]);
+  }, [actions, submitRequestState]);
+
+  useEffect(() => actions.clearSubmitRequestState, [actions]);
 
   const onSubmit = () => {
     const { meetingData, staffMemberEKID, taskData } = preprocessCaseNotesFormData(formData);
@@ -191,11 +199,11 @@ const CaseNotesForm = ({ history, match } :Props) => {
         }
       ]
     };
-    dispatch(submitCaseNotesAndCompleteTask({ associations, meetingEntityData, taskEntityData }));
+    actions.submitCaseNotesAndCompleteTask({ associations, meetingEntityData, taskEntityData });
   };
 
   const gotToParticipantTasks = () => {
-    if (personEKID) dispatch(goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', personEKID)));
+    if (personEKID) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', personEKID));
   };
 
   const hydratedSchema = hydrateCaseNotesForm(schema, reentryStaffMembers);
@@ -236,4 +244,15 @@ const CaseNotesForm = ({ history, match } :Props) => {
   );
 };
 
-export default CaseNotesForm;
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    clearSubmitRequestState,
+    getMeetingAndTask,
+    getReentryStaff,
+    goToRoute,
+    submitCaseNotesAndCompleteTask,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(CaseNotesForm);
