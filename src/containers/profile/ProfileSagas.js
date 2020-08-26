@@ -79,6 +79,7 @@ const {
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
+  MANUAL_JAILS_PRISONS,
   NEEDS_ASSESSMENT,
   PEOPLE,
   PERSON_DETAILS,
@@ -329,6 +330,24 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .map((emergencyContact :Map) => getEKID(emergencyContact))
         .toJS();
       yield call(getEmergencyContactInfoWorker, getEmergencyContactInfo({ emergencyContactEKIDs }));
+    }
+    if (isDefined(get(personNeighborMap, MANUAL_JAIL_STAYS))) {
+      const manualJailStaysEKID :UUID = getEKID(personNeighborMap.getIn([MANUAL_JAIL_STAYS, 0]));
+      const manualJailStayESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+      const manualJailsPrisonsESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
+      const jailStayFilter = {
+        entityKeyIds: [manualJailStaysEKID],
+        destinationEntitySetIds: [manualJailsPrisonsESID],
+        sourceEntitySetIds: [],
+      };
+      const jailStayResponse :Object = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: manualJailStayESID, filter: jailStayFilter })
+      );
+      if (jailStayResponse.error) throw jailStayResponse.error;
+      const jailStayNeighbors :Map = fromJS(jailStayResponse.data);
+      const facility :Map = getNeighborDetails(jailStayNeighbors.getIn([manualJailStaysEKID, 0]));
+      personNeighborMap = personNeighborMap.set(MANUAL_JAILS_PRISONS, List([facility]));
     }
 
     workerResponse.data = personNeighborMap;
