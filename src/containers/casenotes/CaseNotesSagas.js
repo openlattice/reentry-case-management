@@ -1,20 +1,31 @@
 // @flow
 import {
+  all,
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { List, Map, fromJS } from 'immutable';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import {
+  List,
+  Map,
+  fromJS,
+  merge,
+} from 'immutable';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas,
+} from 'lattice-sagas';
 import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
-  GET_MEETING,
+  GET_MEETING_AND_TASK,
   GET_REENTRY_STAFF,
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
-  getMeeting,
+  getMeetingAndTask,
   getReentryStaff,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
@@ -23,14 +34,16 @@ import Logger from '../../utils/Logger';
 import { createOrReplaceAssociation, submitPartialReplace } from '../../core/data/DataActions';
 import { createOrReplaceAssociationWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { getESIDFromApp } from '../../utils/DataUtils';
+import { getESIDFromApp, getNeighborDetails } from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
-const { MEETINGS, REENTRY_STAFF } = APP_TYPE_FQNS;
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { FOLLOW_UPS, MEETINGS, REENTRY_STAFF } = APP_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 
@@ -38,45 +51,59 @@ const LOG = new Logger('CaseNotesSagas');
 
 /*
  *
- * CaseNotesActions.getMeeting()
+ * CaseNotesActions.getMeetingAndTask()
  *
  */
 
-function* getMeetingWorker(action :SequenceAction) :Saga<*> {
+function* getMeetingAndTaskWorker(action :SequenceAction) :Saga<*> {
   const { id } = action;
-  const sagaResponse = {};
 
   try {
-    yield put(getMeeting.request(id));
+    yield put(getMeetingAndTask.request(id));
     const { value } = action;
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
     const meetingEKID = value;
     const app = yield select(getAppFromState);
     const meetingESID :UUID = getESIDFromApp(app, MEETINGS);
+    const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
+    const filter = {
+      entityKeyIds: [meetingEKID],
+      sourceEntitySetIds: [],
+      destinationEntitySetIds: [followUpsESID],
+    };
 
-    const response :Object = yield call(
-      getEntityDataWorker,
-      getEntityData({ entitySetId: meetingESID, entityKeyId: meetingEKID })
-    );
-    if (response.error) throw response.error;
-    const meeting :Map = fromJS(response.data);
-    sagaResponse.data = meeting;
-    yield put(getMeeting.success(id, meeting));
+    const [getMeetingResponse, getTaskResponse] = yield all([
+      call(
+        getEntityDataWorker,
+        getEntityData({ entitySetId: meetingESID, entityKeyId: meetingEKID })
+      ),
+      call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: meetingESID, filter })
+      ),
+    ]);
+    if (getMeetingResponse.error) throw getMeetingResponse.error;
+    if (getTaskResponse.error) throw getTaskResponse.error;
+
+    const meeting :Map = fromJS(getMeetingResponse.data);
+
+    const neighbors :Map = fromJS(getTaskResponse.data);
+    const task :Map = getNeighborDetails(neighbors.getIn([meetingEKID, 0], Map()));
+
+    yield put(getMeetingAndTask.success(id, { meeting, task }));
   }
   catch (error) {
-    sagaResponse.error = error;
     LOG.error(action.type, error);
-    yield put(getMeeting.failure(id, error));
+    yield put(getMeetingAndTask.failure(id, error));
   }
   finally {
-    yield put(getMeeting.finally(id));
+    yield put(getMeetingAndTask.finally(id));
   }
-  return sagaResponse;
 }
 
-function* getMeetingWatcher() :Generator<*, *, *> {
+function* getMeetingAndTaskWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_MEETING, getMeetingWorker);
+  yield takeEvery(GET_MEETING_AND_TASK, getMeetingAndTaskWorker);
 }
 
 /*
@@ -153,8 +180,8 @@ function* submitCaseNotesAndCompleteTaskWatcher() :Generator<*, *, *> {
 }
 
 export {
-  getMeetingWatcher,
-  getMeetingWorker,
+  getMeetingAndTaskWatcher,
+  getMeetingAndTaskWorker,
   getReentryStaffWatcher,
   getReentryStaffWorker,
   submitCaseNotesAndCompleteTaskWatcher,

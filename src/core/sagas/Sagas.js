@@ -44,7 +44,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.switchOrganizationWatcher),
 
     // CaseNotesSagas
-    fork(CaseNotesSagas.getMeetingWatcher),
+    fork(CaseNotesSagas.getMeetingAndTaskWatcher),
     fork(CaseNotesSagas.getReentryStaffWatcher),
     fork(CaseNotesSagas.submitCaseNotesAndCompleteTaskWatcher),
 

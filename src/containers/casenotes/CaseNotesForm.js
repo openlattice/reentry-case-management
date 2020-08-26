@@ -17,7 +17,7 @@ import type { RequestState } from 'redux-reqseq';
 
 import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
-  getMeeting,
+  getMeetingAndTask,
   getReentryStaff,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
@@ -43,10 +43,15 @@ const {
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
 const { getParamFromMatch } = RoutingUtils;
-const { MEETINGS, RECORDED_BY, REENTRY_STAFF } = APP_TYPE_FQNS;
+const {
+  FOLLOW_UPS,
+  MEETINGS,
+  RECORDED_BY,
+  REENTRY_STAFF,
+} = APP_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
-const { MEETING } = CASE_NOTES;
+const { MEETING, TASK } = CASE_NOTES;
 const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 
@@ -84,7 +89,7 @@ const CaseNotesForm = ({ history, match } :Props) => {
 
   useEffect(() => {
     dispatch(getReentryStaff());
-    dispatch(getMeeting(meetingEKID));
+    dispatch(getMeetingAndTask(meetingEKID));
   }, [dispatch, meetingEKID]);
 
   const onChange = ({ formData: newFormData } :Object) => {
@@ -98,6 +103,10 @@ const CaseNotesForm = ({ history, match } :Props) => {
   const meeting :Map = useSelector((store :Map) => store.getIn([
     CASE_NOTES.CASE_NOTES,
     MEETING
+  ]));
+  const task :Map = useSelector((store :Map) => store.getIn([
+    CASE_NOTES.CASE_NOTES,
+    TASK
   ]));
   const selectedOrgId = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
   const entitySetIds :Map = useSelector((store :Map) => store.getIn(
@@ -133,7 +142,10 @@ const CaseNotesForm = ({ history, match } :Props) => {
     REQUEST_STATE,
   ]));
 
-  const entityIndexToIdMap :Map = Map().set(MEETINGS, [meetingEKID]);
+  const taskEKID :UUID = getEKID(task);
+  const entityIndexToIdMap :Map = Map()
+    .set(MEETINGS, [meetingEKID])
+    .set(FOLLOW_UPS, [taskEKID]);
 
   useEffect(() => {
     if (requestIsSuccess(submitRequestState)) {
