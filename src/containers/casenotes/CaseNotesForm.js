@@ -22,7 +22,7 @@ import {
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
 import { schema, uiSchema } from './schemas/CaseNotesSchemas';
-import { hydrateCaseNotesForm, preprocessCaseNotesFormData } from './utils/CaseNotesUtils';
+import { hydrateCaseNotesForm, preprocessCaseNotesFormData } from './utils/CaseNotesFormUtils';
 
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
