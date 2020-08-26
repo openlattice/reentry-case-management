@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 import styled, { css } from 'styled-components';
-import { faCheck } from '@fortawesome/pro-light-svg-icons';
+import { faCheck, faClipboard } from '@fortawesome/pro-light-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import {
@@ -15,10 +15,11 @@ import { connect } from 'react-redux';
 
 import { StyledTableRow } from './FollowUpsTableStyles';
 
+import CaseNotesModal from '../../containers/casenotes/CaseNotesModal';
 import CompleteFollowUpModal from '../../containers/profile/tasks/CompleteFollowUpModal';
 import { FOLLOW_UPS_STATUSES } from '../../containers/profile/tasks/FollowUpsConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEKID, getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 import { PARTICIPANT_FOLLOW_UPS } from '../../utils/constants/ReduxStateConstants';
 
@@ -28,7 +29,7 @@ const {
   NEUTRAL,
   REDS
 } = Colors;
-const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
+const { FOLLOW_UP_NEIGHBOR_MAP, MEETING_NOTES_STAFF_MAP } = PARTICIPANT_FOLLOW_UPS;
 const {
   MANUAL_ASSIGNED_TO,
   MEETINGS,
@@ -133,6 +134,12 @@ const PeopleRow = styled.div`
   width: 50%;
 `;
 
+const PeopleAndNotesButtonRow = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+`;
+
 const ProviderAndButtonRow = styled.div`
   align-items: center;
   display: flex;
@@ -142,14 +149,19 @@ const ProviderAndButtonRow = styled.div`
 `;
 
 type Props = {
-  actions:{
-  };
   className ?:string;
   data :Object;
   followUpNeighborMap :Map;
+  meetingNotesStaffMap :Map;
 };
 
-const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
+const TableRow = ({
+  className,
+  data,
+  followUpNeighborMap,
+  meetingNotesStaffMap,
+} :Props) => {
+
   const {
     dateCompleted,
     dueDate,
@@ -162,6 +174,7 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
   const [completionModalVisible, setCompletionModalVisibility] = useState(false);
+  const [notesModalVisible, setNotesModalVisibility] = useState(false);
 
   const neighbors :Map = followUpNeighborMap.get(id, Map());
   const meeting :any = neighbors.get(MEETINGS, Map());
@@ -185,6 +198,8 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
   const providerName :string = `Provider: ${linkedProviderName || EMPTY_FIELD}`;
   const dateCompletedString :string = `Date completed: ${dateCompleted}`;
 
+  const personWhoRecordedNotes :Map = meetingNotesStaffMap.get(getEKID(meeting), Map());
+
   if (expanded) {
     return (
       <StyledTableRow className={className}>
@@ -199,10 +214,26 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
             </ExpandedHeader>
             { taskName.includes('Meeting') && (<TitleRow>{ taskTitle }</TitleRow>)}
             <ExpandedDescription>{ taskDescription }</ExpandedDescription>
-            <PeopleRow>
-              <div>{ personAssignedToName }</div>
-              <div>{ personWhoReportedName }</div>
-            </PeopleRow>
+            {
+              meeting.isEmpty()
+                ? (
+                  <PeopleRow>
+                    <div>{ personAssignedToName }</div>
+                    <div>{ personWhoReportedName }</div>
+                  </PeopleRow>
+                )
+                : (
+                  <PeopleAndNotesButtonRow>
+                    <PeopleRow>
+                      <div>{ personAssignedToName }</div>
+                      <div>{ personWhoReportedName }</div>
+                    </PeopleRow>
+                    <Button onClick={() => setNotesModalVisibility(true)}>
+                      <FontAwesomeIcon icon={faClipboard} />
+                    </Button>
+                  </PeopleAndNotesButtonRow>
+                )
+            }
             <ProviderAndButtonRow>
               <div>{ providerName }</div>
               {
@@ -226,6 +257,11 @@ const TableRow = ({ className, data, followUpNeighborMap } :Props) => {
             meeting={meeting}
             onClose={() => setCompletionModalVisibility(false)}
             personEKID={personEKID} />
+        <CaseNotesModal
+            isVisible={notesModalVisible}
+            meeting={meeting}
+            onClose={() => setNotesModalVisibility(false)}
+            staffMember={personWhoRecordedNotes} />
       </StyledTableRow>
     );
   }
@@ -249,6 +285,7 @@ const mapStateToProps = (state :Map) => {
   const participantFollowUps = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   return {
     [FOLLOW_UP_NEIGHBOR_MAP]: participantFollowUps.get(FOLLOW_UP_NEIGHBOR_MAP),
+    [MEETING_NOTES_STAFF_MAP]: participantFollowUps.get(MEETING_NOTES_STAFF_MAP),
   };
 };
 
