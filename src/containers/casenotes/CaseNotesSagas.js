@@ -24,9 +24,11 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   GET_MEETING_AND_TASK,
   GET_REENTRY_STAFF,
+  GET_STAFF_WHO_RECORDED_NOTES,
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
   getMeetingAndTask,
   getReentryStaff,
+  getStaffWhoRecordedNotes,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
 
@@ -145,6 +147,58 @@ function* getReentryStaffWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * CaseNotesActions.getStaffWhoRecordedNotes()
+ *
+ */
+
+function* getStaffWhoRecordedNotesWorker(action :SequenceAction) :Saga<*> {
+  const { id } = action;
+
+  try {
+    yield put(getStaffWhoRecordedNotes.request(id));
+    const { value } = action;
+    const { meetingEKIDs } = value;
+
+    const app = yield select(getAppFromState);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
+    const reentryStaffESID :UUID = getESIDFromApp(app, REENTRY_STAFF);
+
+    const searchFilter = {
+      entityKeyIds: meetingEKIDs,
+      sourceEntitySetIds: [],
+      destinationEntitySetIds: [reentryStaffESID],
+    };
+    const response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: meetingsESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+
+    const staffByMeetingEKID = Map().withMutations((mutator :Map) => {
+      fromJS(response.data).forEach((neighborList :List, meetingEKID :UUID) => {
+        const staffMemberRecordedBy :Map = getNeighborDetails(neighborList.get(0));
+        mutator.set(meetingEKID, staffMemberRecordedBy);
+      });
+    });
+
+    yield put(getStaffWhoRecordedNotes.success(id, staffByMeetingEKID));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getStaffWhoRecordedNotes.failure(id, error));
+  }
+  finally {
+    yield put(getStaffWhoRecordedNotes.finally(id));
+  }
+}
+
+function* getStaffWhoRecordedNotesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_STAFF_WHO_RECORDED_NOTES, getStaffWhoRecordedNotesWorker);
+}
+
+/*
+ *
  * CaseNotesActions.submitCaseNotesAndCompleteTask()
  *
  */
@@ -186,6 +240,8 @@ export {
   getMeetingAndTaskWorker,
   getReentryStaffWatcher,
   getReentryStaffWorker,
+  getStaffWhoRecordedNotesWatcher,
+  getStaffWhoRecordedNotesWorker,
   submitCaseNotesAndCompleteTaskWatcher,
   submitCaseNotesAndCompleteTaskWorker,
 };

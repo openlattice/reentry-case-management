@@ -46,6 +46,7 @@ export default function* sagas() :Generator<*, *, *> {
     // CaseNotesSagas
     fork(CaseNotesSagas.getMeetingAndTaskWatcher),
     fork(CaseNotesSagas.getReentryStaffWatcher),
+    fork(CaseNotesSagas.getStaffWhoRecordedNotesWatcher),
     fork(CaseNotesSagas.submitCaseNotesAndCompleteTaskWatcher),
 
     // ContactInfoSagas
