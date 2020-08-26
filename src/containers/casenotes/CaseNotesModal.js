@@ -75,7 +75,7 @@ const CaseNotesModal = ({
           <div>{ plansForNextVisit }</div>
         </NotesAndHeaderBlock>
         <NotesAndHeaderBlock>
-          <Label subtle>Staff Member</Label>
+          <Label subtle>Notes completed by</Label>
           <div>{ `${firstName} ${lastName}` }</div>
         </NotesAndHeaderBlock>
       </ModalCardSegment>
