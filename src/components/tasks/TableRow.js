@@ -215,7 +215,7 @@ const TableRow = ({
             { taskName.includes('Meeting') && (<TitleRow>{ taskTitle }</TitleRow>)}
             <ExpandedDescription>{ taskDescription }</ExpandedDescription>
             {
-              meeting.isEmpty()
+              personWhoRecordedNotes.isEmpty()
                 ? (
                   <PeopleRow>
                     <div>{ personAssignedToName }</div>
