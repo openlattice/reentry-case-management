@@ -62,6 +62,8 @@ import { isDefined } from '../../utils/LangUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
 import { APP } from '../../utils/constants/ReduxStateConstants';
+import { getStaffWhoRecordedNotes } from '../casenotes/CaseNotesActions';
+import { getStaffWhoRecordedNotesWorker } from '../casenotes/CaseNotesSagas';
 
 const LOG = new Logger('ProfileSagas');
 const { FullyQualifiedName } = Models;
@@ -330,6 +332,12 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .map((emergencyContact :Map) => getEKID(emergencyContact))
         .toJS();
       yield call(getEmergencyContactInfoWorker, getEmergencyContactInfo({ emergencyContactEKIDs }));
+    }
+    if (isDefined(get(personNeighborMap, MEETINGS))) {
+      const meetingEKIDs :UUID[] = personNeighborMap.get(MEETINGS)
+        .map((meeting :Map) => getEKID(meeting))
+        .toJS();
+      yield call(getStaffWhoRecordedNotesWorker, getStaffWhoRecordedNotes({ meetingEKIDs }));
     }
 
     workerResponse.data = personNeighborMap;
