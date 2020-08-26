@@ -109,6 +109,9 @@ const CompleteFollowUpModal = ({
     actions.goToRoute(CASE_NOTES_FORM.replace(':participantId', personEKID).replace(':meetingId', meetingEKID));
   };
 
+  const SECONDARY_TEXT :string = meeting.isEmpty() ? 'Cancel' : 'Fill out notes first';
+  const secondaryOnClick = meeting.isEmpty() ? closeModal : goToCaseNotesForm;
+
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Mark as Complete" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[MARK_FOLLOW_UP_AS_COMPLETE]);
@@ -116,19 +119,19 @@ const CompleteFollowUpModal = ({
       <ModalFooter
           isPendingPrimary={isSubmitting}
           onClickPrimary={onSubmit}
-          onClickSecondary={goToCaseNotesForm}
+          onClickSecondary={secondaryOnClick}
           textPrimary="Mark as complete"
-          textSecondary="Fill out notes first" />
+          textSecondary={SECONDARY_TEXT} />
     );
   };
   return (
     <Modal
         isVisible={isVisible}
         onClickPrimary={onSubmit}
-        onClickSecondary={goToCaseNotesForm}
+        onClickSecondary={secondaryOnClick}
         onClose={closeModal}
         textPrimary="Mark as Complete"
-        textSecondary="Fill out notes first"
+        textSecondary={SECONDARY_TEXT}
         viewportScrolling
         withFooter={renderFooter}
         withHeader={renderHeader}>
