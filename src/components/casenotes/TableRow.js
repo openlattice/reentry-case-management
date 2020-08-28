@@ -95,5 +95,4 @@ TableRow.defaultProps = {
   className: undefined
 };
 
-// $FlowFixMe
 export default TableRow;
