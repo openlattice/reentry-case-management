@@ -1,5 +1,5 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
@@ -10,12 +10,10 @@ import {
   Card,
   CardSegment,
 } from 'lattice-ui-kit';
-import { DataUtils, RoutingUtils, useRequestState } from 'lattice-utils';
-import { connect, useSelector } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { DataUtils, RoutingUtils, useGoToRoute, useRequestState } from 'lattice-utils';
+import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
-import type { RequestSequence } from 'redux-reqseq';
 
 import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
@@ -38,7 +36,6 @@ import {
   PARTICIPANT_FOLLOW_UPS,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
-import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getEntityKeyId } = DataUtils;
 const {
@@ -77,27 +74,21 @@ const BannerButtonWrapper = styled.div`
 `;
 
 type Props = {
-  actions :{
-    clearSubmitRequestState :() => void;
-    getMeetingAndTask :RequestSequence;
-    getReentryStaff :RequestSequence;
-    goToRoute :GoToRoute;
-    submitCaseNotesAndCompleteTask :RequestSequence;
-  };
   history :Object;
   match :Match;
 };
 
-const CaseNotesForm = ({ actions, history, match } :Props) => {
+const CaseNotesForm = ({ history, match } :Props) => {
 
   const [formData, updateFormData] = useState({});
-  const personEKID = getParamFromMatch(match, Routes.PARTICIPANT_ID);
+  const personEKID = getParamFromMatch(match, Routes.PARTICIPANT_ID) || '';
   const meetingEKID = getParamFromMatch(match, Routes.MEETING_ID);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    actions.getReentryStaff();
-    actions.getMeetingAndTask(meetingEKID);
-  }, [actions, meetingEKID]);
+    dispatch(getReentryStaff());
+    dispatch(getMeetingAndTask(meetingEKID));
+  }, [dispatch, meetingEKID]);
 
   const onChange = ({ formData: newFormData } :Object) => {
     updateFormData(newFormData);
@@ -157,9 +148,13 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
     if (requestIsSuccess(submitRequestState)) {
       window.scrollTo(0, 0);
     }
-  }, [actions, submitRequestState]);
+  }, [submitRequestState]);
 
-  useEffect(() => actions.clearSubmitRequestState, [actions]);
+  const clearReqState = useCallback(() => {
+    dispatch(clearSubmitRequestState());
+  }, [dispatch]);
+
+  useEffect(() => clearReqState, [clearReqState]);
 
   const onSubmit = () => {
     const { meetingData, staffMemberEKID, taskData } = preprocessCaseNotesFormData(formData);
@@ -199,12 +194,12 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
         }
       ]
     };
-    actions.submitCaseNotesAndCompleteTask({ associations, meetingEntityData, taskEntityData });
+    dispatch(submitCaseNotesAndCompleteTask({ associations, meetingEntityData, taskEntityData }));
   };
 
-  const gotToParticipantTasks = () => {
-    if (personEKID) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', personEKID));
-  };
+  const goToParticipantTasks = useGoToRoute(
+    Routes.PARTICIPANT_TASK_MANAGER.replace(':participantId', personEKID)
+  );
 
   const hydratedSchema = hydrateCaseNotesForm(schema, reentryStaffMembers);
   return (
@@ -216,7 +211,7 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
         <BannerContent>
           <div>Notes submission was successful!</div>
           <BannerButtonWrapper>
-            <Button onClick={gotToParticipantTasks}>Go To Participant Tasks</Button>
+            <Button onClick={goToParticipantTasks}>Go To Participant Tasks</Button>
           </BannerButtonWrapper>
         </BannerContent>
       </Banner>
@@ -244,15 +239,4 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  actions: bindActionCreators({
-    clearSubmitRequestState,
-    getMeetingAndTask,
-    getReentryStaff,
-    goToRoute,
-    submitCaseNotesAndCompleteTask,
-  }, dispatch)
-});
-
-// $FlowFixMe
-export default connect(null, mapDispatchToProps)(CaseNotesForm);
+export default CaseNotesForm;
