@@ -15,7 +15,7 @@ import { connect, useSelector } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
@@ -53,7 +53,7 @@ const {
   RECORDED_BY,
   REENTRY_STAFF,
 } = APP_TYPE_FQNS;
-const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ACTIONS } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { MEETING, TASK } = CASE_NOTES;
 const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
