@@ -62,6 +62,8 @@ import { isDefined } from '../../utils/LangUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
 import { APP } from '../../utils/constants/ReduxStateConstants';
+import { getIncarcerationFacilities } from '../intake/IntakeActions';
+import { getIncarcerationFacilitiesWorker } from '../intake/IntakeSagas';
 
 const LOG = new Logger('ProfileSagas');
 const { FullyQualifiedName } = Models;
@@ -523,6 +525,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
       call(getParticipantWorker, getParticipant({ participantEKID })),
+      call(getIncarcerationFacilitiesWorker, getIncarcerationFacilities()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
