@@ -7,10 +7,10 @@ import { CardSegment, Label } from 'lattice-ui-kit';
 import { StyledTableRow } from '../tasks/FollowUpsTableStyles';
 
 const Date = styled.td`
-  margin-right: 10px;
   font-size: 14px;
-  padding: 20px 15px 20px 0;
+  margin-right: 10px;
   padding-left: 30px;
+  padding: 20px 15px 20px 0;
 `;
 
 const Staff = styled.td`
@@ -49,11 +49,11 @@ const TableRow = ({
 } :Props) => {
 
   const {
-    date,
-    staff,
-    needsAddressed,
     assessmentNotes,
+    date,
+    needsAddressed,
     plansForNextVisit,
+    staff,
   } = data;
   const [expanded, expandOrCollapseRow] = useState(false);
 

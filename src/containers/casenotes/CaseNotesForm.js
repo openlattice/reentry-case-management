@@ -210,8 +210,8 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
   return (
     <>
       <Banner
-          maxHeight="100px"
           isOpen={requestIsSuccess(submitRequestState)}
+          maxHeight="100px"
           mode="success">
         <BannerContent>
           <div>Notes submission was successful!</div>
