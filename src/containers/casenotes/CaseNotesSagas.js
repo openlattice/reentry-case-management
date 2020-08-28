@@ -103,7 +103,7 @@ function* getMeetingAndTaskWorker(action :SequenceAction) :Saga<*> {
   }
 }
 
-function* getMeetingAndTaskWatcher() :Generator<*, *, *> {
+function* getMeetingAndTaskWatcher() :Saga<*> {
 
   yield takeEvery(GET_MEETING_AND_TASK, getMeetingAndTaskWorker);
 }
@@ -140,7 +140,7 @@ function* getReentryStaffWorker(action :SequenceAction) :Saga<*> {
   return sagaResponse;
 }
 
-function* getReentryStaffWatcher() :Generator<*, *, *> {
+function* getReentryStaffWatcher() :Saga<*> {
 
   yield takeEvery(GET_REENTRY_STAFF, getReentryStaffWorker);
 }
@@ -192,7 +192,7 @@ function* getStaffWhoRecordedNotesWorker(action :SequenceAction) :Saga<*> {
   }
 }
 
-function* getStaffWhoRecordedNotesWatcher() :Generator<*, *, *> {
+function* getStaffWhoRecordedNotesWatcher() :Saga<*> {
 
   yield takeEvery(GET_STAFF_WHO_RECORDED_NOTES, getStaffWhoRecordedNotesWorker);
 }
@@ -230,7 +230,7 @@ function* submitCaseNotesAndCompleteTaskWorker(action :SequenceAction) :Saga<*> 
   }
 }
 
-function* submitCaseNotesAndCompleteTaskWatcher() :Generator<*, *, *> {
+function* submitCaseNotesAndCompleteTaskWatcher() :Saga<*> {
 
   yield takeEvery(SUBMIT_CASE_NOTES_AND_COMPLETE_TASK, submitCaseNotesAndCompleteTaskWorker);
 }
