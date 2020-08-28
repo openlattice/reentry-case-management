@@ -5,8 +5,8 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constant
 import { REFERRAL_SOURCES } from '../../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { MANUAL_JAIL_STAYS, REFERRAL_REQUEST } = APP_TYPE_FQNS;
-const { PROJECTED_RELEASE_DATETIME, SOURCE } = PROPERTY_TYPE_FQNS;
+const { MANUAL_JAILS_PRISONS, MANUAL_JAIL_STAYS, REFERRAL_REQUEST } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID, PROJECTED_RELEASE_DATETIME, SOURCE } = PROPERTY_TYPE_FQNS;
 
 const schema :Object = {
   type: 'object',
@@ -16,6 +16,12 @@ const schema :Object = {
       type: 'object',
       title: '',
       properties: {
+        [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
+          type: 'string',
+          title: 'Most recently released from:',
+          enum: [],
+          enumNames: []
+        },
         [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
           type: 'string',
           title: 'Release date:',
@@ -35,6 +41,9 @@ const schema :Object = {
 const uiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)]: {
+      classNames: 'column-span-12',
+    },
     [getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)]: {
       classNames: 'column-span-12',
     },
