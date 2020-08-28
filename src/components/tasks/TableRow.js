@@ -214,26 +214,19 @@ const TableRow = ({
             </ExpandedHeader>
             { taskName.includes('Meeting') && (<TitleRow>{ taskTitle }</TitleRow>)}
             <ExpandedDescription>{ taskDescription }</ExpandedDescription>
-            {
-              personWhoRecordedNotes.isEmpty()
-                ? (
-                  <PeopleRow>
-                    <div>{ personAssignedToName }</div>
-                    <div>{ personWhoReportedName }</div>
-                  </PeopleRow>
+            <PeopleAndNotesButtonRow>
+              <PeopleRow>
+                <div>{ personAssignedToName }</div>
+                <div>{ personWhoReportedName }</div>
+              </PeopleRow>
+              {
+                !personWhoRecordedNotes.isEmpty() && (
+                  <Button onClick={() => setNotesModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faClipboard} />
+                  </Button>
                 )
-                : (
-                  <PeopleAndNotesButtonRow>
-                    <PeopleRow>
-                      <div>{ personAssignedToName }</div>
-                      <div>{ personWhoReportedName }</div>
-                    </PeopleRow>
-                    <Button onClick={() => setNotesModalVisibility(true)}>
-                      <FontAwesomeIcon icon={faClipboard} />
-                    </Button>
-                  </PeopleAndNotesButtonRow>
-                )
-            }
+              }
+            </PeopleAndNotesButtonRow>
             <ProviderAndButtonRow>
               <div>{ providerName }</div>
               {
