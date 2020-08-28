@@ -10,9 +10,10 @@ import {
   Card,
   CardSegment,
 } from 'lattice-ui-kit';
-import { RoutingUtils } from 'lattice-utils';
+import { DataUtils, RoutingUtils, useRequestState } from 'lattice-utils';
 import { connect, useSelector } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
@@ -29,7 +30,6 @@ import { hydrateCaseNotesForm, preprocessCaseNotesFormData } from './utils/CaseN
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { getEKID } from '../../utils/DataUtils';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import {
   APP,
@@ -40,6 +40,7 @@ import {
 } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { getEntityKeyId } = DataUtils;
 const {
   findEntityAddressKeyFromMap,
   processEntityDataForPartialReplace,
@@ -141,14 +142,13 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
     selectedOrgId,
     MEETINGS
   ]));
-  const submitRequestState :RequestState = useSelector((store :Map) => store.getIn([
+  const submitRequestState = useRequestState([
     CASE_NOTES.CASE_NOTES,
     ACTIONS,
     SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
-    REQUEST_STATE,
-  ]));
+  ]) || RequestStates.STANDBY;
 
-  const taskEKID :UUID = getEKID(task);
+  const taskEKID = getEntityKeyId(task);
   const entityIndexToIdMap :Map = Map()
     .set(MEETINGS, [meetingEKID])
     .set(FOLLOW_UPS, [taskEKID]);
@@ -190,7 +190,7 @@ const CaseNotesForm = ({ actions, history, match } :Props) => {
           data: {},
           src: {
             entitySetId: meetingESID,
-            entityKeyId: getEKID(meeting)
+            entityKeyId: getEntityKeyId(meeting)
           },
           dst: {
             entitySetId: reentryStaffESID,

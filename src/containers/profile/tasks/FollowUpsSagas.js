@@ -20,6 +20,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { LangUtils, Logger } from 'lattice-utils';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -35,7 +36,6 @@ import {
   markFollowUpAsComplete,
 } from './FollowUpsActions';
 
-import Logger from '../../../utils/Logger';
 import { submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
 import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -50,7 +50,6 @@ import {
 } from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { constructNewEntityFromSubmittedData } from '../../../utils/FormUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import { DST } from '../../../utils/constants/GeneralConstants';
 import {
   APP,
@@ -63,7 +62,7 @@ import { getProvidersWorker } from '../../providers/ProvidersSagas';
 import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantNeighborsWorker, getParticipantWorker } from '../ProfileSagas';
 
-const LOG = new Logger('FollowUpsSagas');
+const { isDefined } = LangUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -85,6 +84,8 @@ const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getParticipantFollowUpsFromState = (state) => state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS, Map());
 const getProvidersFromState = (state) => state.get(PROVIDERS.PROVIDERS, Map());
+
+const LOG = new Logger('FollowUpsSagas');
 
 /*
  *

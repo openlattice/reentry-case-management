@@ -3,6 +3,7 @@ import React, { useCallback, useEffect } from 'react';
 
 import { Map } from 'immutable';
 import { CardSegment, Modal, ModalFooter } from 'lattice-ui-kit';
+import { useGoToRoute } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -103,11 +104,10 @@ const CompleteFollowUpModal = ({
     }
     actions.markFollowUpAsComplete({ entityData: dataToEdit });
   };
-
-  const goToCaseNotesForm = () => {
-    const meetingEKID :UUID = getEKID(meeting);
-    actions.goToRoute(CASE_NOTES_FORM.replace(':participantId', personEKID).replace(':meetingId', meetingEKID));
-  };
+  const meetingEKID :UUID = getEKID(meeting);
+  const goToCaseNotesForm = useGoToRoute(
+    CASE_NOTES_FORM.replace(':participantId', personEKID).replace(':meetingId', meetingEKID)
+  );
 
   const SECONDARY_TEXT :string = meeting.isEmpty() ? 'Cancel' : 'Fill out notes first';
   const secondaryOnClick = meeting.isEmpty() ? closeModal : goToCaseNotesForm;

@@ -18,6 +18,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { LangUtils, Logger } from 'lattice-utils';
 import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -32,15 +33,14 @@ import {
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
 
-import Logger from '../../utils/Logger';
 import { createOrReplaceAssociation, submitPartialReplace } from '../../core/data/DataActions';
 import { createOrReplaceAssociationWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getESIDFromApp, getNeighborDetails } from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { isDefined } from '../../utils/LangUtils';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 
+const { isDefined } = LangUtils;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
