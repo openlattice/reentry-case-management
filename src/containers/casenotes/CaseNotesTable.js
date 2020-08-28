@@ -7,8 +7,8 @@ import { StyleUtils, Table } from 'lattice-ui-kit';
 
 import { formatNotesTableData } from './utils/CaseNotesTableUtils';
 
+import CaseNotesTableRow from '../../components/casenotes/CaseNotesTableRow';
 import TableHeaderRow from '../../components/tasks/TableHeaderRow';
-import TableRow from '../../components/casenotes/TableRow';
 
 const { getStyleVariation } = StyleUtils;
 
@@ -42,7 +42,7 @@ const CaseNotesTable = ({ meetings, staffByMeetingEKID } :Props) => {
   const notesTableData = formatNotesTableData(meetings, staffByMeetingEKID);
   return (
     <Table
-        components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
+        components={{ HeadCell, Header: TableHeaderRow, Row: CaseNotesTableRow }}
         data={notesTableData}
         headers={tableHeaders} />
   );

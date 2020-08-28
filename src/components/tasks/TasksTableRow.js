@@ -155,7 +155,7 @@ type Props = {
   meetingNotesStaffMap :Map;
 };
 
-const TableRow = ({
+const TasksTableRow = ({
   className,
   data,
   followUpNeighborMap,
@@ -270,7 +270,7 @@ const TableRow = ({
   );
 };
 
-TableRow.defaultProps = {
+TasksTableRow.defaultProps = {
   className: undefined
 };
 
@@ -283,4 +283,4 @@ const mapStateToProps = (state :Map) => {
 };
 
 // $FlowFixMe
-export default connect(mapStateToProps)(TableRow);
+export default connect(mapStateToProps)(TasksTableRow);

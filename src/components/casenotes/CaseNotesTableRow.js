@@ -43,7 +43,7 @@ type Props = {
   data :Object;
 };
 
-const TableRow = ({
+const CaseNotesTableRow = ({
   className,
   data,
 } :Props) => {
@@ -91,8 +91,8 @@ const TableRow = ({
   );
 };
 
-TableRow.defaultProps = {
+CaseNotesTableRow.defaultProps = {
   className: undefined
 };
 
-export default TableRow;
+export default CaseNotesTableRow;
