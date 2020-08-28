@@ -109,7 +109,7 @@ const CompleteFollowUpModal = ({
     CASE_NOTES_FORM.replace(':participantId', personEKID).replace(':meetingId', meetingEKID)
   );
 
-  const SECONDARY_TEXT :string = meeting.isEmpty() ? 'Cancel' : 'Fill out notes first';
+  const SECONDARY_TEXT = meeting.isEmpty() ? 'Cancel' : 'Fill out notes first';
   const secondaryOnClick = meeting.isEmpty() ? closeModal : goToCaseNotesForm;
 
   const renderHeader = () => (<ModalHeader onClose={onClose} title="Mark as Complete" />);
