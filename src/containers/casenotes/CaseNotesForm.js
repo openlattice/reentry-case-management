@@ -10,7 +10,12 @@ import {
   Card,
   CardSegment,
 } from 'lattice-ui-kit';
-import { DataUtils, RoutingUtils, useGoToRoute, useRequestState } from 'lattice-utils';
+import {
+  DataUtils,
+  RoutingUtils,
+  useGoToRoute,
+  useRequestState,
+} from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
@@ -27,7 +32,6 @@ import { hydrateCaseNotesForm, preprocessCaseNotesFormData } from './utils/CaseN
 
 import * as Routes from '../../core/router/Routes';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import {
   APP,
