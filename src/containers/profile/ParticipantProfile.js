@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { faUser } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Map, OrderedMap } from 'immutable';
+import { List, Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
   Button,
@@ -46,12 +46,13 @@ import { getEKID } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { INTAKE, PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
 const { NEUTRAL } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { INCARCERATION_FACILITIES } = INTAKE;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
   EMERGENCY_CONTACT_INFO_BY_CONTACT,
@@ -109,6 +110,7 @@ type Props = {
   };
   contactNameByProviderEKID :Map;
   emergencyContactInfoByContact :Map;
+  incarcerationFacilities :List;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
@@ -187,6 +189,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       contactNameByProviderEKID,
       emergencyContactInfoByContact,
+      incarcerationFacilities,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -246,6 +249,7 @@ class ParticipantProfile extends Component<Props, State> {
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
+              incarcerationFacilities={incarcerationFacilities}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
           <CourtDatesCard participantNeighbors={participantNeighbors} />
@@ -274,9 +278,11 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
+  const intake = state.get(INTAKE.INTAKE);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
     [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
+    [INCARCERATION_FACILITIES]: intake.get(INCARCERATION_FACILITIES),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),

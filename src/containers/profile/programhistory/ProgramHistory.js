@@ -60,12 +60,14 @@ const GrayBar = styled(CardSegment)`
 
 type Props = {
   contactNameByProviderEKID :Map;
+  incarcerationFacilities :List;
   participantNeighbors :Map;
   providerByStatusEKID :Map;
 };
 
 const ProgramHistory = ({
   contactNameByProviderEKID,
+  incarcerationFacilities,
   participantNeighbors,
   providerByStatusEKID,
 } :Props) => {
@@ -116,6 +118,7 @@ const ProgramHistory = ({
         <div><EditButton onClick={() => setEditEventModalVisibility(true)} /></div>
       </CardSegment>
       <EditReleaseInfoModal
+          incarcerationFacilities={incarcerationFacilities}
           isVisible={editModalVisible}
           onClose={() => setEditModalVisibility(false)}
           participantNeighbors={participantNeighbors} />
