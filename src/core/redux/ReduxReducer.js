@@ -7,6 +7,7 @@ import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
+import caseNotesReducer from '../../containers/casenotes/CaseNotesReducer';
 import edmReducer from '../edm/EDMReducer';
 import eventReducer from '../../containers/profile/events/EventReducer';
 import intakeReducer from '../../containers/intake/IntakeReducer';
@@ -23,6 +24,7 @@ export default function reduxReducer(routerHistory :any) {
   return combineReducers({
     app: appReducer,
     auth: AuthReducer,
+    caseNotes: caseNotesReducer,
     edm: edmReducer,
     event: eventReducer,
     intake: intakeReducer,

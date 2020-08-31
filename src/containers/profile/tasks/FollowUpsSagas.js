@@ -20,26 +20,9 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { LangUtils, Logger } from 'lattice-utils';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import {
-  getAssociationESID,
-  getEKID,
-  getESIDFromApp,
-  getFqnFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyFqnFromEDM,
-} from '../../../utils/DataUtils';
-import { constructNewEntityFromSubmittedData } from '../../../utils/FormUtils';
-import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
-import { getParticipantWorker, getParticipantNeighborsWorker } from '../ProfileSagas';
-import { getProviders } from '../../providers/ProvidersActions';
-import { getProvidersWorker } from '../../providers/ProvidersSagas';
-import { submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
 import {
   CREATE_NEW_FOLLOW_UP,
   GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
@@ -52,17 +35,34 @@ import {
   loadTasks,
   markFollowUpAsComplete,
 } from './FollowUpsActions';
+
+import { submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
+import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/data/DataSagas';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getAssociationESID,
+  getEKID,
+  getESIDFromApp,
+  getFqnFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyFqnFromEDM,
+} from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { constructNewEntityFromSubmittedData } from '../../../utils/FormUtils';
+import { DST } from '../../../utils/constants/GeneralConstants';
 import {
   APP,
   EDM,
   PARTICIPANT_FOLLOW_UPS,
   PROVIDERS,
 } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { DST } from '../../../utils/constants/GeneralConstants';
+import { getProviders } from '../../providers/ProvidersActions';
+import { getProvidersWorker } from '../../providers/ProvidersSagas';
+import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
+import { getParticipantNeighborsWorker, getParticipantWorker } from '../ProfileSagas';
 
-const LOG = new Logger('FollowUpsSagas');
+const { isDefined } = LangUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -84,6 +84,8 @@ const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getParticipantFollowUpsFromState = (state) => state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS, Map());
 const getProvidersFromState = (state) => state.get(PROVIDERS.PROVIDERS, Map());
+
+const LOG = new Logger('FollowUpsSagas');
 
 /*
  *
@@ -247,16 +249,19 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const providerESID :UUID = getESIDFromApp(app, PROVIDER);
     const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
-    const searchFilter = {
+    let searchFilter = {
       entityKeyIds: followUpEKIDs,
       sourceEntitySetIds: [meetingsESID, peopleESID, providerESID, reentryStaffESID],
       destinationEntitySetIds: [],
     };
-    const response :Object = yield call(
+    let response :Object = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: followUpsESID, filter: searchFilter })
     );
     if (response.error) throw response.error;
+
+    const meetingsEKIDs :UUID[] = [];
+
     const followUpNeighborMap :Map = Map().withMutations((map :Map) => {
       fromJS(response.data).forEach((neighborList :List, followUpEKID :UUID) => {
         neighborList.forEach((neighbor :Map) => {
@@ -268,11 +273,36 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           const fqn :FullyQualifiedName = getFqnFromApp(app, esidToUseAsKey);
           const entity :Map = getNeighborDetails(neighbor);
           map.update(followUpEKID, Map(), (entitiesMap) => entitiesMap.set(fqn, entity));
+
+          if (neighborESID === meetingsESID) {
+            meetingsEKIDs.push(getEKID(entity));
+          }
         });
       });
     });
 
-    yield put(getFollowUpNeighbors.success(id, followUpNeighborMap));
+    let meetingNotesStaffMap = Map().asMutable();
+
+    if (meetingsEKIDs.length) {
+      searchFilter = {
+        entityKeyIds: meetingsEKIDs,
+        sourceEntitySetIds: [],
+        destinationEntitySetIds: [reentryStaffESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: meetingsESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      fromJS(response.data).forEach((neighborList :List, meetingEKID :UUID) => {
+        const staffMemberRecordedBy :Map = getNeighborDetails(neighborList.get(0));
+        meetingNotesStaffMap.set(meetingEKID, staffMemberRecordedBy);
+      });
+    }
+
+    meetingNotesStaffMap = meetingNotesStaffMap.asImmutable();
+
+    yield put(getFollowUpNeighbors.success(id, { followUpNeighborMap, meetingNotesStaffMap }));
   }
   catch (error) {
     LOG.error(action.type, error);

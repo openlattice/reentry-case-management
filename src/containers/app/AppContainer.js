@@ -33,6 +33,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as AppActions from './AppActions';
 
+import CaseNotesForm from '../casenotes/CaseNotesForm';
 import ContactSupportButton from '../../components/buttons/ContactSupportButton';
 import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import EditReleaseInfoForm from '../profile/programhistory/EditReleaseInfoForm';
@@ -104,6 +105,7 @@ class AppContainer extends Component<Props> {
       return (
         <Switch>
           <Route path={Routes.EDIT_RELEASE_INFO} component={EditReleaseInfoForm} />
+          <Route path={Routes.CASE_NOTES_FORM} component={CaseNotesForm} />
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
           <Route path={Routes.EDIT_PARTICIPANT} component={EditPersonInfoForm} />
           <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfile} />

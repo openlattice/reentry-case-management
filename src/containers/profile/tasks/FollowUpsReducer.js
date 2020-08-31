@@ -16,9 +16,10 @@ import {
   loadTasks,
   markFollowUpAsComplete,
 } from './FollowUpsActions';
+
 import { PARTICIPANT_FOLLOW_UPS, SHARED } from '../../../utils/constants/ReduxStateConstants';
 
-const { FOLLOW_UP_NEIGHBOR_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
+const { FOLLOW_UP_NEIGHBOR_MAP, MEETING_NOTES_STAFF_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const INITIAL_STATE :Map = fromJS({
@@ -40,6 +41,7 @@ const INITIAL_STATE :Map = fromJS({
     },
   },
   [FOLLOW_UP_NEIGHBOR_MAP]: Map(),
+  [MEETING_NOTES_STAFF_MAP]: Map(),
   [REENTRY_STAFF_MEMBERS]: List(),
 });
 
@@ -100,8 +102,10 @@ export default function participantTasksReducer(state :Map = INITIAL_STATE, acti
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
+          const { followUpNeighborMap, meetingNotesStaffMap } = value;
           return state
-            .set(FOLLOW_UP_NEIGHBOR_MAP, value)
+            .set(FOLLOW_UP_NEIGHBOR_MAP, followUpNeighborMap)
+            .set(MEETING_NOTES_STAFF_MAP, meetingNotesStaffMap)
             .setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state.setIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),

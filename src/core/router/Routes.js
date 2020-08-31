@@ -19,13 +19,18 @@ const PARTICIPANT_ID :':participantId' = ':participantId';
 const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
-
 const EDIT_RELEASE_INFO :string = `${PARTICIPANT_PROFILE}/releaseinfo/edit`;
 
+const MEETING_ID :':meetingId' = ':meetingId';
+
+const CASE_NOTES_FORM :string = `/${PARTICIPANT_ID}/tasks/${MEETING_ID}/casemanagementnotes`;
+
 export {
+  CASE_NOTES_FORM,
   EDIT_PARTICIPANT,
   EDIT_RELEASE_INFO,
   LOGIN,
+  MEETING_ID,
   NEW_INTAKE,
   NEW_INTAKE_FORM,
   PARTICIPANTS,

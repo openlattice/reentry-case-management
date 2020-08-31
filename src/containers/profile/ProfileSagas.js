@@ -62,6 +62,8 @@ import { isDefined } from '../../utils/LangUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { DST, SRC } from '../../utils/constants/GeneralConstants';
 import { APP } from '../../utils/constants/ReduxStateConstants';
+import { getStaffWhoRecordedNotes } from '../casenotes/CaseNotesActions';
+import { getStaffWhoRecordedNotesWorker } from '../casenotes/CaseNotesSagas';
 import { getIncarcerationFacilities } from '../intake/IntakeActions';
 import { getIncarcerationFacilitiesWorker } from '../intake/IntakeSagas';
 
@@ -82,6 +84,7 @@ const {
   LOCATION,
   MANUAL_JAIL_STAYS,
   MANUAL_JAILS_PRISONS,
+  MEETINGS,
   NEEDS_ASSESSMENT,
   PEOPLE,
   PERSON_DETAILS,
@@ -351,6 +354,12 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       const facility :Map = getNeighborDetails(jailStayNeighbors.getIn([manualJailStaysEKID, 0]));
       personNeighborMap = personNeighborMap.set(MANUAL_JAILS_PRISONS, List([facility]));
     }
+    if (isDefined(get(personNeighborMap, MEETINGS))) {
+      const meetingEKIDs :UUID[] = personNeighborMap.get(MEETINGS)
+        .map((meeting :Map) => getEKID(meeting))
+        .toJS();
+      yield call(getStaffWhoRecordedNotesWorker, getStaffWhoRecordedNotes({ meetingEKIDs }));
+    }
 
     workerResponse.data = personNeighborMap;
     yield put(getParticipantNeighbors.success(id, personNeighborMap));
@@ -501,6 +510,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
     const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
@@ -521,6 +531,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: sexOffenderRegistrationLocationESID },
       { direction: DST, neighborESID: stateIdESID },
       { direction: SRC, neighborESID: emergencyContactESID },
+      { direction: DST, neighborESID: meetingsESID },
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
