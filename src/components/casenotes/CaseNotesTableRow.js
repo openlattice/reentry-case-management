@@ -9,7 +9,7 @@ import { StyledTableRow } from '../tasks/FollowUpsTableStyles';
 const Date = styled.td`
   font-size: 14px;
   margin-right: 10px;
-  padding: 20px 15px 30px 0;
+  padding: 20px 0 20px 30px;
 `;
 
 const Staff = styled.td`
