@@ -39,6 +39,7 @@ import {
 } from './styled/GeneralProfileStyles';
 import { getFormattedParticipantData } from './utils/ProfileUtils';
 
+import CaseNotesProfileCard from '../casenotes/CaseNotesProfileCard';
 import EditButton from '../../components/buttons/EditButton';
 import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -46,7 +47,7 @@ import { getEKID } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
-import { PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import { CASE_NOTES, PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
@@ -59,6 +60,7 @@ const {
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
 } = PROFILE;
+const { STAFF_BY_MEETING_EKID } = CASE_NOTES;
 
 const participantGridLabels = OrderedMap({
   lastName: 'Last name',
@@ -116,6 +118,7 @@ type Props = {
   requestStates :{
     LOAD_PROFILE :RequestState;
   };
+  staffByMeetingEKID :Map;
 };
 
 type State = {
@@ -190,7 +193,8 @@ class ParticipantProfile extends Component<Props, State> {
       participant,
       participantNeighbors,
       providerByStatusEKID,
-      requestStates
+      requestStates,
+      staffByMeetingEKID,
     } = this.props;
     const { deleteModalIsOpen, eventModalIsOpen } = this.state;
 
@@ -248,6 +252,9 @@ class ParticipantProfile extends Component<Props, State> {
               contactNameByProviderEKID={contactNameByProviderEKID}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
+          <CaseNotesProfileCard
+              participantNeighbors={participantNeighbors}
+              staffByMeetingEKID={staffByMeetingEKID} />
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
         </ProfileCardStack>
@@ -274,6 +281,7 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
+  const caseNotes = state.get(CASE_NOTES.CASE_NOTES);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
     [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
@@ -283,6 +291,7 @@ const mapStateToProps = (state :Map) => {
     requestStates: {
       [LOAD_PROFILE]: profile.getIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE]),
     },
+    [STAFF_BY_MEETING_EKID]: caseNotes.get(STAFF_BY_MEETING_EKID),
   };
 };
 

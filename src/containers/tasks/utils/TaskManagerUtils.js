@@ -70,6 +70,7 @@ const formatTasksForTable = (
       [STATUS]: status
     } = getEntityProperties(task, [CATEGORY, DATETIME_COMPLETED, DESCRIPTION, GENERAL_DATETIME, OL_TITLE, STATUS]);
     const person :Map = followUpNeighbors.getIn([taskEKID, MANUAL_SUBJECT_OF], Map());
+    const personEKID :UUID = getEKID(person);
     const personName :string = getPersonFullName(person);
     const taskName :string = getTaskNameForTaskManager(category, title, personName);
     const dueDateString :string = `Due by: ${DateTime.fromISO(dueDateTime).toLocaleString(DateTime.DATE_SHORT)}`;
@@ -92,6 +93,7 @@ const formatTasksForTable = (
       taskStatus,
       dateCompleted,
       taskTitle: title,
+      personEKID,
     };
     tableData.push(taskRow);
   });

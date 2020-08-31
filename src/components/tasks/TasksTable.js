@@ -14,7 +14,7 @@ import {
 } from 'lattice-ui-kit';
 
 import TableHeaderRow from './TableHeaderRow';
-import TableRow from './TableRow';
+import TasksTableRow from './TasksTableRow';
 
 import NoResults from '../noresults/NoResults';
 
@@ -94,7 +94,7 @@ const TasksTable = ({ hasSearched, isLoading, tasksData } :Props) => {
         {
           (filteredData.length > 0 && hasSearched) && (
             <Table
-                components={{ HeadCell, Header: TableHeaderRow, Row: TableRow }}
+                components={{ HeadCell, Header: TableHeaderRow, Row: TasksTableRow }}
                 data={filteredData}
                 headers={tableHeaders} />
           )

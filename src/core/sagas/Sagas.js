@@ -7,6 +7,7 @@ import { AuthSagas } from 'lattice-auth';
 import { SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as CaseNotesSagas from '../../containers/casenotes/CaseNotesSagas';
 import * as ContactInfoSagas from '../../containers/profile/contacts/ContactInfoSagas';
 import * as CourtSagas from '../../containers/profile/court/CourtSagas';
 import * as EDMSagas from '../edm/EDMSagas';
@@ -41,6 +42,12 @@ export default function* sagas() :Generator<*, *, *> {
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
     fork(AppSagas.switchOrganizationWatcher),
+
+    // CaseNotesSagas
+    fork(CaseNotesSagas.getMeetingAndTaskWatcher),
+    fork(CaseNotesSagas.getReentryStaffWatcher),
+    fork(CaseNotesSagas.getStaffWhoRecordedNotesWatcher),
+    fork(CaseNotesSagas.submitCaseNotesAndCompleteTaskWatcher),
 
     // ContactInfoSagas
     fork(ContactInfoSagas.deleteEmergencyContactWatcher),

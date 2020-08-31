@@ -23,6 +23,7 @@ const { PURPLE, RED } = Colors;
 
 const DeleteMessage = styled(CardSegment)`
   max-width: 500px;
+  padding: 30px 0;
 `;
 
 const Warning = styled.div`
@@ -39,6 +40,24 @@ const Breadcrumb = styled(NavLink)`
   text-decoration: none;
 `;
 
+const standByComponent = (
+  <DeleteMessage>
+    <div>Are you sure you want to delete this profile?</div>
+    <Warning>This action cannot be undone and will remove all records related to this person.</Warning>
+  </DeleteMessage>
+);
+
+const successComponent = (
+  <DeleteMessage>
+    <div>Success!</div>
+    <BreadcrumbsWrapper>
+      <Breadcrumbs>
+        <Breadcrumb to={PARTICIPANTS}>Back to participants</Breadcrumb>
+      </Breadcrumbs>
+    </BreadcrumbsWrapper>
+  </DeleteMessage>
+);
+
 type Props = {
   isVisible :boolean;
   onClose :() => void;
@@ -52,28 +71,11 @@ const DeleteProfileModal = ({ isVisible, onClose, personEKID } :Props) => {
     DELETE_PARTICIPANT_AND_NEIGHBORS,
     REQUEST_STATE
   ]));
-  const standByComponent = (
-    <DeleteMessage padding="30px 0">
-      <div>Are you sure you want to delete this profile?</div>
-      <Warning>This action cannot be undone and will remove all records related to this person.</Warning>
-    </DeleteMessage>
-  );
-  const successComponent = (
-    <DeleteMessage padding="30px 0">
-      <div>Success!</div>
-      <BreadcrumbsWrapper>
-        <Breadcrumbs>
-          <Breadcrumb to={PARTICIPANTS}>Back to participants</Breadcrumb>
-        </Breadcrumbs>
-      </BreadcrumbsWrapper>
-    </DeleteMessage>
-  );
   const requestStateComponents = {
     STANDBY: standByComponent,
     SUCCESS: successComponent,
   };
   const withHeader = <ModalHeader onClose={onClose} title="Delete Person Profile" />;
-
   const dispatch = useDispatch();
   const deleteProfile = () => {
     dispatch(deleteParticipantAndNeighbors(personEKID));

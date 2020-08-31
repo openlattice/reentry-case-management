@@ -2,9 +2,9 @@
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
+import { PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../../utils/Utils';
-import { PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { FOLLOW_UPS_STATUSES } from '../FollowUpsConstants';
 
 const {
@@ -22,7 +22,7 @@ const getTaskName = (category :string, title :string, personName :string) :strin
   return category;
 };
 
-const formatTableData = (tasks :List, personName :string) :Object[] => {
+const formatTableData = (tasks :List, personName :string, personEKID :?UUID) :Object[] => {
   const sortedTasks :List = sortEntitiesByDateProperty(tasks || List(), [GENERAL_DATETIME]);
   const tableData = [];
   sortedTasks.forEach((task :Map) => {
@@ -56,6 +56,7 @@ const formatTableData = (tasks :List, personName :string) :Object[] => {
       taskStatus,
       dateCompleted,
       taskTitle: title,
+      personEKID,
     };
     tableData.push(taskRow);
   });

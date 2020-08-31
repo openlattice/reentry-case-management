@@ -15,6 +15,13 @@ const APP :Object = {
   SELECTED_ORG_ID: 'selectedOrgId',
 };
 
+const CASE_NOTES :Object = {
+  CASE_NOTES: 'caseNotes',
+  MEETING: 'meeting',
+  STAFF_BY_MEETING_EKID: 'staffByMeetingEKID',
+  TASK: 'task',
+};
+
 const EDM :Object = {
   ASSOCIATION_TYPES: 'associationTypes',
   EDM: 'edm',
@@ -44,6 +51,7 @@ const PARTICIPANTS :Object = {
 
 const PARTICIPANT_FOLLOW_UPS :Object = {
   FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
+  MEETING_NOTES_STAFF_MAP: 'meetingNotesStaffMap',
   PARTICIPANT_FOLLOW_UPS: 'participantFollowUps',
   REENTRY_STAFF_MEMBERS: 'reentryStaffMembers',
 };
@@ -95,6 +103,7 @@ const TASK_MANAGER :Object = {
 
 export {
   APP,
+  CASE_NOTES,
   EDM,
   EVENT,
   INTAKE,

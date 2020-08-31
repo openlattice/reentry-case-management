@@ -60,6 +60,7 @@ const APP_TYPE_FQNS :Object = {
   PROVIDER_CONTACT_INFO: new FullyQualifiedName('app.providercontactinformation'),
   PROVIDER_EMPLOYEES: new FullyQualifiedName('app.serviceprovideremployees'), // ol.employee
   PROVIDER_STAFF: new FullyQualifiedName('app.serviceproviderstaff'), // general.person
+  RECORDED_BY: new FullyQualifiedName('app.recordedby'),
   REENTRY_EMPLOYEES: new FullyQualifiedName('app.staff_employee'), // ol.employee
   REENTRY_STAFF: new FullyQualifiedName('app.staff'), // general.person
   REFERRAL_REQUEST: new FullyQualifiedName('app.referralrequest'),
@@ -89,6 +90,7 @@ const PROPERTY_TYPE_FQNS = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
+  FUTURE_PLANS: new FullyQualifiedName('ol.futureplans'),
   GENDER: new FullyQualifiedName('person.gender'),
   GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
   GENERAL_NOTES: new FullyQualifiedName('general.notes'),
@@ -124,6 +126,7 @@ const PROPERTY_TYPE_FQNS = {
   TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
   US_STATE: new FullyQualifiedName('location.state'),
+  VISIT_REASON: new FullyQualifiedName('visit.reason'),
   ZIP: new FullyQualifiedName('location.zip'),
 };
 
