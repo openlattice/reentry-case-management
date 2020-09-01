@@ -47,7 +47,12 @@ import { getEKID } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
-import { CASE_NOTES, INTAKE, PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import {
+  CASE_NOTES,
+  INTAKE,
+  PROFILE,
+  SHARED
+} from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
@@ -171,19 +176,13 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   goToEditPersonPage = () => {
-    const {
-      actions,
-      match,
-    } = this.props;
+    const { actions, match } = this.props;
     const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
     if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(Routes.PARTICIPANT_ID, participantId));
   };
 
   goToTaskManager = () => {
-    const {
-      actions,
-      match,
-    } = this.props;
+    const { actions, match } = this.props;
     const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
     if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(Routes.PARTICIPANT_ID, participantId));
   }
@@ -193,6 +192,7 @@ class ParticipantProfile extends Component<Props, State> {
       contactNameByProviderEKID,
       emergencyContactInfoByContact,
       incarcerationFacilities,
+      match,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -253,7 +253,7 @@ class ParticipantProfile extends Component<Props, State> {
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
-              incarcerationFacilities={incarcerationFacilities}
+              match={match}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
           <CaseNotesProfileCard
