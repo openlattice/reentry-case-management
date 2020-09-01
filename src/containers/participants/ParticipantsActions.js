@@ -10,8 +10,8 @@ const clearSearchResults = () => ({
 const GET_JAIL_NAMES_FOR_JAIL_STAYS :'GET_JAIL_NAMES_FOR_JAIL_STAYS' = 'GET_JAIL_NAMES_FOR_JAIL_STAYS';
 const getJailNamesForJailStays :RequestSequence = newRequestSequence(GET_JAIL_NAMES_FOR_JAIL_STAYS);
 
-const GET_PARTICIPANT_NEIGHBORS :'GET_PARTICIPANT_NEIGHBORS' = 'GET_PARTICIPANT_NEIGHBORS';
-const getParticipantNeighbors :RequestSequence = newRequestSequence(GET_PARTICIPANT_NEIGHBORS);
+const GET_PARTICIPANTS_NEIGHBORS :'GET_PARTICIPANTS_NEIGHBORS' = 'GET_PARTICIPANTS_NEIGHBORS';
+const getParticipantsNeighbors :RequestSequence = newRequestSequence(GET_PARTICIPANTS_NEIGHBORS);
 
 const SEARCH_PARTICIPANTS :'SEARCH_PARTICIPANTS' = 'SEARCH_PARTICIPANTS';
 const searchParticipants :RequestSequence = newRequestSequence(SEARCH_PARTICIPANTS);
@@ -19,10 +19,10 @@ const searchParticipants :RequestSequence = newRequestSequence(SEARCH_PARTICIPAN
 export {
   CLEAR_SEARCH_RESULTS,
   GET_JAIL_NAMES_FOR_JAIL_STAYS,
-  GET_PARTICIPANT_NEIGHBORS,
+  GET_PARTICIPANTS_NEIGHBORS,
   SEARCH_PARTICIPANTS,
   clearSearchResults,
   getJailNamesForJailStays,
-  getParticipantNeighbors,
+  getParticipantsNeighbors,
   searchParticipants,
 };

@@ -6,12 +6,13 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   CLEAR_SEARCH_RESULTS,
   GET_JAIL_NAMES_FOR_JAIL_STAYS,
-  GET_PARTICIPANT_NEIGHBORS,
+  GET_PARTICIPANTS_NEIGHBORS,
   SEARCH_PARTICIPANTS,
   getJailNamesForJailStays,
-  getParticipantNeighbors,
+  getParticipantsNeighbors,
   searchParticipants,
 } from './ParticipantsActions';
+
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE, TOTAL_HITS } = SHARED;
@@ -22,7 +23,7 @@ const INITIAL_STATE :Map = fromJS({
     [GET_JAIL_NAMES_FOR_JAIL_STAYS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_PARTICIPANT_NEIGHBORS]: {
+    [GET_PARTICIPANTS_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SEARCH_PARTICIPANTS]: {
@@ -61,21 +62,21 @@ export default function participantsReducer(state :Map = INITIAL_STATE, action :
       });
     }
 
-    case getParticipantNeighbors.case(action.type): {
+    case getParticipantsNeighbors.case(action.type): {
 
-      return getParticipantNeighbors.reducer(state, action, {
+      return getParticipantsNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, action.id], action)
-          .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, GET_PARTICIPANTS_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, GET_PARTICIPANTS_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
           const { value } = seqAction;
           return state
             .set(NEIGHBORS, value)
-            .setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
+            .setIn([ACTIONS, GET_PARTICIPANTS_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => state.setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, action.id]),
+        FAILURE: () => state.setIn([ACTIONS, GET_PARTICIPANTS_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANTS_NEIGHBORS, action.id]),
       });
     }
 
