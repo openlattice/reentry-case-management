@@ -54,9 +54,13 @@ import {
 } from './person/EditPersonActions';
 import {
   EDIT_EVENT,
+  EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
+  SUBMIT_RELEASE_DATE,
   editEvent,
+  editReleaseDate,
   editReleaseInfo,
+  submitReleaseDate,
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
@@ -139,6 +143,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_RELEASE_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_RELEASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -170,6 +177,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_PERSON_DETAILS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_RELEASE_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_STATE_ID]: {
@@ -484,6 +494,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editReleaseDate.case(action.type): {
+      return editReleaseDate.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedJailStay :Map = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+          if (editedJailStay) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [MANUAL_JAIL_STAYS, 0],
+              Map(),
+              (oldJailStay) => oldJailStay.merge(editedJailStay)
+            );
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_DATE, action.id]),
+      });
+    }
+
     case editReleaseInfo.case(action.type): {
       return editReleaseInfo.reducer(state, action, {
         REQUEST: () => state
@@ -760,6 +796,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
+    case submitReleaseDate.case(action.type): {
+      return submitReleaseDate.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id], action)
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newJailStay :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(MANUAL_JAIL_STAYS, List([newJailStay]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id]),
       });
     }
 

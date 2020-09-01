@@ -90,7 +90,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getJailNamesForJailStaysWatcher),
-    fork(ParticipantsSagas.getParticipantNeighborsWatcher),
+    fork(ParticipantsSagas.getParticipantsNeighborsWatcher),
     fork(ParticipantsSagas.searchParticipantsWatcher),
 
     // ProfileSagas
@@ -103,7 +103,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ProgramHistorySagas
     fork(ProgramHistorySagas.editEventWatcher),
+    fork(ProgramHistorySagas.editReleaseDateWatcher),
     fork(ProgramHistorySagas.editReleaseInfoWatcher),
+    fork(ProgramHistorySagas.submitReleaseDateWatcher),
 
     // ProvidersSagas
     fork(ProvidersSagas.addNewProviderContactsWatcher),

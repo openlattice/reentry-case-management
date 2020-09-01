@@ -7,10 +7,6 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
-  SearchApiActions,
-  SearchApiSagas,
-} from 'lattice-sagas';
-import {
   List,
   Map,
   Set,
@@ -18,34 +14,45 @@ import {
   get,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import {
+  SearchApiActions,
+  SearchApiSagas,
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import { isValidUUID } from '../../../utils/ValidationUtils';
 import {
-  ASSOCIATION_DETAILS,
-  getEKID,
-  getESIDFromApp,
-  getPropertyFqnFromEDM
-} from '../../../utils/DataUtils';
+  EDIT_EVENT,
+  EDIT_RELEASE_DATE,
+  EDIT_RELEASE_INFO,
+  SUBMIT_RELEASE_DATE,
+  editEvent,
+  editReleaseDate,
+  editReleaseInfo,
+  submitReleaseDate,
+} from './ProgramHistoryActions';
+
+import Logger from '../../../utils/Logger';
 import { createOrReplaceAssociation, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
 import {
   createOrReplaceAssociationWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker,
 } from '../../../core/data/DataSagas';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  ASSOCIATION_DETAILS,
+  getEKID,
+  getESIDFromApp,
+  getPTIDFromEDM,
+  getPropertyFqnFromEDM,
+} from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
+import { isValidUUID } from '../../../utils/ValidationUtils';
+import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
 import { getEnrollmentStatusNeighbors } from '../ProfileActions';
 import { getEnrollmentStatusNeighborsWorker } from '../ProfileSagas';
-import {
-  EDIT_EVENT,
-  EDIT_RELEASE_INFO,
-  editEvent,
-  editReleaseInfo,
-} from './ProgramHistoryActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -60,7 +67,7 @@ const {
   PROVIDER,
   REFERRAL_REQUEST,
 } = APP_TYPE_FQNS;
-const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ENTITY_KEY_ID, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PARTICIPANT_NEIGHBORS } = PROFILE;
@@ -70,6 +77,70 @@ const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getProfileFromState = (state) => state.get(PROFILE.PROFILE, Map());
 
 const LOG = new Logger('ProgramHistorySagas');
+
+/*
+ *
+ * ProgramHistoryActions.editReleaseDate()
+ *
+ */
+
+function* editReleaseDateWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editReleaseDate.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const jailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const projectedReleaseDatetimePTID :UUID = getPTIDFromEDM(edm, PROJECTED_RELEASE_DATETIME);
+
+    const jailStayEKID = Object.keys(entityData[jailStaysESID])[0];
+    const releaseDate = entityData[jailStaysESID][jailStayEKID][projectedReleaseDatetimePTID][0];
+    if (releaseDate) {
+      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+      const releaseDateTime = DateTime.fromSQL(`${releaseDate} ${currentTime}`).toISO();
+      entityData[jailStaysESID][jailStayEKID][projectedReleaseDatetimePTID][0] = releaseDateTime;
+    }
+    let editedJailStay :Map = Map();
+
+    if (Object.values(entityData).length) {
+      const response :Object = yield call(
+        submitPartialReplaceWorker,
+        submitPartialReplace({ entityData })
+      );
+      if (response.error) throw response.error;
+
+      if (entityData[jailStaysESID]) {
+        const data = Object.values(entityData[jailStaysESID])[0];
+        editedJailStay = Map().withMutations((map :Map) => {
+          fromJS(data).forEach((propertyValue :any, ptid :string) => {
+            const fqn = getPropertyFqnFromEDM(edm, ptid);
+            map.set(fqn, propertyValue);
+          });
+          map.set(ENTITY_KEY_ID, Set([jailStayEKID]));
+        });
+      }
+    }
+
+    yield put(editReleaseDate.success(id, editedJailStay));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editReleaseDate.failure(id, error));
+  }
+  finally {
+    yield put(editReleaseDate.finally(id));
+  }
+}
+
+function* editReleaseDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_RELEASE_DATE, editReleaseDateWorker);
+}
 
 /*
  *
@@ -341,9 +412,61 @@ function* editEventWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_EVENT, editEventWorker);
 }
 
+/*
+ *
+ * ProgramHistoryActions.submitReleaseDate()
+ *
+ */
+
+function* submitReleaseDateWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitReleaseDate.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const jailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newJailStayEKID :UUID = entityKeyIds[jailStaysESID][0];
+    const newJailStay :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, Set([newJailStayEKID]));
+      fromJS(entityData[jailStaysESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitReleaseDate.success(id, newJailStay));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitReleaseDate.failure(id, error));
+  }
+  finally {
+    yield put(submitReleaseDate.finally(id));
+  }
+}
+
+function* submitReleaseDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_RELEASE_DATE, submitReleaseDateWorker);
+}
+
 export {
   editEventWatcher,
   editEventWorker,
+  editReleaseDateWatcher,
+  editReleaseDateWorker,
   editReleaseInfoWatcher,
   editReleaseInfoWorker,
+  submitReleaseDateWatcher,
+  submitReleaseDateWorker,
 };
