@@ -8,13 +8,15 @@ import {
   CardSegment,
   Colors,
 } from 'lattice-ui-kit';
+import { RoutingUtils, useGoToRoute } from 'lattice-utils';
+import type { Match } from 'react-router';
 
 import EditEventModal from './EditEventModal';
-import EditReleaseInfoModal from './EditReleaseInfoModal';
 import Event from './Event';
 import { schema, uiSchema } from './schemas/EditEnrollmentDateSchemas';
 
 import EditButton from '../../../components/buttons/EditButton';
+import * as Routes from '../../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
@@ -29,6 +31,7 @@ import {
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { getMostRecentReleaseDate, getReentryEnrollmentDate } from '../utils/ProfileUtils';
 
+const { getParamFromMatch } = RoutingUtils;
 const { NEUTRAL } = Colors;
 const {
   ENROLLMENT_STATUS,
@@ -60,19 +63,23 @@ const GrayBar = styled(CardSegment)`
 
 type Props = {
   contactNameByProviderEKID :Map;
-  incarcerationFacilities :List;
+  match :Match;
   participantNeighbors :Map;
   providerByStatusEKID :Map;
 };
 
 const ProgramHistory = ({
   contactNameByProviderEKID,
-  incarcerationFacilities,
+  match,
   participantNeighbors,
   providerByStatusEKID,
 } :Props) => {
 
-  const [editModalVisible, setEditModalVisibility] = useState(false);
+  const personEKID = getParamFromMatch(match, Routes.PARTICIPANT_ID) || '';
+  const goToEditReleaseInfoForm = useGoToRoute(
+    Routes.EDIT_RELEASE_INFO.replace(':participantId', personEKID)
+  );
+
   const [editEventModalVisible, setEditEventModalVisibility] = useState(false);
 
   const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
@@ -92,7 +99,7 @@ const ProgramHistory = ({
     <EventsCard>
       <CardHeaderWithButtons padding="30px" vertical={false}>
         <SmallCardHeaderTitle>Program History</SmallCardHeaderTitle>
-        <EditButton onClick={() => setEditModalVisibility(true)}>Edit</EditButton>
+        <EditButton onClick={goToEditReleaseInfoForm}>Edit</EditButton>
       </CardHeaderWithButtons>
       <GrayBar padding="15px 30px" vertical={false}>
         <div>{ referralSource }</div>
@@ -117,11 +124,6 @@ const ProgramHistory = ({
         </CardInnerWrapper>
         <div><EditButton onClick={() => setEditEventModalVisibility(true)} /></div>
       </CardSegment>
-      <EditReleaseInfoModal
-          incarcerationFacilities={incarcerationFacilities}
-          isVisible={editModalVisible}
-          onClose={() => setEditModalVisibility(false)}
-          participantNeighbors={participantNeighbors} />
       <EditEventModal
           isVisible={editEventModalVisible}
           needsAssessment={needsAssessment}
