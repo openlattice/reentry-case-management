@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { faUser } from '@fortawesome/pro-duotone-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { List, Map, OrderedMap } from 'immutable';
+import { Map, OrderedMap } from 'immutable';
 import {
   Breadcrumbs,
   Button,
@@ -117,7 +117,6 @@ type Props = {
   };
   contactNameByProviderEKID :Map;
   emergencyContactInfoByContact :Map;
-  incarcerationFacilities :List;
   match :Match;
   participant :Map;
   participantNeighbors :Map;
@@ -191,7 +190,6 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       contactNameByProviderEKID,
       emergencyContactInfoByContact,
-      incarcerationFacilities,
       match,
       participant,
       participantNeighbors,
