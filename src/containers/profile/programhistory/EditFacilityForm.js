@@ -117,7 +117,7 @@ const EditFacilityForm = () => {
   if (requestIsPending(editRequestState)) {
     return (
       <Card>
-        <CardSegment vertical>
+        <CardSegment>
           <Spinner size="2x" />
         </CardSegment>
       </Card>

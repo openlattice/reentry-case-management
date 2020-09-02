@@ -151,7 +151,7 @@ const EditReleaseDateForm = () => {
   if (requestIsPending(reducedReqState)) {
     return (
       <Card>
-        <CardSegment vertical>
+        <CardSegment>
           <Spinner size="2x" />
         </CardSegment>
       </Card>

@@ -34,9 +34,9 @@ const { getEntityKeyId } = DataUtils;
 const { isDefined } = LangUtils;
 const { reduceRequestStates } = ReduxUtils;
 const {
-  processAssociationEntityData,
   getEntityAddressKey,
   getPageSectionKey,
+  processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
 const { MANUAL_SUBJECT_OF, PEOPLE, REFERRAL_REQUEST } = APP_TYPE_FQNS;
@@ -129,7 +129,7 @@ const EditReferredFromForm = () => {
   if (requestIsPending(reducedReqState)) {
     return (
       <Card>
-        <CardSegment vertical>
+        <CardSegment>
           <Spinner size="2x" />
         </CardSegment>
       </Card>
