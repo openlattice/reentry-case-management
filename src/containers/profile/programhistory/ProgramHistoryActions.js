@@ -8,9 +8,6 @@ const editEvent :RequestSequence = newRequestSequence(EDIT_EVENT);
 const EDIT_FACILITY_RELEASED_FROM :'EDIT_FACILITY_RELEASED_FROM' = 'EDIT_FACILITY_RELEASED_FROM';
 const editFacilityReleasedFrom :RequestSequence = newRequestSequence(EDIT_FACILITY_RELEASED_FROM);
 
-const EDIT_RELEASE_INFO :'EDIT_RELEASE_INFO' = 'EDIT_RELEASE_INFO';
-const editReleaseInfo :RequestSequence = newRequestSequence(EDIT_RELEASE_INFO);
-
 const EDIT_REFERRAL_SOURCE :'EDIT_REFERRAL_SOURCE' = 'EDIT_REFERRAL_SOURCE';
 const editReferralSource :RequestSequence = newRequestSequence(EDIT_REFERRAL_SOURCE);
 
@@ -28,14 +25,12 @@ export {
   EDIT_FACILITY_RELEASED_FROM,
   EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
-  EDIT_RELEASE_INFO,
   SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
   editFacilityReleasedFrom,
   editReferralSource,
   editReleaseDate,
-  editReleaseInfo,
   submitReferralSource,
   submitReleaseDate,
 };
