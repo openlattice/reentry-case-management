@@ -1,10 +1,5 @@
 // @flow
-import {
-  List,
-  getIn,
-  removeIn,
-  setIn,
-} from 'immutable';
+import { List, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -42,20 +37,19 @@ const hydrateSchema = (schema :Object, facilities :List) :Object => {
   return newSchema;
 };
 
-const getDataForAssociationUpdate = (formData :Object, facilityEKID :UUID) => {
-  const facilityEKIDPath :string[] = [
-    getPageSectionKey(1, 1),
-    getEntityAddressKey(0, MANUAL_JAILS_PRISONS, ENTITY_KEY_ID)
-  ];
-  const facilityEKIDInForm = getIn(formData, facilityEKIDPath);
-  const editedFormData = removeIn(formData, facilityEKIDPath);
-  if (facilityEKID === facilityEKIDInForm) {
-    return { editedFormData, newFacilityEKID: '' };
-  }
-  return { editedFormData, newFacilityEKID: facilityEKIDInForm };
+const hydrateUiSchema = (uiSchema :Object) => {
+  const newUiSchema = setIn(
+    uiSchema,
+    [
+      getPageSectionKey(1, 1),
+      'ui:options',
+    ],
+    false
+  );
+  return newUiSchema;
 };
 
 export {
-  getDataForAssociationUpdate,
   hydrateSchema,
+  hydrateUiSchema,
 };
