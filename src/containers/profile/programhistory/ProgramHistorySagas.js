@@ -23,12 +23,16 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   EDIT_EVENT,
+  EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
+  SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
+  editReferralSource,
   editReleaseDate,
   editReleaseInfo,
+  submitReferralSource,
   submitReleaseDate,
 } from './ProgramHistoryActions';
 
@@ -77,6 +81,60 @@ const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getProfileFromState = (state) => state.get(PROFILE.PROFILE, Map());
 
 const LOG = new Logger('ProgramHistorySagas');
+
+/*
+ *
+ * ProgramHistoryActions.editReferralSource()
+ *
+ */
+
+function* editReferralSourceWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editReferralSource.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const referralRequestESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+
+    let editedReferralRequest :Map = Map();
+
+    if (Object.values(entityData).length) {
+      const response :Object = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+      if (response.error) throw response.error;
+
+      if (entityData[referralRequestESID]) {
+        const data = Object.values(entityData[referralRequestESID])[0];
+        const referralRequestEKID = Object.keys(entityData[referralRequestESID])[0];
+        editedReferralRequest = Map().withMutations((map :Map) => {
+          fromJS(data).forEach((propertyValue :any, ptid :string) => {
+            const fqn = getPropertyFqnFromEDM(edm, ptid);
+            map.set(fqn, propertyValue);
+          });
+          map.set(ENTITY_KEY_ID, Set([referralRequestEKID]));
+        });
+      }
+    }
+
+    yield put(editReferralSource.success(id, editedReferralRequest));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editReferralSource.failure(id, error));
+  }
+  finally {
+    yield put(editReferralSource.finally(id));
+  }
+}
+
+function* editReferralSourceWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_REFERRAL_SOURCE, editReferralSourceWorker);
+}
 
 /*
  *
@@ -460,13 +518,64 @@ function* submitReleaseDateWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_RELEASE_DATE, submitReleaseDateWorker);
 }
 
+/*
+ *
+ * ProgramHistoryActions.submitReferralSource()
+ *
+ */
+
+function* submitReferralSourceWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitReferralSource.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const referralRequestESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newReferralRequestEKID :UUID = entityKeyIds[referralRequestESID][0];
+    const newReferralRequest :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, Set([newReferralRequestEKID]));
+      fromJS(entityData[referralRequestESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitReferralSource.success(id, newReferralRequest));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitReferralSource.failure(id, error));
+  }
+  finally {
+    yield put(submitReferralSource.finally(id));
+  }
+}
+
+function* submitReferralSourceWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_REFERRAL_SOURCE, submitReferralSourceWorker);
+}
 export {
   editEventWatcher,
   editEventWorker,
+  editReferralSourceWatcher,
+  editReferralSourceWorker,
   editReleaseDateWatcher,
   editReleaseDateWorker,
   editReleaseInfoWatcher,
   editReleaseInfoWorker,
+  submitReferralSourceWatcher,
+  submitReferralSourceWorker,
   submitReleaseDateWatcher,
   submitReleaseDateWorker,
 };

@@ -54,12 +54,16 @@ import {
 } from './person/EditPersonActions';
 import {
   EDIT_EVENT,
+  EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
+  SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
+  editReferralSource,
   editReleaseDate,
   editReleaseInfo,
+  submitReferralSource,
   submitReleaseDate,
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
@@ -143,6 +147,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_REFERRAL_SOURCE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_RELEASE_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -177,6 +184,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_PERSON_DETAILS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_REFERRAL_SOURCE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_RELEASE_DATE]: {
@@ -494,6 +504,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editReferralSource.case(action.type): {
+      return editReferralSource.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, action.id], action)
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedReferralRequest :Map = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+          if (editedReferralRequest) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [REFERRAL_REQUEST, 0],
+              Map(),
+              (oldReferralRequest) => oldReferralRequest.merge(editedReferralRequest)
+            );
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_REFERRAL_SOURCE, action.id]),
+      });
+    }
+
     case editReleaseDate.case(action.type): {
       return editReleaseDate.reducer(state, action, {
         REQUEST: () => state
@@ -796,6 +832,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
+    case submitReferralSource.case(action.type): {
+      return submitReferralSource.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, action.id], action)
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newReferralRequest :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(REFERRAL_REQUEST, List([newReferralRequest]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, action.id]),
       });
     }
 
