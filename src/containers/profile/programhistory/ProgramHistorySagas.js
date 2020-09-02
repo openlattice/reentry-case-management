@@ -23,12 +23,14 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   EDIT_EVENT,
+  EDIT_FACILITY_RELEASED_FROM,
   EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
   SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
+  editFacilityReleasedFrom,
   editReferralSource,
   editReleaseDate,
   editReleaseInfo,
@@ -54,7 +56,12 @@ import {
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { isValidUUID } from '../../../utils/ValidationUtils';
-import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
+import {
+  APP,
+  EDM,
+  INTAKE,
+  PROFILE,
+} from '../../../utils/constants/ReduxStateConstants';
 import { getEnrollmentStatusNeighbors } from '../ProfileActions';
 import { getEnrollmentStatusNeighborsWorker } from '../ProfileSagas';
 
@@ -64,7 +71,9 @@ const { processAssociationEntityData } = DataProcessingUtils;
 const {
   ASSIGNED_TO,
   ENROLLMENT_STATUS,
+  MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
+  MANUAL_LOCATED_AT,
   MANUAL_SUBJECT_OF,
   NEEDS_ASSESSMENT,
   PEOPLE,
@@ -75,12 +84,83 @@ const { ENTITY_KEY_ID, PROJECTED_RELEASE_DATETIME } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PARTICIPANT_NEIGHBORS } = PROFILE;
+const { INCARCERATION_FACILITIES } = INTAKE;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 const getProfileFromState = (state) => state.get(PROFILE.PROFILE, Map());
 
 const LOG = new Logger('ProgramHistorySagas');
+
+/*
+ *
+ * ProgramHistoryActions.editFacilityReleasedFrom()
+ *
+ */
+
+function* editFacilityReleasedFromWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editFacilityReleasedFrom.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { associations, jailStayEKID, newFacilityEKID } = value;
+
+    const associationsToDelete = [];
+
+    const app = yield select(getAppFromState);
+    const jailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const facilityESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
+    const locatedAtESID :UUID = getESIDFromApp(app, MANUAL_LOCATED_AT);
+
+    const filter = {
+      entityKeyIds: [jailStayEKID],
+      sourceEntitySetIds: [],
+      destinationEntitySetIds: [facilityESID],
+    };
+    let response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: jailStaysESID, filter })
+    );
+    if (response.error) throw response.error;
+    console.log('response ', response);
+    const enrollmentStatusNeighbors :Map = fromJS(response.data);
+    const originalAssociationEKID :UUID = enrollmentStatusNeighbors.getIn([
+      jailStayEKID,
+      0,
+      ASSOCIATION_DETAILS,
+      ENTITY_KEY_ID,
+      0
+    ]);
+    if (originalAssociationEKID) {
+      associationsToDelete.push({ entitySetId: locatedAtESID, entityKeyIds: [originalAssociationEKID] });
+    }
+
+    response = yield call(
+      createOrReplaceAssociationWorker,
+      createOrReplaceAssociation({ associations, associationsToDelete })
+    );
+    if (response.error) throw response.error;
+
+    const facilities = yield select((state) => state.getIn([INTAKE.INTAKE, INCARCERATION_FACILITIES], List()));
+    const newFacility = facilities.find((facility) => getEKID(facility) === newFacilityEKID);
+
+    yield put(editFacilityReleasedFrom.success(id, newFacility));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editFacilityReleasedFrom.failure(id, error));
+  }
+  finally {
+    yield put(editFacilityReleasedFrom.finally(id));
+  }
+}
+
+function* editFacilityReleasedFromWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_FACILITY_RELEASED_FROM, editFacilityReleasedFromWorker);
+}
 
 /*
  *
@@ -568,6 +648,8 @@ function* submitReferralSourceWatcher() :Generator<*, *, *> {
 export {
   editEventWatcher,
   editEventWorker,
+  editFacilityReleasedFromWatcher,
+  editFacilityReleasedFromWorker,
   editReferralSourceWatcher,
   editReferralSourceWorker,
   editReleaseDateWatcher,

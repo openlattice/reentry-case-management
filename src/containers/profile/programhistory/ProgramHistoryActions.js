@@ -5,6 +5,9 @@ import type { RequestSequence } from 'redux-reqseq';
 const EDIT_EVENT :'EDIT_EVENT' = 'EDIT_EVENT';
 const editEvent :RequestSequence = newRequestSequence(EDIT_EVENT);
 
+const EDIT_FACILITY_RELEASED_FROM :'EDIT_FACILITY_RELEASED_FROM' = 'EDIT_FACILITY_RELEASED_FROM';
+const editFacilityReleasedFrom :RequestSequence = newRequestSequence(EDIT_FACILITY_RELEASED_FROM);
+
 const EDIT_RELEASE_INFO :'EDIT_RELEASE_INFO' = 'EDIT_RELEASE_INFO';
 const editReleaseInfo :RequestSequence = newRequestSequence(EDIT_RELEASE_INFO);
 
@@ -22,12 +25,14 @@ const submitReleaseDate :RequestSequence = newRequestSequence(SUBMIT_RELEASE_DAT
 
 export {
   EDIT_EVENT,
+  EDIT_FACILITY_RELEASED_FROM,
   EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
   SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
+  editFacilityReleasedFrom,
   editReferralSource,
   editReleaseDate,
   editReleaseInfo,

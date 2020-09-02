@@ -54,12 +54,14 @@ import {
 } from './person/EditPersonActions';
 import {
   EDIT_EVENT,
+  EDIT_FACILITY_RELEASED_FROM,
   EDIT_REFERRAL_SOURCE,
   EDIT_RELEASE_DATE,
   EDIT_RELEASE_INFO,
   SUBMIT_REFERRAL_SOURCE,
   SUBMIT_RELEASE_DATE,
   editEvent,
+  editFacilityReleasedFrom,
   editReferralSource,
   editReleaseDate,
   editReleaseInfo,
@@ -106,6 +108,7 @@ const {
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
+  MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
@@ -133,6 +136,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_EMERGENCY_CONTACTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_FACILITY_RELEASED_FROM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_NEEDS]: {
@@ -441,6 +447,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_EVENT, action.id]),
+      });
+    }
+
+    case editFacilityReleasedFrom.case(action.type): {
+      return editFacilityReleasedFrom.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, action.id], action)
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newFacility :Map = seqAction.value;
+          const participantNeighbors = state.get(PARTICIPANT_NEIGHBORS)
+            .setIn([MANUAL_JAILS_PRISONS, 0], newFacility);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, action.id]),
       });
     }
 

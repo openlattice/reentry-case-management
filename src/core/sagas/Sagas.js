@@ -103,6 +103,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ProgramHistorySagas
     fork(ProgramHistorySagas.editEventWatcher),
+    fork(ProgramHistorySagas.editFacilityReleasedFromWatcher),
     fork(ProgramHistorySagas.editReferralSourceWatcher),
     fork(ProgramHistorySagas.editReleaseDateWatcher),
     fork(ProgramHistorySagas.editReleaseInfoWatcher),
