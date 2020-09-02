@@ -124,7 +124,6 @@ function* editFacilityReleasedFromWorker(action :SequenceAction) :Generator<*, *
       searchEntityNeighborsWithFilter({ entitySetId: jailStaysESID, filter })
     );
     if (response.error) throw response.error;
-    console.log('response ', response);
     const enrollmentStatusNeighbors :Map = fromJS(response.data);
     const originalAssociationEKID :UUID = enrollmentStatusNeighbors.getIn([
       jailStayEKID,
@@ -195,7 +194,7 @@ function* editReferralSourceWorker(action :SequenceAction) :Generator<*, *, *> {
             const fqn = getPropertyFqnFromEDM(edm, ptid);
             map.set(fqn, propertyValue);
           });
-          map.set(ENTITY_KEY_ID, Set([referralRequestEKID]));
+          map.set(ENTITY_KEY_ID, List([referralRequestEKID]));
         });
       }
     }
@@ -259,7 +258,7 @@ function* editReleaseDateWorker(action :SequenceAction) :Generator<*, *, *> {
             const fqn = getPropertyFqnFromEDM(edm, ptid);
             map.set(fqn, propertyValue);
           });
-          map.set(ENTITY_KEY_ID, Set([jailStayEKID]));
+          map.set(ENTITY_KEY_ID, List([jailStayEKID]));
         });
       }
     }
@@ -575,7 +574,7 @@ function* submitReleaseDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const newJailStayEKID :UUID = entityKeyIds[jailStaysESID][0];
     const newJailStay :Map = Map().withMutations((map :Map) => {
-      map.set(ENTITY_KEY_ID, Set([newJailStayEKID]));
+      map.set(ENTITY_KEY_ID, List([newJailStayEKID]));
       fromJS(entityData[jailStaysESID][0]).forEach((propertyValue :any, ptid :string) => {
         const fqn = getPropertyFqnFromEDM(edm, ptid);
         map.set(fqn, propertyValue);
@@ -623,7 +622,7 @@ function* submitReferralSourceWorker(action :SequenceAction) :Generator<*, *, *>
 
     const newReferralRequestEKID :UUID = entityKeyIds[referralRequestESID][0];
     const newReferralRequest :Map = Map().withMutations((map :Map) => {
-      map.set(ENTITY_KEY_ID, Set([newReferralRequestEKID]));
+      map.set(ENTITY_KEY_ID, List([newReferralRequestEKID]));
       fromJS(entityData[referralRequestESID][0]).forEach((propertyValue :any, ptid :string) => {
         const fqn = getPropertyFqnFromEDM(edm, ptid);
         map.set(fqn, propertyValue);
