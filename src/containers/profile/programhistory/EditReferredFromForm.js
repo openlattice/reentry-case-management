@@ -94,8 +94,8 @@ const EditReferredFromForm = () => {
   ], Map()));
   const personEKID = getEntityKeyId(participant);
 
-  const onSubmit = () => {
-    const entityData = processEntityData(formData, entitySetIds, propertyTypeIds);
+  const onSubmit = ({ formData: submittedFormData }) => {
+    const entityData = processEntityData(submittedFormData, entitySetIds, propertyTypeIds);
     const associations = [[MANUAL_SUBJECT_OF, personEKID, PEOPLE, 0, REFERRAL_REQUEST, {}]];
     const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     if (Object.values(entityData).length) {
@@ -138,12 +138,12 @@ const EditReferredFromForm = () => {
 
   return (
     <Card>
-      <CardSegment>
+      <CardSegment padding={isDefined(referralSource) ? '30px' : '0'}>
         <Form
             disabled={isDefined(referralSource)}
             formContext={formContext}
             formData={formData}
-            noPadding
+            noPadding={isDefined(referralSource)}
             onChange={onChange}
             onSubmit={onSubmit}
             schema={referredFromSchema}

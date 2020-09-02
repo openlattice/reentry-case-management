@@ -18,7 +18,7 @@ import {
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
-import { hydrateSchema } from '../utils/EditReleaseInfoUtils';
+import { hydrateSchema, hydrateUiSchema } from '../utils/EditReleaseInfoUtils';
 import { getReleaseDateAndEKIDForForm } from '../utils/ProfileUtils';
 
 const { getEntityKeyId } = DataUtils;
@@ -91,12 +91,15 @@ const EditFacilityForm = () => {
     }
   };
 
+  const jailStayIsDefined = isDefined(participantNeighbors.get(MANUAL_JAIL_STAYS));
   const incarcerationFacilities :List = useSelector((store :Map) => store.getIn([
     INTAKE.INTAKE,
     INCARCERATION_FACILITIES,
   ], List()));
-
   const facilitySchemaWithFacilities = hydrateSchema(facilitySchema, incarcerationFacilities);
+  const uiSchema = (isDefined(facilityEKID) || jailStayIsDefined)
+    ? facilityUiSchema
+    : hydrateUiSchema(facilityUiSchema);
 
   const formContext = {
     editAction: onSubmit,
@@ -125,14 +128,14 @@ const EditFacilityForm = () => {
     <Card>
       <CardSegment padding={isDefined(facilityEKID) ? '30px' : '0'}>
         <Form
-            disabled={isDefined(facilityEKID) || !isDefined(jailStayEKID)}
+            disabled={isDefined(facilityEKID) || !jailStayIsDefined}
             formContext={formContext}
             formData={formData}
             noPadding={isDefined(facilityEKID)}
             onChange={onChange}
             onSubmit={onSubmit}
             schema={facilitySchemaWithFacilities}
-            uiSchema={facilityUiSchema} />
+            uiSchema={uiSchema} />
       </CardSegment>
     </Card>
   );

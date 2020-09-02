@@ -102,14 +102,14 @@ const EditReleaseDateForm = () => {
   ], Map()));
   const personEKID = getEntityKeyId(participant);
 
-  const onSubmit = () => {
-    let updatedFormData = formData;
+  const onSubmit = ({ formData: submittedFormData }) => {
+    let updatedFormData = submittedFormData;
     const projectedReleaseDatetimePath = [
       getPageSectionKey(1, 1),
       getEntityAddressKey(0, MANUAL_JAIL_STAYS, PROJECTED_RELEASE_DATETIME)
     ];
-    if (getIn(formData, projectedReleaseDatetimePath)) {
-      const formReleaseDate = getIn(formData, projectedReleaseDatetimePath);
+    if (getIn(updatedFormData, projectedReleaseDatetimePath)) {
+      const formReleaseDate = getIn(updatedFormData, projectedReleaseDatetimePath);
       const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
       const releaseDateTime = DateTime.fromSQL(`${formReleaseDate} ${currentTime}`).toISO();
       updatedFormData = setIn(updatedFormData, projectedReleaseDatetimePath, releaseDateTime);
@@ -133,6 +133,8 @@ const EditReleaseDateForm = () => {
     entitySetIds,
     propertyTypeIds,
   };
+
+  const jailStayIsDefined = isDefined(participantNeighbors.get(MANUAL_JAIL_STAYS));
 
   const editRequestState = useRequestState([
     PROFILE.PROFILE,
@@ -158,12 +160,12 @@ const EditReleaseDateForm = () => {
 
   return (
     <Card>
-      <CardSegment>
+      <CardSegment padding={jailStayIsDefined ? '30px' : '0'}>
         <Form
-            disabled={isDefined(releaseDate)}
+            disabled={jailStayIsDefined}
             formContext={formContext}
             formData={formData}
-            noPadding
+            noPadding={jailStayIsDefined}
             onChange={onChange}
             onSubmit={onSubmit}
             schema={releaseDateSchema}
