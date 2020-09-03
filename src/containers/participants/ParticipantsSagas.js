@@ -13,10 +13,10 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_JAIL_NAMES_FOR_JAIL_STAYS,
-  GET_PARTICIPANT_NEIGHBORS,
+  GET_PARTICIPANTS_NEIGHBORS,
   SEARCH_PARTICIPANTS,
   getJailNamesForJailStays,
-  getParticipantNeighbors,
+  getParticipantsNeighbors,
   searchParticipants,
 } from './ParticipantsActions';
 
@@ -116,16 +116,16 @@ function* getJailNamesForJailStaysWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsSagas.getParticipantNeighbors()
+ * ParticipantsSagas.getParticipantsNeighbors()
  *
  */
 
-function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getParticipantsNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
   try {
-    yield put(getParticipantNeighbors.request(id, value));
+    yield put(getParticipantsNeighbors.request(id, value));
     const { neighborsToGet, participantEKIDs } = value;
 
     const app = yield select(getAppFromState);
@@ -179,20 +179,20 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
       yield call(getJailNamesForJailStaysWorker, getJailNamesForJailStays({ jailStayEKIDs }));
     }
 
-    yield put(getParticipantNeighbors.success(id, neighbors));
+    yield put(getParticipantsNeighbors.success(id, neighbors));
   }
   catch (error) {
     LOG.error(action.type, error);
-    yield put(getParticipantNeighbors.failure(id, error));
+    yield put(getParticipantsNeighbors.failure(id, error));
   }
   finally {
-    yield put(getParticipantNeighbors.finally(id));
+    yield put(getParticipantsNeighbors.finally(id));
   }
 }
 
-function* getParticipantNeighborsWatcher() :Generator<*, *, *> {
+function* getParticipantsNeighborsWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_PARTICIPANT_NEIGHBORS, getParticipantNeighborsWorker);
+  yield takeEvery(GET_PARTICIPANTS_NEIGHBORS, getParticipantsNeighborsWorker);
 }
 
 /*
@@ -293,7 +293,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         { direction: DST, neighborESID: manualJailStaysESID },
         { direction: DST, neighborESID: needsAssessmentESID },
       ];
-      yield call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKIDs }));
+      yield call(getParticipantsNeighborsWorker, getParticipantsNeighbors({ neighborsToGet, participantEKIDs }));
     }
 
     yield put(searchParticipants.success(id, { searchedParticipants, totalHits }));
@@ -315,8 +315,8 @@ function* searchParticipantsWatcher() :Generator<*, *, *> {
 export {
   getJailNamesForJailStaysWatcher,
   getJailNamesForJailStaysWorker,
-  getParticipantNeighborsWatcher,
-  getParticipantNeighborsWorker,
+  getParticipantsNeighborsWatcher,
+  getParticipantsNeighborsWorker,
   searchParticipantsWatcher,
   searchParticipantsWorker,
 };

@@ -47,12 +47,18 @@ import { getEKID } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
-import { CASE_NOTES, PROFILE, SHARED } from '../../utils/constants/ReduxStateConstants';
+import {
+  CASE_NOTES,
+  INTAKE,
+  PROFILE,
+  SHARED
+} from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getParamFromMatch } = RoutingUtils;
 const { NEUTRAL } = Colors;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { INCARCERATION_FACILITIES } = INTAKE;
 const {
   CONTACT_NAME_BY_PROVIDER_EKID,
   EMERGENCY_CONTACT_INFO_BY_CONTACT,
@@ -169,19 +175,13 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   goToEditPersonPage = () => {
-    const {
-      actions,
-      match,
-    } = this.props;
+    const { actions, match } = this.props;
     const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
     if (participantId) actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(Routes.PARTICIPANT_ID, participantId));
   };
 
   goToTaskManager = () => {
-    const {
-      actions,
-      match,
-    } = this.props;
+    const { actions, match } = this.props;
     const participantId = getParamFromMatch(match, Routes.PARTICIPANT_ID);
     if (participantId) actions.goToRoute(Routes.PARTICIPANT_TASK_MANAGER.replace(Routes.PARTICIPANT_ID, participantId));
   }
@@ -190,6 +190,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       contactNameByProviderEKID,
       emergencyContactInfoByContact,
+      match,
       participant,
       participantNeighbors,
       providerByStatusEKID,
@@ -250,6 +251,7 @@ class ParticipantProfile extends Component<Props, State> {
           <NeedsCard participantNeighbors={participantNeighbors} />
           <ProgramHistory
               contactNameByProviderEKID={contactNameByProviderEKID}
+              match={match}
               participantNeighbors={participantNeighbors}
               providerByStatusEKID={providerByStatusEKID} />
           <CaseNotesProfileCard
@@ -281,10 +283,12 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const profile = state.get(PROFILE.PROFILE);
+  const intake = state.get(INTAKE.INTAKE);
   const caseNotes = state.get(CASE_NOTES.CASE_NOTES);
   return {
     [CONTACT_NAME_BY_PROVIDER_EKID]: profile.get(CONTACT_NAME_BY_PROVIDER_EKID),
     [EMERGENCY_CONTACT_INFO_BY_CONTACT]: profile.get(EMERGENCY_CONTACT_INFO_BY_CONTACT),
+    [INCARCERATION_FACILITIES]: intake.get(INCARCERATION_FACILITIES),
     [PARTICIPANT]: profile.get(PARTICIPANT),
     [PARTICIPANT_NEIGHBORS]: profile.get(PARTICIPANT_NEIGHBORS),
     [PROVIDER_BY_STATUS_EKID]: profile.get(PROVIDER_BY_STATUS_EKID),

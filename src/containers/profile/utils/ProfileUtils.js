@@ -103,8 +103,7 @@ const getReleaseDateAndEKIDForForm = (jailStays :List) :Object => {
   const releaseDateTime = getMostRecentReleaseDateFromNeighbors(jailStays);
   const sortedJailStays :List = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]);
   const jailStayEKID :UUID = getEKID(sortedJailStays.last());
-  if (!releaseDateTime.isValid) return {};
-  return { jailStayEKID, releaseDate: releaseDateTime.toISODate() };
+  return { jailStayEKID, releaseDate: releaseDateTime.isValid ? releaseDateTime.toISODate() : undefined };
 };
 
 const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
