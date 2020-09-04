@@ -5,11 +5,9 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { List, Map, fromJS } from 'immutable';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
-
-import Logger from '../../utils/Logger';
 
 import {
   GET_INCARCERATION_FACILITIES,
@@ -17,13 +15,15 @@ import {
   getIncarcerationFacilities,
   submitIntakeForm,
 } from './IntakeActions';
+
+import Logger from '../../utils/Logger';
 import { submitDataGraph } from '../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../core/data/DataSagas';
-import { isDefined } from '../../utils/LangUtils';
-import { getESIDFromApp } from '../../utils/DataUtils';
-import { APP } from '../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getESIDFromApp } from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -42,6 +42,7 @@ const LOG = new Logger('PersonInformationSagas');
 function* getIncarcerationFacilitiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id } = action;
+  const sagaResponse = {};
 
   try {
     yield put(getIncarcerationFacilities.request(id));
@@ -53,16 +54,18 @@ function* getIncarcerationFacilitiesWorker(action :SequenceAction) :Generator<*,
       throw response.error;
     }
     const incarcerationFacilities :List = fromJS(response.data);
-
+    sagaResponse.data = incarcerationFacilities;
     yield put(getIncarcerationFacilities.success(id, incarcerationFacilities));
   }
   catch (error) {
+    sagaResponse.error = error;
     LOG.error('caught exception in getIncarcerationFacilitiesWorker()', error);
     yield put(getIncarcerationFacilities.failure(id, error));
   }
   finally {
     yield put(getIncarcerationFacilities.finally(id));
   }
+  return sagaResponse;
 }
 
 function* getIncarcerationFacilitiesWatcher() :Generator<*, *, *> {

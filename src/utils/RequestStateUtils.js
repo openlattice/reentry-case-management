@@ -1,15 +1,15 @@
+import has from 'lodash/has';
 // @flow
 import isString from 'lodash/isString';
-import has from 'lodash/has';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import { isDefined } from './LangUtils';
 
-const requestIsPending = (requestState :RequestState) :boolean => requestState === RequestStates.PENDING;
-const requestIsSuccess = (requestState :RequestState) :boolean => requestState === RequestStates.SUCCESS;
-const requestIsFailure = (requestState :RequestState) :boolean => requestState === RequestStates.FAILURE;
-const requestIsStandby = (requestState :RequestState) :boolean => requestState === RequestStates.STANDBY;
+const requestIsPending = (requestState :RequestState | void) :boolean => requestState === RequestStates.PENDING;
+const requestIsSuccess = (requestState :RequestState | void) :boolean => requestState === RequestStates.SUCCESS;
+const requestIsFailure = (requestState :RequestState | void) :boolean => requestState === RequestStates.FAILURE;
+const requestIsStandby = (requestState :RequestState | void) :boolean => requestState === RequestStates.STANDBY;
 
 const isRequestState = (requestState :string) :boolean => isString(requestState) && has(RequestStates, requestState);
 

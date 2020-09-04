@@ -54,9 +54,17 @@ import {
 } from './person/EditPersonActions';
 import {
   EDIT_EVENT,
-  EDIT_RELEASE_INFO,
+  EDIT_FACILITY_RELEASED_FROM,
+  EDIT_REFERRAL_SOURCE,
+  EDIT_RELEASE_DATE,
+  SUBMIT_REFERRAL_SOURCE,
+  SUBMIT_RELEASE_DATE,
   editEvent,
-  editReleaseInfo,
+  editFacilityReleasedFrom,
+  editReferralSource,
+  editReleaseDate,
+  submitReferralSource,
+  submitReleaseDate,
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
@@ -98,6 +106,7 @@ const {
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
+  MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
@@ -127,6 +136,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_EMERGENCY_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_FACILITY_RELEASED_FROM]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_NEEDS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -139,7 +151,10 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [EDIT_RELEASE_INFO]: {
+    [EDIT_REFERRAL_SOURCE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_RELEASE_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_SEX_OFFENDER]: {
@@ -172,6 +187,12 @@ const INITIAL_STATE :Map = fromJS({
     [SUBMIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SUBMIT_REFERRAL_SOURCE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_RELEASE_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [SUBMIT_STATE_ID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -199,15 +220,13 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
     case CLEAR_EDIT_REQUEST_STATE: {
       return state
         .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_SEX_OFFENDER, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_CONTACT_INFO, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_COURT_HEARINGS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EMERGENCY_CONTACTS, REQUEST_STATE], RequestStates.STANDBY)
         .setIn([ACTIONS, EDIT_EVENT, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY)
-        .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.STANDBY);
+        .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case createNewFollowUp.case(action.type): {
@@ -424,6 +443,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editFacilityReleasedFrom.case(action.type): {
+      return editFacilityReleasedFrom.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, action.id], action)
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newFacility :Map = seqAction.value;
+          const participantNeighbors = state.get(PARTICIPANT_NEIGHBORS)
+            .setIn([MANUAL_JAILS_PRISONS, 0], newFacility);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_FACILITY_RELEASED_FROM, action.id]),
+      });
+    }
+
     case editNeeds.case(action.type): {
       return editNeeds.reducer(state, action, {
         REQUEST: () => state
@@ -484,42 +523,55 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
-    case editReleaseInfo.case(action.type): {
-      return editReleaseInfo.reducer(state, action, {
+    case editReferralSource.case(action.type): {
+      return editReferralSource.reducer(state, action, {
         REQUEST: () => state
-          .setIn([ACTIONS, EDIT_RELEASE_INFO, action.id], action)
-          .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, action.id], action)
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = action;
-          const newEntities :Map = seqAction.value;
-          const newJailStay = newEntities.get(MANUAL_JAIL_STAYS);
-          const newReferralRequest = newEntities.get(REFERRAL_REQUEST);
+          const editedReferralRequest :Map = seqAction.value;
           let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
-
-          if (newJailStay) {
-            if (participantNeighbors.get(MANUAL_JAIL_STAYS)) {
-              participantNeighbors = participantNeighbors.setIn([MANUAL_JAIL_STAYS, 0], newJailStay);
-            }
-            else {
-              participantNeighbors = participantNeighbors.set(MANUAL_JAIL_STAYS, List([newJailStay]));
-            }
+          if (editedReferralRequest) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [REFERRAL_REQUEST, 0],
+              Map(),
+              (oldReferralRequest) => oldReferralRequest.merge(editedReferralRequest)
+            );
           }
-          if (newReferralRequest) {
-            if (participantNeighbors.get(REFERRAL_REQUEST)) {
-              participantNeighbors = participantNeighbors.setIn([REFERRAL_REQUEST, 0], newReferralRequest);
-            }
-            else {
-              participantNeighbors = participantNeighbors.set(REFERRAL_REQUEST, List([newReferralRequest]));
-            }
-          }
-
           return state
             .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
-            .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+            .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .setIn([ACTIONS, EDIT_RELEASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_INFO, action.id]),
+          .setIn([ACTIONS, EDIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_REFERRAL_SOURCE, action.id]),
+      });
+    }
+
+    case editReleaseDate.case(action.type): {
+      return editReleaseDate.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedJailStay :Map = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+          if (editedJailStay) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [MANUAL_JAIL_STAYS, 0],
+              Map(),
+              (oldJailStay) => oldJailStay.merge(editedJailStay)
+            );
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_RELEASE_DATE, action.id]),
       });
     }
 
@@ -760,6 +812,46 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_PERSON_DETAILS, action.id]),
+      });
+    }
+
+    case submitReferralSource.case(action.type): {
+      return submitReferralSource.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, action.id], action)
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newReferralRequest :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(REFERRAL_REQUEST, List([newReferralRequest]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_REFERRAL_SOURCE, action.id]),
+      });
+    }
+
+    case submitReleaseDate.case(action.type): {
+      return submitReleaseDate.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id], action)
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newJailStay :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(MANUAL_JAIL_STAYS, List([newJailStay]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id]),
       });
     }
 

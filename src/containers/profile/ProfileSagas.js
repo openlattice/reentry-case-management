@@ -64,6 +64,8 @@ import { DST, SRC } from '../../utils/constants/GeneralConstants';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 import { getStaffWhoRecordedNotes } from '../casenotes/CaseNotesActions';
 import { getStaffWhoRecordedNotesWorker } from '../casenotes/CaseNotesSagas';
+import { getIncarcerationFacilities } from '../intake/IntakeActions';
+import { getIncarcerationFacilitiesWorker } from '../intake/IntakeSagas';
 
 const LOG = new Logger('ProfileSagas');
 const { FullyQualifiedName } = Models;
@@ -81,6 +83,7 @@ const {
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
   MANUAL_JAIL_STAYS,
+  MANUAL_JAILS_PRISONS,
   MEETINGS,
   NEEDS_ASSESSMENT,
   PEOPLE,
@@ -333,6 +336,24 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .toJS();
       yield call(getEmergencyContactInfoWorker, getEmergencyContactInfo({ emergencyContactEKIDs }));
     }
+    if (isDefined(get(personNeighborMap, MANUAL_JAIL_STAYS))) {
+      const manualJailStaysEKID :UUID = getEKID(personNeighborMap.getIn([MANUAL_JAIL_STAYS, 0]));
+      const manualJailStayESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+      const manualJailsPrisonsESID :UUID = getESIDFromApp(app, MANUAL_JAILS_PRISONS);
+      const jailStayFilter = {
+        entityKeyIds: [manualJailStaysEKID],
+        destinationEntitySetIds: [manualJailsPrisonsESID],
+        sourceEntitySetIds: [],
+      };
+      const jailStayResponse :Object = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: manualJailStayESID, filter: jailStayFilter })
+      );
+      if (jailStayResponse.error) throw jailStayResponse.error;
+      const jailStayNeighbors :Map = fromJS(jailStayResponse.data);
+      const facility :Map = getNeighborDetails(jailStayNeighbors.getIn([manualJailStaysEKID, 0]));
+      personNeighborMap = personNeighborMap.set(MANUAL_JAILS_PRISONS, List([facility]));
+    }
     if (isDefined(get(personNeighborMap, MEETINGS))) {
       const meetingEKIDs :UUID[] = personNeighborMap.get(MEETINGS)
         .map((meeting :Map) => getEKID(meeting))
@@ -515,6 +536,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
       call(getParticipantWorker, getParticipant({ participantEKID })),
+      call(getIncarcerationFacilitiesWorker, getIncarcerationFacilities()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
