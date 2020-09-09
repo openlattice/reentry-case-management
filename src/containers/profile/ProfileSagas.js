@@ -26,12 +26,14 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  GET_SUPERVISION_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  getSupervisionNeighbors,
   loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
@@ -74,20 +76,25 @@ const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  ATTORNEYS,
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
   EMERGENCY_CONTACT_INFO,
+  EMPLOYEE,
+  EMPLOYMENT,
   ENROLLMENT_STATUS,
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
-  MANUAL_JAIL_STAYS,
   MANUAL_JAILS_PRISONS,
+  MANUAL_JAIL_STAYS,
   MEETINGS,
   NEEDS_ASSESSMENT,
+  OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
+  PROBATION_PAROLE,
   PROVIDER,
   PROVIDER_STAFF,
   REFERRAL_REQUEST,
@@ -264,6 +271,87 @@ function* getEnrollmentStatusNeighborsWorker(action :SequenceAction) :Generator<
 function* getEnrollmentStatusNeighborsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_ENROLLMENT_STATUS_NEIGHBORS, getEnrollmentStatusNeighborsWorker);
+}
+
+/*
+ *
+ * ProfileActions.getSupervisionNeighbors()
+ *
+ */
+
+function* getSupervisionNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(getSupervisionNeighbors.request(id, value));
+    const personNeighborMap :Map = value;
+
+    const app = yield select(getAppFromState);
+    const attorneysESID :UUID = getESIDFromApp(app, ATTORNEYS);
+    const officersESID :UUID = getESIDFromApp(app, OFFICERS);
+
+    let attorney :Map = Map();
+    const attorneyEmploymentEntityList = get(personNeighborMap, EMPLOYMENT);
+    if (isDefined(attorneyEmploymentEntityList) && !attorneyEmploymentEntityList.isEmpty()) {
+      const attorneyEmploymentEKID :UUID = getEKID(attorneyEmploymentEntityList.get(0));
+      const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
+      const filter = {
+        entityKeyIds: [attorneyEmploymentEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [attorneysESID],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employmentESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      if (!neighbors.isEmpty()) {
+        attorney = getNeighborDetails(neighbors.getIn([attorneyEmploymentEKID, 0]));
+      }
+    }
+
+    let officer :Map = Map();
+    const officerEmployeeEntityList = get(personNeighborMap, EMPLOYEE);
+    if (isDefined(officerEmployeeEntityList) && !officerEmployeeEntityList.isEmpty()) {
+      const officerEmployeeEKID :UUID = getEKID(officerEmployeeEntityList.get(0));
+      const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+      const filter = {
+        entityKeyIds: [officerEmployeeEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [officersESID],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employeeESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      if (!neighbors.isEmpty()) {
+        officer = getNeighborDetails(neighbors.getIn([officerEmployeeEKID, 0]));
+      }
+    }
+
+    const supervisionNeighbors = Map().withMutations((mutator :Map) => {
+      if (!attorney.isEmpty()) mutator.set(ATTORNEYS, attorney);
+      if (!officer.isEmpty()) mutator.set(OFFICERS, officer);
+    });
+
+    yield put(getSupervisionNeighbors.success(id, supervisionNeighbors));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getSupervisionNeighbors.failure(id, error));
+  }
+  finally {
+    yield put(getSupervisionNeighbors.finally(id));
+  }
+}
+
+function* getSupervisionNeighborsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SUPERVISION_NEIGHBORS, getSupervisionNeighborsWorker);
 }
 
 /*
@@ -571,6 +659,8 @@ export {
   getParticipantNeighborsWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getSupervisionNeighborsWatcher,
+  getSupervisionNeighborsWorker,
   loadPersonInfoForEditWatcher,
   loadPersonInfoForEditWorker,
   loadProfileWatcher,

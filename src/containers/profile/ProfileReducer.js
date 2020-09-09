@@ -9,12 +9,14 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  GET_SUPERVISION_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  getSupervisionNeighbors,
   loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
@@ -95,6 +97,7 @@ const {
   PERSON_DETAILS_FORM_DATA,
   PERSON_FORM_DATA,
   PROVIDER_BY_STATUS_EKID,
+  SUPERVISION_NEIGHBORS,
   STATE_ID_FORM_DATA,
 } = PROFILE;
 const {
@@ -173,6 +176,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_SUPERVISION_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [LOAD_PROFILE]: {
@@ -684,6 +690,24 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         },
         FAILURE: () => state.setIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_NEIGHBORS, action.id]),
+      });
+    }
+
+    case getSupervisionNeighbors.case(action.type): {
+
+      return getSupervisionNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(SUPERVISION_NEIGHBORS, value)
+            .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, action.id]),
       });
     }
 
