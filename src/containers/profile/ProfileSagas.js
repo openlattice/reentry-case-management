@@ -448,6 +448,9 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .toJS();
       yield call(getStaffWhoRecordedNotesWorker, getStaffWhoRecordedNotes({ meetingEKIDs }));
     }
+    if (isDefined(get(personNeighborMap, EMPLOYMENT)) || isDefined(get(personNeighborMap, EMPLOYEE))) {
+      yield call(getSupervisionNeighborsWorker, getSupervisionNeighbors(personNeighborMap));
+    }
 
     workerResponse.data = personNeighborMap;
     yield put(getParticipantNeighbors.success(id, personNeighborMap));
@@ -595,12 +598,15 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
     const educationESID :UUID = getESIDFromApp(app, EDUCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+    const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
     const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
+    const probationParoleESID :UUID = getESIDFromApp(app, PROBATION_PAROLE);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
     const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
@@ -620,6 +626,9 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: stateIdESID },
       { direction: SRC, neighborESID: emergencyContactESID },
       { direction: DST, neighborESID: meetingsESID },
+      { direction: DST, neighborESID: probationParoleESID },
+      { direction: DST, neighborESID: employmentESID }, // attorney
+      { direction: SRC, neighborESID: employeeESID }, // probation/parole officer
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
