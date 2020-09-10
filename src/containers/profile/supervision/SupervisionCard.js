@@ -4,13 +4,15 @@ import React from 'react';
 import { Map, OrderedMap } from 'immutable';
 import {
   Card,
-  CardHeader,
   CardSegment,
   DataGrid,
 } from 'lattice-ui-kit';
+import { useGoToRoute } from 'lattice-utils';
 
+import EditButton from '../../../components/buttons/EditButton';
+import { EDIT_SUPERVISION, PARTICIPANT_ID } from '../../../core/router/Routes';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
-import { SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
+import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
 import { formatGridData } from '../utils/SupervisionUtils';
 
 const labelMap = OrderedMap({
@@ -27,16 +29,19 @@ const labelMap = OrderedMap({
 
 type Props = {
   participantNeighbors :Map;
+  personEKID :UUID;
   supervisionNeighbors :Map;
 };
 
-const SupervisionCard = ({ participantNeighbors, supervisionNeighbors } :Props) => {
+const SupervisionCard = ({ participantNeighbors, personEKID, supervisionNeighbors } :Props) => {
+  const goToEditSupervisionPage = useGoToRoute(EDIT_SUPERVISION.replace(PARTICIPANT_ID, personEKID));
   const gridData = formatGridData(participantNeighbors, supervisionNeighbors);
   return (
     <Card>
-      <CardHeader padding="30px" vertical={false}>
+      <CardHeaderWithButtons padding="30px" vertical={false}>
         <SmallCardHeaderTitle>Supervision</SmallCardHeaderTitle>
-      </CardHeader>
+        <EditButton onClick={goToEditSupervisionPage}>Edit</EditButton>
+      </CardHeaderWithButtons>
       <CardSegment>
         <DataGrid
             columns={3}
