@@ -266,7 +266,10 @@ class ParticipantProfile extends Component<Props, State> {
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
           { participantNeighbors.has(PROBATION_PAROLE) && (
-            <SupervisionCard participantNeighbors={participantNeighbors} supervisionNeighbors={supervisionNeighbors} />
+            <SupervisionCard
+                participantNeighbors={participantNeighbors}
+                personEKID={personEKID}
+                supervisionNeighbors={supervisionNeighbors} />
           )}
         </ProfileCardStack>
         <CenteredCardSegment vertical={false}>
