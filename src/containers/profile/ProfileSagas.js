@@ -333,9 +333,52 @@ function* getSupervisionNeighborsWorker(action :SequenceAction) :Generator<*, *,
       }
     }
 
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    let contactInfo :Map = Map().asMutable();
+
+    if (!attorney.isEmpty()) {
+      const attorneyEKID :UUID = getEKID(attorney);
+      const filter = {
+        entityKeyIds: [attorneyEKID],
+        destinationEntitySetIds: [contactInfoESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: attorneysESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      const attorneyContactInfo :List = neighbors
+        .get(attorneyEKID, List())
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+      contactInfo.set(ATTORNEYS, attorneyContactInfo);
+    }
+
+    if (!officer.isEmpty()) {
+      const officerEKID :UUID = getEKID(officer);
+      const filter = {
+        entityKeyIds: [officerEKID],
+        destinationEntitySetIds: [contactInfoESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: officersESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      const officerContactInfo :List = neighbors
+        .get(officerEKID, List())
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+      contactInfo.set(OFFICERS, officerContactInfo);
+    }
+    contactInfo = contactInfo.asImmutable();
+
     const supervisionNeighbors = Map().withMutations((mutator :Map) => {
       if (!attorney.isEmpty()) mutator.set(ATTORNEYS, attorney);
       if (!officer.isEmpty()) mutator.set(OFFICERS, officer);
+      if (!contactInfo.isEmpty()) mutator.set(CONTACT_INFO, contactInfo);
     });
 
     yield put(getSupervisionNeighbors.success(id, supervisionNeighbors));
