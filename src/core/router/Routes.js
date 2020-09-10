@@ -20,6 +20,7 @@ const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/${PARTICIPANT_ID}`;
 const PARTICIPANT_TASK_MANAGER :string = `${PARTICIPANT_PROFILE}/tasks`;
 const EDIT_PARTICIPANT :string = `${PARTICIPANT_PROFILE}/edit`;
 const EDIT_RELEASE_INFO :string = `${PARTICIPANT_PROFILE}/releaseinfo/edit`;
+const EDIT_SUPERVISION :string = `${PARTICIPANT_PROFILE}/supervision/edit`;
 
 const MEETING_ID :':meetingId' = ':meetingId';
 
@@ -29,6 +30,7 @@ export {
   CASE_NOTES_FORM,
   EDIT_PARTICIPANT,
   EDIT_RELEASE_INFO,
+  EDIT_SUPERVISION,
   LOGIN,
   MEETING_ID,
   NEW_INTAKE,
