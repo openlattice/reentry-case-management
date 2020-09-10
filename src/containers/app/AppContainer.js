@@ -37,6 +37,7 @@ import CaseNotesForm from '../casenotes/CaseNotesForm';
 import ContactSupportButton from '../../components/buttons/ContactSupportButton';
 import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import EditReleaseInfoForm from '../profile/programhistory/EditReleaseInfoForm';
+import EditSupervisionForm from '../profile/supervision/EditSupervisionForm';
 import IntakeForm from '../intake/IntakeForm';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
@@ -104,6 +105,7 @@ class AppContainer extends Component<Props> {
     if (requestIsSuccess(requestStates[INITIALIZE_APPLICATION])) {
       return (
         <Switch>
+          <Route path={Routes.EDIT_SUPERVISION} component={EditSupervisionForm} />
           <Route path={Routes.EDIT_RELEASE_INFO} component={EditReleaseInfoForm} />
           <Route path={Routes.CASE_NOTES_FORM} component={CaseNotesForm} />
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
