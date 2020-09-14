@@ -12,6 +12,7 @@ import { ReduxUtils, RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
+import EditOfficerForm from './EditOfficerForm';
 import EditProbationParoleForm from './EditProbationParoleForm';
 
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -127,6 +128,10 @@ const EditSupervisionForm = ({ match } :Props) => {
                 <EditProbationParoleForm
                     participantEKID={participantEKID}
                     participantNeighbors={participantNeighbors} />
+                <EditOfficerForm
+                    participantEKID={participantEKID}
+                    participantNeighbors={participantNeighbors}
+                    supervisionNeighbors={supervisionNeighbors} />
               </CardStack>
             </>
           )
