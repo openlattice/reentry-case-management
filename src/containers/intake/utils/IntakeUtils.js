@@ -640,6 +640,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   // Attorney
   if (attorneyFilledOutInForm) {
     associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYMENT, {}]);
+    associations.push([REPRESENTED_BY, 0, PEOPLE, 0, ATTORNEYS, {}]);
     associations.push([HAS, 0, ATTORNEYS, 0, EMPLOYMENT, {}]);
   }
 
