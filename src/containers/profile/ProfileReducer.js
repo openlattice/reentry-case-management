@@ -70,6 +70,12 @@ import {
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
+  EDIT_SUPERVISION,
+  SUBMIT_SUPERVISION,
+  editSupervision,
+  submitSupervision,
+} from './supervision/SupervisionActions';
+import {
   CREATE_NEW_FOLLOW_UP,
   MARK_FOLLOW_UP_AS_COMPLETE,
   createNewFollowUp,
@@ -113,6 +119,7 @@ const {
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
+  PROBATION_PAROLE,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
   SEX_OFFENDER_REGISTRATION_LOCATION,
@@ -163,6 +170,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_SEX_OFFENDER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_SUPERVISION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_STATE_ID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -197,6 +207,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_RELEASE_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_SUPERVISION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_STATE_ID]: {
@@ -600,6 +613,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editSupervision.case(action.type): {
+      return editSupervision.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SUPERVISION, action.id], action)
+          .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedSupervision :Map = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+          if (editedSupervision) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [PROBATION_PAROLE, 0],
+              Map(),
+              (oldSupervision) => oldSupervision.merge(editedSupervision)
+            );
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SUPERVISION, action.id]),
+      });
+    }
+
     case editStateId.case(action.type): {
       return editStateId.reducer(state, action, {
         REQUEST: () => state
@@ -877,6 +916,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id]),
+      });
+    }
+
+    case submitSupervision.case(action.type): {
+      return submitSupervision.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, action.id], action)
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newSupervision :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(PROBATION_PAROLE, List([newSupervision]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_SUPERVISION, action.id]),
       });
     }
 

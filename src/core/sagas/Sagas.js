@@ -24,6 +24,7 @@ import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as SexOffenderSagas from '../../containers/profile/sexoffender/SexOffenderSagas';
+import * as SupervisionSagas from '../../containers/profile/supervision/SupervisionSagas';
 import * as TasksSagas from '../../containers/tasks/TasksSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -138,6 +139,10 @@ export default function* sagas() :Generator<*, *, *> {
 
     // SexOffenderSagas
     fork(SexOffenderSagas.editSexOffenderWatcher),
+
+    // SupervisionSagas
+    fork(SupervisionSagas.editSupervisionWatcher),
+    fork(SupervisionSagas.submitSupervisionWatcher),
 
     // TasksSagas
     fork(TasksSagas.getPeopleForNewTaskFormWatcher),
