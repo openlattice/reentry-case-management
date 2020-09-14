@@ -21,7 +21,7 @@ const {
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
-const schema :Object = {
+const probationParoleSchema :Object = {
   type: 'object',
   title: '',
   properties: {
@@ -46,7 +46,14 @@ const schema :Object = {
         },
       }
     },
-    [getPageSectionKey(1, 2)]: {
+  }
+};
+
+const officerSchema :Object = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: 'Probation/Parole Officer',
       properties: {
@@ -60,7 +67,13 @@ const schema :Object = {
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
+  }
+};
+const officerContactSchema :Object = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: 'Probation/Parole Officer Contact Information',
       properties: {
@@ -74,7 +87,14 @@ const schema :Object = {
         },
       }
     },
-    [getPageSectionKey(1, 4)]: {
+  }
+};
+
+const attorneySchema :Object = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: 'Attorney',
       properties: {
@@ -88,7 +108,14 @@ const schema :Object = {
         },
       }
     },
-    [getPageSectionKey(1, 5)]: {
+  }
+};
+
+const attorneyContactSchema :Object = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: 'Attorney Contact Information',
       properties: {
@@ -105,7 +132,7 @@ const schema :Object = {
   }
 };
 
-const uiSchema = {
+const probationParoleUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
@@ -119,7 +146,10 @@ const uiSchema = {
       classNames: 'column-span-4',
     },
   },
-  [getPageSectionKey(1, 2)]: {
+};
+
+const officerUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
     [getEntityAddressKey(0, OFFICERS, FIRST_NAME)]: {
@@ -129,7 +159,10 @@ const uiSchema = {
       classNames: 'column-span-4',
     },
   },
-  [getPageSectionKey(1, 3)]: {
+};
+
+const officerContactUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
@@ -139,7 +172,10 @@ const uiSchema = {
       classNames: 'column-span-4',
     },
   },
-  [getPageSectionKey(1, 4)]: {
+};
+
+const attorneyUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
     [getEntityAddressKey(0, ATTORNEYS, FIRST_NAME)]: {
@@ -149,7 +185,10 @@ const uiSchema = {
       classNames: 'column-span-4',
     },
   },
-  [getPageSectionKey(1, 5)]: {
+};
+
+const attorneyContactUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
@@ -162,6 +201,14 @@ const uiSchema = {
 };
 
 export {
-  schema,
-  uiSchema,
+  attorneyContactSchema,
+  attorneyContactUiSchema,
+  attorneySchema,
+  attorneyUiSchema,
+  officerContactSchema,
+  officerContactUiSchema,
+  officerSchema,
+  officerUiSchema,
+  probationParoleSchema,
+  probationParoleUiSchema,
 };
