@@ -70,9 +70,13 @@ import {
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
+  EDIT_OFFICER,
   EDIT_SUPERVISION,
+  SUBMIT_OFFICER,
   SUBMIT_SUPERVISION,
+  editOfficer,
   editSupervision,
+  submitOfficer,
   submitSupervision,
 } from './supervision/SupervisionActions';
 import {
@@ -110,6 +114,7 @@ const {
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
+  EMPLOYEE,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
   HEARINGS,
@@ -118,6 +123,7 @@ const {
   MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
+  OFFICERS,
   PERSON_DETAILS,
   PROBATION_PAROLE,
   REFERRAL_REQUEST,
@@ -146,13 +152,16 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_EMERGENCY_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_EVENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_FACILITY_RELEASED_FROM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_NEEDS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [EDIT_EVENT]: {
+    [EDIT_OFFICER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON]: {
@@ -198,6 +207,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_EDUCATION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_OFFICER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_PERSON_DETAILS]: {
@@ -497,6 +509,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_NEEDS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_NEEDS, action.id]),
+      });
+    }
+
+    case editOfficer.case(action.type): {
+      return editOfficer.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_OFFICER, action.id], action)
+          .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedOfficer :Map = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          if (editedOfficer) {
+            supervisionNeighbors = supervisionNeighbors.update(
+              OFFICERS,
+              Map(),
+              (oldOfficer) => oldOfficer.merge(editedOfficer)
+            );
+          }
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_OFFICER, action.id]),
       });
     }
 
@@ -855,6 +893,29 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_EDUCATION, action.id]),
+      });
+    }
+
+    case submitOfficer.case(action.type): {
+      return submitOfficer.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER, action.id], action)
+          .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEmployee, newOfficer } = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(EMPLOYEE, List([newEmployee]));
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .set(OFFICERS, newOfficer);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_OFFICER, action.id]),
       });
     }
 

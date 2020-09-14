@@ -15,9 +15,13 @@ import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  EDIT_OFFICER,
   EDIT_SUPERVISION,
+  SUBMIT_OFFICER,
   SUBMIT_SUPERVISION,
+  editOfficer,
   editSupervision,
+  submitOfficer,
   submitSupervision,
 } from './SupervisionActions';
 
@@ -33,13 +37,75 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
 const { isDefined } = LangUtils;
-const { PROBATION_PAROLE } = APP_TYPE_FQNS;
+const {
+  EMPLOYEE,
+  OFFICERS,
+  PROBATION_PAROLE,
+} = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID, RECOGNIZED_END_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 
 const LOG = new Logger('SupervisionSagas');
+
+/*
+ *
+ * SupervisionActions.editOfficer()
+ *
+ */
+
+function* editOfficerWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editOfficer.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const officerESID :UUID = getESIDFromApp(app, OFFICERS);
+
+    const officerEKID = Object.keys(entityData[officerESID])[0];
+
+    let editedOfficer :Map = Map();
+
+    if (Object.values(entityData).length) {
+      const response :Object = yield call(
+        submitPartialReplaceWorker,
+        submitPartialReplace({ entityData })
+      );
+      if (response.error) throw response.error;
+
+      if (entityData[officerESID]) {
+        const data = Object.values(entityData[officerESID])[0];
+        editedOfficer = Map().withMutations((map :Map) => {
+          fromJS(data).forEach((propertyValue :any, ptid :string) => {
+            const fqn = getPropertyFqnFromEDM(edm, ptid);
+            map.set(fqn, propertyValue);
+          });
+          map.set(ENTITY_KEY_ID, List([officerEKID]));
+        });
+      }
+    }
+
+    yield put(editOfficer.success(id, editedOfficer));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editOfficer.failure(id, error));
+  }
+  finally {
+    yield put(editOfficer.finally(id));
+  }
+}
+
+function* editOfficerWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_OFFICER, editOfficerWorker);
+}
 
 /*
  *
@@ -107,6 +173,64 @@ function* editSupervisionWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * SupervisionActions.submitOfficer()
+ *
+ */
+
+function* submitOfficerWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitOfficer.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const officersESID :UUID = getESIDFromApp(app, OFFICERS);
+    const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newOfficerEKID :UUID = entityKeyIds[officersESID][0];
+    const newOfficer :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([newOfficerEKID]));
+      fromJS(entityData[officersESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    const newEmployeeEKID :UUID = entityKeyIds[employeeESID][0];
+    const newEmployee :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([newEmployeeEKID]));
+      fromJS(entityData[employeeESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitOfficer.success(id, { newEmployee, newOfficer }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitOfficer.failure(id, error));
+  }
+  finally {
+    yield put(submitOfficer.finally(id));
+  }
+}
+
+function* submitOfficerWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_OFFICER, submitOfficerWorker);
+}
+
+/*
+ *
  * SupervisionActions.submitSupervision()
  *
  */
@@ -154,8 +278,12 @@ function* submitSupervisionWatcher() :Generator<*, *, *> {
 }
 
 export {
+  editOfficerWatcher,
+  editOfficerWorker,
   editSupervisionWatcher,
   editSupervisionWorker,
+  submitOfficerWatcher,
+  submitOfficerWorker,
   submitSupervisionWatcher,
   submitSupervisionWorker,
 };
