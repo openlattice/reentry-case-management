@@ -50,13 +50,13 @@ const schema :Object = {
       type: 'object',
       title: 'Probation/Parole Officer',
       properties: {
-        [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
-          type: 'string',
-          title: 'Officer last name',
-        },
         [getEntityAddressKey(0, OFFICERS, FIRST_NAME)]: {
           type: 'string',
           title: 'Officer first name',
+        },
+        [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
+          type: 'string',
+          title: 'Officer last name',
         },
       }
     },
@@ -78,13 +78,13 @@ const schema :Object = {
       type: 'object',
       title: 'Attorney',
       properties: {
-        [getEntityAddressKey(0, ATTORNEYS, LAST_NAME)]: {
-          type: 'string',
-          title: 'Attorney last name',
-        },
         [getEntityAddressKey(0, ATTORNEYS, FIRST_NAME)]: {
           type: 'string',
           title: 'Attorney first name',
+        },
+        [getEntityAddressKey(0, ATTORNEYS, LAST_NAME)]: {
+          type: 'string',
+          title: 'Attorney last name',
         },
       }
     },
@@ -122,10 +122,10 @@ const uiSchema = {
   [getPageSectionKey(1, 2)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
-    [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
+    [getEntityAddressKey(0, OFFICERS, FIRST_NAME)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, OFFICERS, FIRST_NAME)]: {
+    [getEntityAddressKey(0, OFFICERS, LAST_NAME)]: {
       classNames: 'column-span-4',
     },
   },
@@ -142,10 +142,10 @@ const uiSchema = {
   [getPageSectionKey(1, 4)]: {
     classNames: 'column-span-12 grid-container',
     'ui:options': { editable: true },
-    [getEntityAddressKey(0, ATTORNEYS, LAST_NAME)]: {
+    [getEntityAddressKey(0, ATTORNEYS, FIRST_NAME)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, ATTORNEYS, FIRST_NAME)]: {
+    [getEntityAddressKey(0, ATTORNEYS, LAST_NAME)]: {
       classNames: 'column-span-4',
     },
   },
