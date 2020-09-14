@@ -53,7 +53,7 @@ type Props = {
   participantNeighbors :Map;
 };
 
-const EditSupervisionForm = ({ participantEKID, participantNeighbors } :Props) => {
+const EditProbationParoleForm = ({ participantEKID, participantNeighbors } :Props) => {
 
   const supervision = participantNeighbors.get(PROBATION_PAROLE, List());
   const [formData, updateFormData] = useState({});
@@ -166,4 +166,4 @@ const EditSupervisionForm = ({ participantEKID, participantNeighbors } :Props) =
   );
 };
 
-export default EditSupervisionForm;
+export default EditProbationParoleForm;
