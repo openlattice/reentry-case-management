@@ -12,6 +12,7 @@ import { ReduxUtils, RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
+import EditAttorneyForm from './EditAttorneyForm';
 import EditOfficerForm from './EditOfficerForm';
 import EditProbationParoleForm from './EditProbationParoleForm';
 
@@ -129,6 +130,10 @@ const EditSupervisionForm = ({ match } :Props) => {
                     participantEKID={participantEKID}
                     participantNeighbors={participantNeighbors} />
                 <EditOfficerForm
+                    participantEKID={participantEKID}
+                    participantNeighbors={participantNeighbors}
+                    supervisionNeighbors={supervisionNeighbors} />
+                <EditAttorneyForm
                     participantEKID={participantEKID}
                     participantNeighbors={participantNeighbors}
                     supervisionNeighbors={supervisionNeighbors} />
