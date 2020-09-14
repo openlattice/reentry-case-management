@@ -10,6 +10,7 @@ import {
 import { useGoToRoute } from 'lattice-utils';
 
 import EditButton from '../../../components/buttons/EditButton';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EDIT_SUPERVISION, PARTICIPANT_ID } from '../../../core/router/Routes';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 import { CardHeaderWithButtons, SmallCardHeaderTitle } from '../styled/GeneralProfileStyles';
@@ -42,14 +43,18 @@ const SupervisionCard = ({ participantNeighbors, personEKID, supervisionNeighbor
         <SmallCardHeaderTitle>Supervision</SmallCardHeaderTitle>
         <EditButton onClick={goToEditSupervisionPage}>Edit</EditButton>
       </CardHeaderWithButtons>
-      <CardSegment>
-        <DataGrid
-            columns={3}
-            data={gridData}
-            emptyString={EMPTY_FIELD}
-            labelMap={labelMap}
-            truncate />
-      </CardSegment>
+      {
+        participantNeighbors.has(APP_TYPE_FQNS.PROBATION_PAROLE) && (
+          <CardSegment>
+            <DataGrid
+                columns={3}
+                data={gridData}
+                emptyString={EMPTY_FIELD}
+                labelMap={labelMap}
+                truncate />
+          </CardSegment>
+        )
+      }
     </Card>
   );
 };

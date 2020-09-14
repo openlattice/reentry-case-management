@@ -265,12 +265,10 @@ class ParticipantProfile extends Component<Props, State> {
               staffByMeetingEKID={staffByMeetingEKID} />
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
-          { participantNeighbors.has(PROBATION_PAROLE) && (
-            <SupervisionCard
-                participantNeighbors={participantNeighbors}
-                personEKID={personEKID}
-                supervisionNeighbors={supervisionNeighbors} />
-          )}
+          <SupervisionCard
+              participantNeighbors={participantNeighbors}
+              personEKID={personEKID}
+              supervisionNeighbors={supervisionNeighbors} />
         </ProfileCardStack>
         <CenteredCardSegment vertical={false}>
           <Button
