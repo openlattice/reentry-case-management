@@ -70,12 +70,16 @@ import {
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
+  EDIT_ATTORNEY,
   EDIT_OFFICER,
   EDIT_SUPERVISION,
+  SUBMIT_ATTORNEY,
   SUBMIT_OFFICER,
   SUBMIT_SUPERVISION,
+  editAttorney,
   editOfficer,
   editSupervision,
+  submitAttorney,
   submitOfficer,
   submitSupervision,
 } from './supervision/SupervisionActions';
@@ -111,10 +115,12 @@ const {
   STATE_ID_FORM_DATA,
 } = PROFILE;
 const {
+  ATTORNEYS,
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
   EMPLOYEE,
+  EMPLOYMENT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
   HEARINGS,
@@ -138,6 +144,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DELETE_PARTICIPANT_AND_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_ATTORNEY]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CONTACT_INFO]: {
@@ -204,6 +213,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [LOAD_PERSON_INFO_FOR_EDIT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_ATTORNEY]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_EDUCATION]: {
@@ -351,6 +363,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, action.id]),
+      });
+    }
+
+    case editAttorney.case(action.type): {
+      return editAttorney.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY, action.id], action)
+          .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedAttorney :Map = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          if (editedAttorney) {
+            supervisionNeighbors = supervisionNeighbors.update(
+              ATTORNEYS,
+              Map(),
+              (oldOfficer) => oldOfficer.merge(editedAttorney)
+            );
+          }
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_ATTORNEY, action.id]),
       });
     }
 
@@ -872,6 +910,29 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
             )
             .setIn([ACTIONS, RECORD_ENROLLMENT_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
+      });
+    }
+
+    case submitAttorney.case(action.type): {
+      return submitAttorney.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, action.id], action)
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newAttorney, newEmployment } = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(EMPLOYMENT, List([newEmployment]));
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .set(ATTORNEYS, newAttorney);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_ATTORNEY, action.id]),
       });
     }
 

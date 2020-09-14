@@ -15,12 +15,16 @@ import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  EDIT_ATTORNEY,
   EDIT_OFFICER,
   EDIT_SUPERVISION,
+  SUBMIT_ATTORNEY,
   SUBMIT_OFFICER,
   SUBMIT_SUPERVISION,
+  editAttorney,
   editOfficer,
   editSupervision,
+  submitAttorney,
   submitOfficer,
   submitSupervision,
 } from './SupervisionActions';
@@ -38,7 +42,9 @@ import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
 const { isDefined } = LangUtils;
 const {
+  ATTORNEYS,
   EMPLOYEE,
+  EMPLOYMENT,
   OFFICERS,
   PROBATION_PAROLE,
 } = APP_TYPE_FQNS;
@@ -48,6 +54,64 @@ const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
 
 const LOG = new Logger('SupervisionSagas');
+
+/*
+ *
+ * SupervisionActions.editAttorney()
+ *
+ */
+
+function* editAttorneyWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editAttorney.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const attorneysESID :UUID = getESIDFromApp(app, ATTORNEYS);
+
+    const attorneyEKID = Object.keys(entityData[attorneysESID])[0];
+
+    let editedAttorney :Map = Map();
+
+    if (Object.values(entityData).length) {
+      const response :Object = yield call(
+        submitPartialReplaceWorker,
+        submitPartialReplace({ entityData })
+      );
+      if (response.error) throw response.error;
+
+      if (entityData[attorneysESID]) {
+        const data = Object.values(entityData[attorneysESID])[0];
+        editedAttorney = Map().withMutations((map :Map) => {
+          fromJS(data).forEach((propertyValue :any, ptid :string) => {
+            const fqn = getPropertyFqnFromEDM(edm, ptid);
+            map.set(fqn, propertyValue);
+          });
+          map.set(ENTITY_KEY_ID, List([attorneyEKID]));
+        });
+      }
+    }
+
+    yield put(editAttorney.success(id, editedAttorney));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editAttorney.failure(id, error));
+  }
+  finally {
+    yield put(editAttorney.finally(id));
+  }
+}
+
+function* editAttorneyWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_ATTORNEY, editAttorneyWorker);
+}
 
 /*
  *
@@ -173,6 +237,64 @@ function* editSupervisionWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * SupervisionActions.submitAttorney()
+ *
+ */
+
+function* submitAttorneyWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitAttorney.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const attorneysESID :UUID = getESIDFromApp(app, ATTORNEYS);
+    const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newAttorneyEKID :UUID = entityKeyIds[attorneysESID][0];
+    const newAttorney :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([newAttorneyEKID]));
+      fromJS(entityData[attorneysESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    const newEmploymentEKID :UUID = entityKeyIds[employmentESID][0];
+    const newEmployment :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([newEmploymentEKID]));
+      fromJS(entityData[employmentESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitAttorney.success(id, { newAttorney, newEmployment }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitAttorney.failure(id, error));
+  }
+  finally {
+    yield put(submitAttorney.finally(id));
+  }
+}
+
+function* submitAttorneyWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_ATTORNEY, submitAttorneyWorker);
+}
+
+/*
+ *
  * SupervisionActions.submitOfficer()
  *
  */
@@ -278,10 +400,14 @@ function* submitSupervisionWatcher() :Generator<*, *, *> {
 }
 
 export {
+  editAttorneyWatcher,
+  editAttorneyWorker,
   editOfficerWatcher,
   editOfficerWorker,
   editSupervisionWatcher,
   editSupervisionWorker,
+  submitAttorneyWatcher,
+  submitAttorneyWorker,
   submitOfficerWatcher,
   submitOfficerWorker,
   submitSupervisionWatcher,
