@@ -146,6 +146,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(SupervisionSagas.editSupervisionWatcher),
     fork(SupervisionSagas.submitAttorneyWatcher),
     fork(SupervisionSagas.submitOfficerWatcher),
+    fork(SupervisionSagas.submitOfficerContactInfoWatcher),
     fork(SupervisionSagas.submitSupervisionWatcher),
 
     // TasksSagas

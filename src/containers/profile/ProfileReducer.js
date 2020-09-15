@@ -75,12 +75,14 @@ import {
   EDIT_SUPERVISION,
   SUBMIT_ATTORNEY,
   SUBMIT_OFFICER,
+  SUBMIT_OFFICER_CONTACT_INFO,
   SUBMIT_SUPERVISION,
   editAttorney,
   editOfficer,
   editSupervision,
   submitAttorney,
   submitOfficer,
+  submitOfficerContactInfo,
   submitSupervision,
 } from './supervision/SupervisionActions';
 import {
@@ -222,6 +224,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_OFFICER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_OFFICER_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_PERSON_DETAILS]: {
@@ -977,6 +982,28 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_OFFICER, action.id]),
+      });
+    }
+
+    case submitOfficerContactInfo.case(action.type): {
+      return submitOfficerContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEmail, newPhone } = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          const contactInfo :Map = supervisionNeighbors.get(CONTACT_INFO, Map())
+            .set(OFFICERS, List([newPhone, newEmail]));
+          supervisionNeighbors = supervisionNeighbors.set(CONTACT_INFO, contactInfo);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, action.id]),
       });
     }
 

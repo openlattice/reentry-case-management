@@ -17,15 +17,19 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   EDIT_ATTORNEY,
   EDIT_OFFICER,
+  EDIT_OFFICER_CONTACT_INFO,
   EDIT_SUPERVISION,
   SUBMIT_ATTORNEY,
   SUBMIT_OFFICER,
+  SUBMIT_OFFICER_CONTACT_INFO,
   SUBMIT_SUPERVISION,
   editAttorney,
   editOfficer,
+  editOfficerContactInfo,
   editSupervision,
   submitAttorney,
   submitOfficer,
+  submitOfficerContactInfo,
   submitSupervision,
 } from './SupervisionActions';
 
@@ -43,6 +47,7 @@ import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 const { isDefined } = LangUtils;
 const {
   ATTORNEYS,
+  CONTACT_INFO,
   EMPLOYEE,
   EMPLOYMENT,
   OFFICERS,
@@ -353,6 +358,65 @@ function* submitOfficerWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * SupervisionActions.submitOfficerContactInfo()
+ *
+ */
+
+function* submitOfficerContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitOfficerContactInfo.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newContactEKIDs = entityKeyIds[contactInfoESID];
+    const phoneEKID = newContactEKIDs[0];
+    const emailEKID = newContactEKIDs[1];
+
+    const newPhone = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([phoneEKID]));
+      fromJS(entityData[contactInfoESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    const newEmail :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([emailEKID]));
+      fromJS(entityData[contactInfoESID][1]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitOfficerContactInfo.success(id, { newEmail, newPhone }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitOfficerContactInfo.failure(id, error));
+  }
+  finally {
+    yield put(submitOfficerContactInfo.finally(id));
+  }
+}
+
+function* submitOfficerContactInfoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_OFFICER_CONTACT_INFO, submitOfficerContactInfoWorker);
+}
+
+/*
+ *
  * SupervisionActions.submitSupervision()
  *
  */
@@ -408,6 +472,8 @@ export {
   editSupervisionWorker,
   submitAttorneyWatcher,
   submitAttorneyWorker,
+  submitOfficerContactInfoWatcher,
+  submitOfficerContactInfoWorker,
   submitOfficerWatcher,
   submitOfficerWorker,
   submitSupervisionWatcher,
