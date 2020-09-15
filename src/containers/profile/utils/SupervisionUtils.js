@@ -3,6 +3,7 @@ import {
   List,
   Map,
   get,
+  getIn,
   setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
@@ -190,8 +191,26 @@ const preprocessContactInfoFormData = (formData :Object) :Object => {
   return updatedFormData;
 };
 
+const getNewContactValueFromEditedData = (formData :Object, officerContactInfo :List) => {
+  const existingContactIsPhone = officerContactInfo.hasIn([0, PHONE_NUMBER]);
+  const existingContactIsEmail = officerContactInfo.hasIn([0, EMAIL]);
+
+  let newContactValue;
+  let propertyFqn = EMAIL;
+  if (existingContactIsPhone) {
+    newContactValue = getIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(1, CONTACT_INFO, EMAIL)]) || '';
+  }
+  if (existingContactIsEmail) {
+    newContactValue = getIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)])
+      || '';
+    propertyFqn = PHONE_NUMBER;
+  }
+  return { newContactValue, propertyFqn };
+};
+
 export {
   formatGridData,
+  getNewContactValueFromEditedData,
   getOriginalFormData,
   preprocessContactInfoFormData,
 };
