@@ -12,6 +12,7 @@ import { ReduxUtils, RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
+import EditAttorneyContactInfoForm from './EditAttorneyContactInfoForm';
 import EditAttorneyForm from './EditAttorneyForm';
 import EditOfficerContactInfoForm from './EditOfficerContactInfoForm';
 import EditOfficerForm from './EditOfficerForm';
@@ -140,6 +141,8 @@ const EditSupervisionForm = ({ match } :Props) => {
                 <EditAttorneyForm
                     participantEKID={participantEKID}
                     participantNeighbors={participantNeighbors}
+                    supervisionNeighbors={supervisionNeighbors} />
+                <EditAttorneyContactInfoForm
                     supervisionNeighbors={supervisionNeighbors} />
               </CardStack>
             </>
