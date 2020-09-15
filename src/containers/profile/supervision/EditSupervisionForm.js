@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { Match } from 'react-router';
 
 import EditAttorneyForm from './EditAttorneyForm';
+import EditOfficerContactInfoForm from './EditOfficerContactInfoForm';
 import EditOfficerForm from './EditOfficerForm';
 import EditProbationParoleForm from './EditProbationParoleForm';
 
@@ -131,6 +132,9 @@ const EditSupervisionForm = ({ match } :Props) => {
                     participantNeighbors={participantNeighbors} />
                 <EditOfficerForm
                     participantEKID={participantEKID}
+                    participantNeighbors={participantNeighbors}
+                    supervisionNeighbors={supervisionNeighbors} />
+                <EditOfficerContactInfoForm
                     participantNeighbors={participantNeighbors}
                     supervisionNeighbors={supervisionNeighbors} />
                 <EditAttorneyForm
