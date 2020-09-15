@@ -123,8 +123,22 @@ const getNewContactValueFromEditedData = (formData :Object, officerContactInfo :
   return { newContactValue, propertyFqn };
 };
 
+const getNonEditableSchema = (uiSchema :Object) :Object => {
+  const newUiSchema = setIn(
+    uiSchema,
+    [
+      getPageSectionKey(1, 1),
+      'ui:options',
+      'editable'
+    ],
+    false
+  );
+  return newUiSchema;
+};
+
 export {
   formatGridData,
   getNewContactValueFromEditedData,
+  getNonEditableSchema,
   preprocessContactInfoFormData,
 };
