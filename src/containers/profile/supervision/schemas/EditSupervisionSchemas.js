@@ -81,7 +81,7 @@ const officerContactSchema :Object = {
           type: 'string',
           title: 'Officer phone number',
         },
-        [getEntityAddressKey(0, CONTACT_INFO, EMAIL)]: {
+        [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
           type: 'string',
           title: 'Officer email',
         },
@@ -123,7 +123,7 @@ const attorneyContactSchema :Object = {
           type: 'string',
           title: 'Attorney phone number',
         },
-        [getEntityAddressKey(0, CONTACT_INFO, EMAIL)]: {
+        [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
           type: 'string',
           title: 'Attorney email',
         },
@@ -168,7 +168,7 @@ const officerContactUiSchema = {
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, CONTACT_INFO, EMAIL)]: {
+    [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
       classNames: 'column-span-4',
     },
   },
@@ -194,7 +194,7 @@ const attorneyContactUiSchema = {
     [getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, CONTACT_INFO, EMAIL)]: {
+    [getEntityAddressKey(1, CONTACT_INFO, EMAIL)]: {
       classNames: 'column-span-4',
     },
   },
