@@ -29,7 +29,7 @@ import {
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
 import { formatPhoneNumbersAsYouType } from '../utils/PhoneNumberUtils';
-import { preprocessContactInfoFormData } from '../utils/SupervisionUtils';
+import { getNonEditableSchema, preprocessContactInfoFormData } from '../utils/SupervisionUtils';
 
 const { getEntityKeyId } = DataUtils;
 const {
@@ -134,7 +134,7 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
     }
   };
 
-  const handleEditOfficer = (params) => {
+  const handleEditOfficerContactInfo = (params) => {
     dispatch(editOfficerContactInfo({
       employeeEKID,
       officerContactInfo,
@@ -144,7 +144,7 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
   };
 
   const formContext = {
-    editAction: handleEditOfficer,
+    editAction: handleEditOfficerContactInfo,
     entityIndexToIdMap,
     entitySetIds,
     propertyTypeIds,
@@ -161,6 +161,8 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
     ACTIONS,
     SUBMIT_OFFICER_CONTACT_INFO,
   ]);
+
+  const uiSchema = officer.isEmpty() ? getNonEditableSchema(officerContactUiSchema) : officerContactUiSchema;
 
   return (
     <Card>
@@ -179,7 +181,7 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
                   onChange={onChange}
                   onSubmit={onSubmit}
                   schema={officerContactSchema}
-                  uiSchema={officerContactUiSchema} />
+                  uiSchema={uiSchema} />
             )
 
         }
