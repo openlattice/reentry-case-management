@@ -25,8 +25,6 @@ const {
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
-  FIRST_NAME,
-  LAST_NAME,
   LEVEL,
   PHONE_NUMBER,
   RECOGNIZED_END_DATETIME,
@@ -41,7 +39,8 @@ const formatGridData = (participantNeighbors :Map, supervisionNeighbors :Map) :M
     [LEVEL]: level,
     [RECOGNIZED_END_DATETIME]: endDateTime,
     [TYPE]: supervisionType
-  } = getEntityProperties(supervisionList.get(0) || Map(), [LEVEL, RECOGNIZED_END_DATETIME, TYPE]);
+  } = getEntityProperties(supervisionList.get(0) || Map(), [LEVEL, RECOGNIZED_END_DATETIME, TYPE], EMPTY_FIELD);
+  const endDateTimeAsDTObj = DateTime.fromISO(endDateTime);
 
   const attorney :Map = supervisionNeighbors.get(ATTORNEYS, Map());
   const officer :Map = supervisionNeighbors.get(OFFICERS, Map());
@@ -75,11 +74,11 @@ const formatGridData = (participantNeighbors :Map, supervisionNeighbors :Map) :M
   const gridData = Map({
     supervisionType,
     level,
-    endDate: DateTime.fromISO(endDateTime).toLocaleString(DateTime.DATE_SHORT),
-    officerName: getPersonFullName(officer),
+    endDate: endDateTimeAsDTObj.isValid ? endDateTimeAsDTObj.toLocaleString(DateTime.DATE_SHORT) : EMPTY_FIELD,
+    officerName: officer.isEmpty() ? EMPTY_FIELD : getPersonFullName(officer),
     officerPhone,
     officerEmail,
-    attorneyName: getPersonFullName(attorney),
+    attorneyName: attorney.isEmpty() ? EMPTY_FIELD : getPersonFullName(attorney),
     attorneyPhone,
     attorneyEmail,
   });
