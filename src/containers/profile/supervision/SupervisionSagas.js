@@ -22,18 +22,22 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   EDIT_ATTORNEY,
+  EDIT_ATTORNEY_CONTACT_INFO,
   EDIT_OFFICER,
   EDIT_OFFICER_CONTACT_INFO,
   EDIT_SUPERVISION,
   SUBMIT_ATTORNEY,
+  SUBMIT_ATTORNEY_CONTACT_INFO,
   SUBMIT_OFFICER,
   SUBMIT_OFFICER_CONTACT_INFO,
   SUBMIT_SUPERVISION,
   editAttorney,
+  editAttorneyContactInfo,
   editOfficer,
   editOfficerContactInfo,
   editSupervision,
   submitAttorney,
+  submitAttorneyContactInfo,
   submitOfficer,
   submitOfficerContactInfo,
   submitSupervision,
@@ -129,6 +133,113 @@ function* editAttorneyWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editAttorneyWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_ATTORNEY, editAttorneyWorker);
+}
+
+/*
+ *
+ * SupervisionActions.editAttorneyContactInfo()
+ *
+ */
+
+function* editAttorneyContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(editAttorneyContactInfo.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const {
+      attorneyContactInfo,
+      attorneyEKID,
+      entityData,
+      formData,
+    } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const selectedOrgId = app.get(SELECTED_ORG_ID);
+    const entitySetIds = app.getIn([ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map());
+    const propertyTypeIds = edm.getIn([TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map());
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+
+    let editedContacts :List = List();
+    let newContact :Map = Map();
+
+    // case where only 1 contact info entity was created in the Intake
+    if (attorneyContactInfo.count() === 1) {
+      const { newContactValue, propertyFqn } = getNewContactValueFromEditedData(formData, attorneyContactInfo);
+      const newContactPTID = getPTIDFromEDM(edm, propertyFqn);
+      const newEntityData = {
+        [contactInfoESID]: [{
+          [newContactPTID]: [newContactValue]
+        }]
+      };
+      const associations = [
+        [CONTACTED_VIA, attorneyEKID, ATTORNEYS, 0, CONTACT_INFO, {}],
+      ];
+      const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
+      const response :Object = yield call(
+        submitDataGraphWorker,
+        submitDataGraph({ associationEntityData, entityData: newEntityData })
+      );
+      if (response.error) throw response.error;
+      const { entityKeyIds } = response.data;
+      const newContactEKID = entityKeyIds[contactInfoESID][0];
+
+      newContact = Map().withMutations((map :Map) => {
+        map.set(ENTITY_KEY_ID, List([newContactEKID]));
+        map.set(getPropertyFqnFromEDM(edm, newContactPTID), List([newContactValue]));
+      });
+    }
+
+    if (Object.values(entityData).length) {
+      const updatedEntityData = Map().withMutations((mutator :Map) => {
+        mutator.set(contactInfoESID, Map());
+        fromJS(entityData).get(contactInfoESID).forEach((entityMap :Map, key :string) => {
+          if (isValidUUID(key)) {
+            mutator.setIn([contactInfoESID, key], entityMap);
+          }
+        });
+      });
+
+      if (!updatedEntityData.isEmpty()) {
+        const response :Object = yield call(
+          submitPartialReplaceWorker,
+          submitPartialReplace({ entityData: updatedEntityData.toJS() })
+        );
+        if (response.error) throw response.error;
+
+        attorneyContactInfo.forEach((existingContact :Map, index :number) => {
+          const existingContactEKID = getEntityKeyId(existingContact);
+          const editedData = entityData[contactInfoESID][existingContactEKID];
+          let editedContact = existingContact;
+          if (isDefined(editedData)) {
+            fromJS(editedData).forEach((propertyValue :any, ptid :string) => {
+              const fqn = getPropertyFqnFromEDM(edm, ptid);
+              editedContact = editedContact.set(fqn, propertyValue);
+            });
+          }
+          editedContacts = editedContacts.set(index, editedContact);
+        });
+      }
+    }
+    if (!newContact.isEmpty()) editedContacts = editedContacts.push(newContact);
+
+    yield put(editAttorneyContactInfo.success(id, editedContacts));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editAttorneyContactInfo.failure(id, error));
+  }
+  finally {
+    yield put(editAttorneyContactInfo.finally(id));
+  }
+}
+
+function* editAttorneyContactInfoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_ATTORNEY_CONTACT_INFO, editAttorneyContactInfoWorker);
 }
 
 /*
@@ -422,6 +533,65 @@ function* submitAttorneyWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * SupervisionActions.submitAttorneyContactInfo()
+ *
+ */
+
+function* submitAttorneyContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(submitAttorneyContactInfo.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { entityKeyIds } = response.data;
+    const { entityData } = value;
+
+    const newContactEKIDs = entityKeyIds[contactInfoESID];
+    const phoneEKID = newContactEKIDs[0];
+    const emailEKID = newContactEKIDs[1];
+
+    const newPhone = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([phoneEKID]));
+      fromJS(entityData[contactInfoESID][0]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    const newEmail :Map = Map().withMutations((map :Map) => {
+      map.set(ENTITY_KEY_ID, List([emailEKID]));
+      fromJS(entityData[contactInfoESID][1]).forEach((propertyValue :any, ptid :string) => {
+        const fqn = getPropertyFqnFromEDM(edm, ptid);
+        map.set(fqn, propertyValue);
+      });
+    });
+
+    yield put(submitAttorneyContactInfo.success(id, { newEmail, newPhone }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(submitAttorneyContactInfo.failure(id, error));
+  }
+  finally {
+    yield put(submitAttorneyContactInfo.finally(id));
+  }
+}
+
+function* submitAttorneyContactInfoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(SUBMIT_ATTORNEY_CONTACT_INFO, submitAttorneyContactInfoWorker);
+}
+
+/*
+ *
  * SupervisionActions.submitOfficer()
  *
  */
@@ -588,12 +758,16 @@ function* submitSupervisionWatcher() :Generator<*, *, *> {
 export {
   editAttorneyWatcher,
   editAttorneyWorker,
+  editAttorneyContactInfoWatcher,
+  editAttorneyContactInfoWorker,
   editOfficerContactInfoWatcher,
   editOfficerContactInfoWorker,
   editOfficerWatcher,
   editOfficerWorker,
   editSupervisionWatcher,
   editSupervisionWorker,
+  submitAttorneyContactInfoWatcher,
+  submitAttorneyContactInfoWorker,
   submitAttorneyWatcher,
   submitAttorneyWorker,
   submitOfficerContactInfoWatcher,
