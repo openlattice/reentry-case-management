@@ -94,10 +94,10 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
   const entityIndexToIdMap :Map = Map().withMutations((mutator :Map) => {
     officerContactInfo.forEach((contact :Map) => {
       if (contact.has(PHONE_NUMBER)) {
-        mutator.set(0, getEntityKeyId(contact));
+        mutator.setIn([CONTACT_INFO, 0], getEntityKeyId(contact));
       }
       if (contact.has(EMAIL)) {
-        mutator.set(1, getEntityKeyId(contact));
+        mutator.setIn([CONTACT_INFO, 1], getEntityKeyId(contact));
       }
     });
   });
@@ -135,7 +135,12 @@ const EditOfficerContactInfoForm = ({ participantNeighbors, supervisionNeighbors
   };
 
   const handleEditOfficer = (params) => {
-    dispatch(editOfficerContactInfo({ employeeEKID, officerEKID, ...params }));
+    dispatch(editOfficerContactInfo({
+      employeeEKID,
+      officerContactInfo,
+      officerEKID,
+      ...params
+    }));
   };
 
   const formContext = {

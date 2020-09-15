@@ -72,6 +72,7 @@ import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderAct
 import {
   EDIT_ATTORNEY,
   EDIT_OFFICER,
+  EDIT_OFFICER_CONTACT_INFO,
   EDIT_SUPERVISION,
   SUBMIT_ATTORNEY,
   SUBMIT_OFFICER,
@@ -79,6 +80,7 @@ import {
   SUBMIT_SUPERVISION,
   editAttorney,
   editOfficer,
+  editOfficerContactInfo,
   editSupervision,
   submitAttorney,
   submitOfficer,
@@ -173,6 +175,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_OFFICER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_OFFICER_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON]: {
@@ -578,6 +583,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_OFFICER, action.id]),
+      });
+    }
+
+    case editOfficerContactInfo.case(action.type): {
+      return editOfficerContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedContacts :List = seqAction.value;
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .setIn([CONTACT_INFO, OFFICERS], editedContacts);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, action.id]),
       });
     }
 
