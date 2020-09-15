@@ -1,6 +1,12 @@
 // @flow
-import { List, Map } from 'immutable';
+import {
+  List,
+  Map,
+  get,
+  setIn,
+} from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DataUtils, LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -9,6 +15,7 @@ import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const { isDefined } = LangUtils;
 const {
   ATTORNEYS,
   CONTACT_INFO,
@@ -165,7 +172,26 @@ const getOriginalFormData = (participantNeighbors :Map, supervisionNeighbors :Ma
   return originalFormData;
 };
 
+const preprocessContactInfoFormData = (formData :Object) :Object => {
+  let updatedFormData = formData;
+  const pageSection1 :string = getPageSectionKey(1, 1);
+  const phoneKey :string = getEntityAddressKey(0, CONTACT_INFO, PHONE_NUMBER);
+  const emailKey :string = getEntityAddressKey(1, CONTACT_INFO, EMAIL);
+  const contactsInFormData = get(formData, pageSection1);
+
+  if (!isDefined(get(contactsInFormData, phoneKey))) {
+    updatedFormData = setIn(updatedFormData, [pageSection1, phoneKey], ' ');
+  }
+
+  if (!isDefined(get(contactsInFormData, emailKey))) {
+    updatedFormData = setIn(updatedFormData, [pageSection1, emailKey], ' ');
+  }
+
+  return updatedFormData;
+};
+
 export {
   formatGridData,
   getOriginalFormData,
+  preprocessContactInfoFormData,
 };
