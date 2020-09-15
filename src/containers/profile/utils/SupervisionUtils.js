@@ -7,7 +7,7 @@ import {
   setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
-import { DataUtils, LangUtils } from 'lattice-utils';
+import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
