@@ -43,7 +43,6 @@ import { getFormattedParticipantData } from './utils/ProfileUtils';
 import CaseNotesProfileCard from '../casenotes/CaseNotesProfileCard';
 import EditButton from '../../components/buttons/EditButton';
 import * as Routes from '../../core/router/Routes';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEKID } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
@@ -70,7 +69,6 @@ const {
   SUPERVISION_NEIGHBORS,
 } = PROFILE;
 const { STAFF_BY_MEETING_EKID } = CASE_NOTES;
-const { PROBATION_PAROLE } = APP_TYPE_FQNS;
 
 const participantGridLabels = OrderedMap({
   lastName: 'Last name',
