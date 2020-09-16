@@ -21,7 +21,7 @@ const {
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
-const probationParoleSchema :Object = {
+const probationParoleSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -49,7 +49,7 @@ const probationParoleSchema :Object = {
   }
 };
 
-const officerSchema :Object = {
+const officerSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -69,7 +69,7 @@ const officerSchema :Object = {
     },
   }
 };
-const officerContactSchema :Object = {
+const officerContactSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -90,7 +90,7 @@ const officerContactSchema :Object = {
   }
 };
 
-const attorneySchema :Object = {
+const attorneySchema = {
   type: 'object',
   title: '',
   properties: {
@@ -111,7 +111,7 @@ const attorneySchema :Object = {
   }
 };
 
-const attorneyContactSchema :Object = {
+const attorneyContactSchema = {
   type: 'object',
   title: '',
   properties: {
