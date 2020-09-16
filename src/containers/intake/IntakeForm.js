@@ -135,8 +135,9 @@ class IntakeForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
+    const initialFormData = prepopulateFormData(props.selectedPerson, props.selectedReleaseDate);
     this.state = {
-      pagedData: {},
+      pagedData: initialFormData,
     };
   }
 
