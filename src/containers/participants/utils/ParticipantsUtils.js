@@ -2,9 +2,10 @@
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const { MANUAL_JAIL_STAYS, NEEDS_ASSESSMENT } = APP_TYPE_FQNS;
 const {
@@ -27,7 +28,8 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
     const personName :string = (typeof firstName === 'string' && typeof lastName === 'string')
       ? `${firstName} ${lastName}`
       : '';
-    const dateOfBirth :string = DateTime.fromISO(dob).toLocaleString(DateTime.DATE_SHORT);
+    const dobAsDTObj = DateTime.fromISO(dob);
+    const dateOfBirth :string = dobAsDTObj.isValid ? dobAsDTObj.toLocaleString(DateTime.DATE_SHORT) : EMPTY_FIELD;
     const personEKID :UUID = getEKID(person);
     const jailStays :List = personNeighbors.getIn([personEKID, MANUAL_JAIL_STAYS], List());
     const jailStay :Map = sortEntitiesByDateProperty(jailStays, [PROJECTED_RELEASE_DATETIME]).last();
@@ -36,7 +38,10 @@ const aggregateResultsData = (people :List, personNeighbors :Map, jailNamesByJai
 
     const needsAssessment :Map = personNeighbors.getIn([personEKID, NEEDS_ASSESSMENT], List()).get(0);
     const { [DATETIME_COMPLETED]: enrollmentDateTime } = getEntityProperties(needsAssessment, [DATETIME_COMPLETED]);
-    const enrollmentDate :string = DateTime.fromISO(enrollmentDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const enrollmentDateAsDTObj = DateTime.fromISO(enrollmentDateTime);
+    const enrollmentDate :string = enrollmentDateAsDTObj.isValid
+      ? enrollmentDateAsDTObj.toLocaleString(DateTime.DATE_SHORT)
+      : EMPTY_FIELD;
 
     const personDataObject :Map = fromJS({
       name: personName,
