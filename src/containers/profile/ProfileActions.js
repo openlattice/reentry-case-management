@@ -19,6 +19,9 @@ const getParticipant :RequestSequence = newRequestSequence(GET_PARTICIPANT);
 const GET_PARTICIPANT_NEIGHBORS :'GET_PARTICIPANT_NEIGHBORS' = 'GET_PARTICIPANT_NEIGHBORS';
 const getParticipantNeighbors :RequestSequence = newRequestSequence(GET_PARTICIPANT_NEIGHBORS);
 
+const GET_SUPERVISION_NEIGHBORS :'GET_SUPERVISION_NEIGHBORS' = 'GET_SUPERVISION_NEIGHBORS';
+const getSupervisionNeighbors :RequestSequence = newRequestSequence(GET_SUPERVISION_NEIGHBORS);
+
 const LOAD_PROFILE :'LOAD_PROFILE' = 'LOAD_PROFILE';
 const loadProfile :RequestSequence = newRequestSequence(LOAD_PROFILE);
 
@@ -31,6 +34,7 @@ export {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  GET_SUPERVISION_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   clearDeleteRequestState,
@@ -38,6 +42,7 @@ export {
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  getSupervisionNeighbors,
   loadPersonInfoForEdit,
   loadProfile,
 };
