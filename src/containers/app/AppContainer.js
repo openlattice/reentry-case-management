@@ -4,6 +4,7 @@
 
 import React, { Component } from 'react';
 
+import _isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { AuthActions, AuthUtils } from 'lattice-auth';
@@ -37,6 +38,7 @@ import CaseNotesForm from '../casenotes/CaseNotesForm';
 import ContactSupportButton from '../../components/buttons/ContactSupportButton';
 import EditPersonInfoForm from '../profile/person/EditPersonInfoForm';
 import EditReleaseInfoForm from '../profile/programhistory/EditReleaseInfoForm';
+import EditSupervisionForm from '../profile/supervision/EditSupervisionForm';
 import IntakeForm from '../intake/IntakeForm';
 import OpenLatticeIcon from '../../assets/images/ol_icon.png';
 import ParticipantFollowUps from '../profile/tasks/ParticipantFollowUps';
@@ -47,9 +49,12 @@ import Reports from '../reports/Reports';
 import SearchReleases from '../releases/SearchReleases';
 import TaskManager from '../tasks/TaskManager';
 import * as Routes from '../../core/router/Routes';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google';
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
+
+declare var gtag :?Function;
 
 const { APP_CONTENT_WIDTH } = Sizes;
 const { INITIALIZE_APPLICATION, switchOrganization } = AppActions;
@@ -85,6 +90,10 @@ class AppContainer extends Component<Props> {
 
     const { actions } = this.props;
     actions.logout();
+
+    if (_isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
+    }
   }
 
   switchOrganization = (organization :Object) => {
@@ -104,6 +113,7 @@ class AppContainer extends Component<Props> {
     if (requestIsSuccess(requestStates[INITIALIZE_APPLICATION])) {
       return (
         <Switch>
+          <Route path={Routes.EDIT_SUPERVISION} component={EditSupervisionForm} />
           <Route path={Routes.EDIT_RELEASE_INFO} component={EditReleaseInfoForm} />
           <Route path={Routes.CASE_NOTES_FORM} component={CaseNotesForm} />
           <Route path={Routes.PARTICIPANT_TASK_MANAGER} component={ParticipantFollowUps} />
