@@ -74,6 +74,7 @@ const PROFILE :Object = {
   PROFILE: 'profile',
   PROVIDER_BY_STATUS_EKID: 'providerByStatusEKID',
   STATE_ID_FORM_DATA: 'stateIdFormData',
+  SUPERVISION_NEIGHBORS: 'supervisionNeighbors',
 };
 
 const RELEASES :Object = {
