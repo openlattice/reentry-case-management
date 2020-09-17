@@ -9,12 +9,14 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  GET_SUPERVISION_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  getSupervisionNeighbors,
   loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
@@ -68,6 +70,28 @@ import {
 } from './programhistory/ProgramHistoryActions';
 import { EDIT_SEX_OFFENDER, editSexOffender } from './sexoffender/SexOffenderActions';
 import {
+  EDIT_ATTORNEY,
+  EDIT_ATTORNEY_CONTACT_INFO,
+  EDIT_OFFICER,
+  EDIT_OFFICER_CONTACT_INFO,
+  EDIT_SUPERVISION,
+  SUBMIT_ATTORNEY,
+  SUBMIT_ATTORNEY_CONTACT_INFO,
+  SUBMIT_OFFICER,
+  SUBMIT_OFFICER_CONTACT_INFO,
+  SUBMIT_SUPERVISION,
+  editAttorney,
+  editAttorneyContactInfo,
+  editOfficer,
+  editOfficerContactInfo,
+  editSupervision,
+  submitAttorney,
+  submitAttorneyContactInfo,
+  submitOfficer,
+  submitOfficerContactInfo,
+  submitSupervision,
+} from './supervision/SupervisionActions';
+import {
   CREATE_NEW_FOLLOW_UP,
   MARK_FOLLOW_UP_AS_COMPLETE,
   createNewFollowUp,
@@ -95,12 +119,16 @@ const {
   PERSON_DETAILS_FORM_DATA,
   PERSON_FORM_DATA,
   PROVIDER_BY_STATUS_EKID,
+  SUPERVISION_NEIGHBORS,
   STATE_ID_FORM_DATA,
 } = PROFILE;
 const {
+  ATTORNEYS,
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
+  EMPLOYEE,
+  EMPLOYMENT,
   ENROLLMENT_STATUS,
   FOLLOW_UPS,
   HEARINGS,
@@ -109,7 +137,9 @@ const {
   MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
   NEEDS_ASSESSMENT,
+  OFFICERS,
   PERSON_DETAILS,
+  PROBATION_PAROLE,
   REFERRAL_REQUEST,
   SEX_OFFENDER,
   SEX_OFFENDER_REGISTRATION_LOCATION,
@@ -124,6 +154,12 @@ const INITIAL_STATE :Map = fromJS({
     [DELETE_PARTICIPANT_AND_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_ATTORNEY]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_ATTORNEY_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -136,13 +172,19 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_EMERGENCY_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_EVENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_FACILITY_RELEASED_FROM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_NEEDS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [EDIT_EVENT]: {
+    [EDIT_OFFICER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_OFFICER_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON]: {
@@ -160,6 +202,9 @@ const INITIAL_STATE :Map = fromJS({
     [EDIT_SEX_OFFENDER]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [EDIT_SUPERVISION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [EDIT_STATE_ID]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -175,13 +220,28 @@ const INITIAL_STATE :Map = fromJS({
     [GET_PARTICIPANT_NEIGHBORS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_SUPERVISION_NEIGHBORS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [LOAD_PROFILE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [LOAD_PERSON_INFO_FOR_EDIT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SUBMIT_ATTORNEY]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_ATTORNEY_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [SUBMIT_EDUCATION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_OFFICER]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_OFFICER_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_PERSON_DETAILS]: {
@@ -191,6 +251,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_RELEASE_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SUBMIT_SUPERVISION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SUBMIT_STATE_ID]: {
@@ -205,6 +268,7 @@ const INITIAL_STATE :Map = fromJS({
   [PERSON_DETAILS_FORM_DATA]: Map(),
   [PERSON_FORM_DATA]: Map(),
   [PROVIDER_BY_STATUS_EKID]: Map(),
+  [SUPERVISION_NEIGHBORS]: Map(),
   [STATE_ID_FORM_DATA]: Map(),
 });
 
@@ -319,6 +383,52 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_PARTICIPANT_AND_NEIGHBORS, action.id]),
+      });
+    }
+
+    case editAttorney.case(action.type): {
+      return editAttorney.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY, action.id], action)
+          .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedAttorney :Map = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          if (editedAttorney) {
+            supervisionNeighbors = supervisionNeighbors.update(
+              ATTORNEYS,
+              Map(),
+              (oldOfficer) => oldOfficer.merge(editedAttorney)
+            );
+          }
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_ATTORNEY, action.id]),
+      });
+    }
+
+    case editAttorneyContactInfo.case(action.type): {
+      return editAttorneyContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedContacts :List = seqAction.value;
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .setIn([CONTACT_INFO, ATTORNEYS], editedContacts);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_ATTORNEY_CONTACT_INFO, action.id]),
       });
     }
 
@@ -480,6 +590,52 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editOfficer.case(action.type): {
+      return editOfficer.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_OFFICER, action.id], action)
+          .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedOfficer :Map = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          if (editedOfficer) {
+            supervisionNeighbors = supervisionNeighbors.update(
+              OFFICERS,
+              Map(),
+              (oldOfficer) => oldOfficer.merge(editedOfficer)
+            );
+          }
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_OFFICER, action.id]),
+      });
+    }
+
+    case editOfficerContactInfo.case(action.type): {
+      return editOfficerContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedContacts :List = seqAction.value;
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .setIn([CONTACT_INFO, OFFICERS], editedContacts);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_OFFICER_CONTACT_INFO, action.id]),
+      });
+    }
+
     case editPerson.case(action.type): {
       return editPerson.reducer(state, action, {
         REQUEST: () => state
@@ -593,6 +749,32 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case editSupervision.case(action.type): {
+      return editSupervision.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SUPERVISION, action.id], action)
+          .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const editedSupervision :Map = seqAction.value;
+          let participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS);
+          if (editedSupervision) {
+            participantNeighbors = participantNeighbors.updateIn(
+              [PROBATION_PAROLE, 0],
+              Map(),
+              (oldSupervision) => oldSupervision.merge(editedSupervision)
+            );
+          }
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SUPERVISION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SUPERVISION, action.id]),
+      });
+    }
+
     case editStateId.case(action.type): {
       return editStateId.reducer(state, action, {
         REQUEST: () => state
@@ -687,6 +869,24 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case getSupervisionNeighbors.case(action.type): {
+
+      return getSupervisionNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, action.id], action)
+          .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(SUPERVISION_NEIGHBORS, value)
+            .setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_SUPERVISION_NEIGHBORS, action.id]),
+      });
+    }
+
     case loadProfile.case(action.type): {
 
       return loadProfile.reducer(state, action, {
@@ -773,6 +973,51 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
       });
     }
 
+    case submitAttorney.case(action.type): {
+      return submitAttorney.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, action.id], action)
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newAttorney, newEmployment } = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(EMPLOYMENT, List([newEmployment]));
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .set(ATTORNEYS, newAttorney);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_ATTORNEY, action.id]),
+      });
+    }
+
+    case submitAttorneyContactInfo.case(action.type): {
+      return submitAttorneyContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, SUBMIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEmail, newPhone } = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          const contactInfo :Map = supervisionNeighbors.get(CONTACT_INFO, Map())
+            .set(ATTORNEYS, List([newPhone, newEmail]));
+          supervisionNeighbors = supervisionNeighbors.set(CONTACT_INFO, contactInfo);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_ATTORNEY_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_ATTORNEY_CONTACT_INFO, action.id]),
+      });
+    }
+
     case submitEducation.case(action.type): {
       return submitEducation.reducer(state, action, {
         REQUEST: () => state
@@ -791,6 +1036,51 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_EDUCATION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_EDUCATION, action.id]),
+      });
+    }
+
+    case submitOfficer.case(action.type): {
+      return submitOfficer.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER, action.id], action)
+          .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEmployee, newOfficer } = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(EMPLOYEE, List([newEmployee]));
+          const supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS)
+            .set(OFFICERS, newOfficer);
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_OFFICER, action.id]),
+      });
+    }
+
+    case submitOfficerContactInfo.case(action.type): {
+      return submitOfficerContactInfo.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, action.id], action)
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { newEmail, newPhone } = seqAction.value;
+          let supervisionNeighbors :Map = state.get(SUPERVISION_NEIGHBORS);
+          const contactInfo :Map = supervisionNeighbors.get(CONTACT_INFO, Map())
+            .set(OFFICERS, List([newPhone, newEmail]));
+          supervisionNeighbors = supervisionNeighbors.set(CONTACT_INFO, contactInfo);
+          return state
+            .set(SUPERVISION_NEIGHBORS, supervisionNeighbors)
+            .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_OFFICER_CONTACT_INFO, action.id]),
       });
     }
 
@@ -852,6 +1142,26 @@ export default function profileReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, SUBMIT_RELEASE_DATE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_RELEASE_DATE, action.id]),
+      });
+    }
+
+    case submitSupervision.case(action.type): {
+      return submitSupervision.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, action.id], action)
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const newSupervision :Map = seqAction.value;
+          const participantNeighbors :Map = state.get(PARTICIPANT_NEIGHBORS)
+            .set(PROBATION_PAROLE, List([newSupervision]));
+          return state
+            .set(PARTICIPANT_NEIGHBORS, participantNeighbors)
+            .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SUBMIT_SUPERVISION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SUBMIT_SUPERVISION, action.id]),
       });
     }
 

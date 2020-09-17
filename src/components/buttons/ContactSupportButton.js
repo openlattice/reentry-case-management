@@ -6,9 +6,10 @@ import { faQuestionCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Colors } from 'lattice-ui-kit';
 
-const { NEUTRAL } = Colors;
+const { NEUTRAL, WHITE } = Colors;
 
 const SupportButton = styled(Button)`
+  background-color: ${WHITE};
   bottom: 16px;
   position: fixed;
   right: 16px;

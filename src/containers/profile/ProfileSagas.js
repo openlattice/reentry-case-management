@@ -26,12 +26,14 @@ import {
   GET_ENROLLMENT_STATUS_NEIGHBORS,
   GET_PARTICIPANT,
   GET_PARTICIPANT_NEIGHBORS,
+  GET_SUPERVISION_NEIGHBORS,
   LOAD_PERSON_INFO_FOR_EDIT,
   LOAD_PROFILE,
   deleteParticipantAndNeighbors,
   getEnrollmentStatusNeighbors,
   getParticipant,
   getParticipantNeighbors,
+  getSupervisionNeighbors,
   loadPersonInfoForEdit,
   loadProfile,
 } from './ProfileActions';
@@ -74,20 +76,25 @@ const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  ATTORNEYS,
   CONTACT_INFO,
   EDUCATION,
   EMERGENCY_CONTACT,
   EMERGENCY_CONTACT_INFO,
+  EMPLOYEE,
+  EMPLOYMENT,
   ENROLLMENT_STATUS,
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
-  MANUAL_JAIL_STAYS,
   MANUAL_JAILS_PRISONS,
+  MANUAL_JAIL_STAYS,
   MEETINGS,
   NEEDS_ASSESSMENT,
+  OFFICERS,
   PEOPLE,
   PERSON_DETAILS,
+  PROBATION_PAROLE,
   PROVIDER,
   PROVIDER_STAFF,
   REFERRAL_REQUEST,
@@ -268,6 +275,130 @@ function* getEnrollmentStatusNeighborsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ProfileActions.getSupervisionNeighbors()
+ *
+ */
+
+function* getSupervisionNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(getSupervisionNeighbors.request(id, value));
+    const personNeighborMap :Map = value;
+
+    const app = yield select(getAppFromState);
+    const attorneysESID :UUID = getESIDFromApp(app, ATTORNEYS);
+    const officersESID :UUID = getESIDFromApp(app, OFFICERS);
+
+    let attorney :Map = Map();
+    const attorneyEmploymentEntityList = get(personNeighborMap, EMPLOYMENT);
+    if (isDefined(attorneyEmploymentEntityList) && !attorneyEmploymentEntityList.isEmpty()) {
+      const attorneyEmploymentEKID :UUID = getEKID(attorneyEmploymentEntityList.get(0));
+      const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
+      const filter = {
+        entityKeyIds: [attorneyEmploymentEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [attorneysESID],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employmentESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      if (!neighbors.isEmpty()) {
+        attorney = getNeighborDetails(neighbors.getIn([attorneyEmploymentEKID, 0]));
+      }
+    }
+
+    let officer :Map = Map();
+    const officerEmployeeEntityList = get(personNeighborMap, EMPLOYEE);
+    if (isDefined(officerEmployeeEntityList) && !officerEmployeeEntityList.isEmpty()) {
+      const officerEmployeeEKID :UUID = getEKID(officerEmployeeEntityList.get(0));
+      const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+      const filter = {
+        entityKeyIds: [officerEmployeeEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [officersESID],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employeeESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      if (!neighbors.isEmpty()) {
+        officer = getNeighborDetails(neighbors.getIn([officerEmployeeEKID, 0]));
+      }
+    }
+
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    let contactInfo :Map = Map().asMutable();
+
+    if (!attorney.isEmpty()) {
+      const attorneyEKID :UUID = getEKID(attorney);
+      const filter = {
+        entityKeyIds: [attorneyEKID],
+        destinationEntitySetIds: [contactInfoESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: attorneysESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      const attorneyContactInfo :List = neighbors
+        .get(attorneyEKID, List())
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+      contactInfo.set(ATTORNEYS, attorneyContactInfo);
+    }
+
+    if (!officer.isEmpty()) {
+      const officerEKID :UUID = getEKID(officer);
+      const filter = {
+        entityKeyIds: [officerEKID],
+        destinationEntitySetIds: [contactInfoESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: officersESID, filter })
+      );
+      if (response.error) throw response.error;
+      const neighbors = fromJS(response.data);
+      const officerContactInfo :List = neighbors
+        .get(officerEKID, List())
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+      contactInfo.set(OFFICERS, officerContactInfo);
+    }
+    contactInfo = contactInfo.asImmutable();
+
+    const supervisionNeighbors = Map().withMutations((mutator :Map) => {
+      if (!attorney.isEmpty()) mutator.set(ATTORNEYS, attorney);
+      if (!officer.isEmpty()) mutator.set(OFFICERS, officer);
+      if (!contactInfo.isEmpty()) mutator.set(CONTACT_INFO, contactInfo);
+    });
+
+    yield put(getSupervisionNeighbors.success(id, supervisionNeighbors));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getSupervisionNeighbors.failure(id, error));
+  }
+  finally {
+    yield put(getSupervisionNeighbors.finally(id));
+  }
+}
+
+function* getSupervisionNeighborsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SUPERVISION_NEIGHBORS, getSupervisionNeighborsWorker);
+}
+
+/*
+ *
  * ProfileActions.getParticipantNeighbors()
  *
  */
@@ -359,6 +490,9 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
         .map((meeting :Map) => getEKID(meeting))
         .toJS();
       yield call(getStaffWhoRecordedNotesWorker, getStaffWhoRecordedNotes({ meetingEKIDs }));
+    }
+    if (isDefined(get(personNeighborMap, EMPLOYMENT)) || isDefined(get(personNeighborMap, EMPLOYEE))) {
+      yield call(getSupervisionNeighborsWorker, getSupervisionNeighbors(personNeighborMap));
     }
 
     workerResponse.data = personNeighborMap;
@@ -507,12 +641,15 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
     const educationESID :UUID = getESIDFromApp(app, EDUCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+    const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
     const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
     const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
     const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
     const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
     const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
+    const probationParoleESID :UUID = getESIDFromApp(app, PROBATION_PAROLE);
     const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
     const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
     const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
@@ -532,6 +669,9 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
       { direction: DST, neighborESID: stateIdESID },
       { direction: SRC, neighborESID: emergencyContactESID },
       { direction: DST, neighborESID: meetingsESID },
+      { direction: DST, neighborESID: probationParoleESID },
+      { direction: DST, neighborESID: employmentESID }, // attorney
+      { direction: SRC, neighborESID: employeeESID }, // probation/parole officer
     ];
     const workerResponses :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
@@ -571,6 +711,8 @@ export {
   getParticipantNeighborsWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getSupervisionNeighborsWatcher,
+  getSupervisionNeighborsWorker,
   loadPersonInfoForEditWatcher,
   loadPersonInfoForEditWorker,
   loadProfileWatcher,
