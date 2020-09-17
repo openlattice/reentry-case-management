@@ -28,6 +28,7 @@ import NeedsCard from './needs/NeedsCard';
 import ProgramHistory from './programhistory/ProgramHistory';
 import RecordEventModal from './events/RecordEventModal';
 import SexOffenderCard from './sexoffender/SexOffenderCard';
+import SupervisionCard from './supervision/SupervisionCard';
 import { LOAD_PROFILE, clearDeleteRequestState, loadProfile } from './ProfileActions';
 import { CardInnerWrapper } from './styled/EventStyles';
 import {
@@ -65,6 +66,7 @@ const {
   PARTICIPANT,
   PARTICIPANT_NEIGHBORS,
   PROVIDER_BY_STATUS_EKID,
+  SUPERVISION_NEIGHBORS,
 } = PROFILE;
 const { STAFF_BY_MEETING_EKID } = CASE_NOTES;
 
@@ -124,6 +126,7 @@ type Props = {
   requestStates :{
     LOAD_PROFILE :RequestState;
   };
+  supervisionNeighbors :Map;
   staffByMeetingEKID :Map;
 };
 
@@ -195,6 +198,7 @@ class ParticipantProfile extends Component<Props, State> {
       participantNeighbors,
       providerByStatusEKID,
       requestStates,
+      supervisionNeighbors,
       staffByMeetingEKID,
     } = this.props;
     const { deleteModalIsOpen, eventModalIsOpen } = this.state;
@@ -259,6 +263,10 @@ class ParticipantProfile extends Component<Props, State> {
               staffByMeetingEKID={staffByMeetingEKID} />
           <CourtDatesCard participantNeighbors={participantNeighbors} />
           <SexOffenderCard participantNeighbors={participantNeighbors} />
+          <SupervisionCard
+              participantNeighbors={participantNeighbors}
+              personEKID={personEKID}
+              supervisionNeighbors={supervisionNeighbors} />
         </ProfileCardStack>
         <CenteredCardSegment vertical={false}>
           <Button
@@ -295,6 +303,7 @@ const mapStateToProps = (state :Map) => {
     requestStates: {
       [LOAD_PROFILE]: profile.getIn([ACTIONS, LOAD_PROFILE, REQUEST_STATE]),
     },
+    [SUPERVISION_NEIGHBORS]: profile.get(SUPERVISION_NEIGHBORS),
     [STAFF_BY_MEETING_EKID]: caseNotes.get(STAFF_BY_MEETING_EKID),
   };
 };

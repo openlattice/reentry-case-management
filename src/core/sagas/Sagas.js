@@ -24,6 +24,7 @@ import * as ReleasesSagas from '../../containers/releases/ReleasesSagas';
 import * as ReportsSagas from '../../containers/reports/ReportsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as SexOffenderSagas from '../../containers/profile/sexoffender/SexOffenderSagas';
+import * as SupervisionSagas from '../../containers/profile/supervision/SupervisionSagas';
 import * as TasksSagas from '../../containers/tasks/TasksSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -98,6 +99,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ProfileSagas.getEnrollmentStatusNeighborsWatcher),
     fork(ProfileSagas.getParticipantWatcher),
     fork(ProfileSagas.getParticipantNeighborsWatcher),
+    fork(ProfileSagas.getSupervisionNeighborsWatcher),
     fork(ProfileSagas.loadProfileWatcher),
     fork(ProfileSagas.loadPersonInfoForEditWatcher),
 
@@ -137,6 +139,18 @@ export default function* sagas() :Generator<*, *, *> {
 
     // SexOffenderSagas
     fork(SexOffenderSagas.editSexOffenderWatcher),
+
+    // SupervisionSagas
+    fork(SupervisionSagas.editAttorneyContactInfoWatcher),
+    fork(SupervisionSagas.editAttorneyWatcher),
+    fork(SupervisionSagas.editOfficerContactInfoWatcher),
+    fork(SupervisionSagas.editOfficerWatcher),
+    fork(SupervisionSagas.editSupervisionWatcher),
+    fork(SupervisionSagas.submitAttorneyContactInfoWatcher),
+    fork(SupervisionSagas.submitAttorneyWatcher),
+    fork(SupervisionSagas.submitOfficerContactInfoWatcher),
+    fork(SupervisionSagas.submitOfficerWatcher),
+    fork(SupervisionSagas.submitSupervisionWatcher),
 
     // TasksSagas
     fork(TasksSagas.getPeopleForNewTaskFormWatcher),

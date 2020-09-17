@@ -640,6 +640,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   // Attorney
   if (attorneyFilledOutInForm) {
     associations.push([REPRESENTED_BY, 0, PEOPLE, 0, EMPLOYMENT, {}]);
+    associations.push([REPRESENTED_BY, 0, PEOPLE, 0, ATTORNEYS, {}]);
     associations.push([HAS, 0, ATTORNEYS, 0, EMPLOYMENT, {}]);
   }
 
@@ -662,7 +663,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   */
 
   // Probation/Parole
-  if (isDefined(get(probationData, SUPERVISION_END_DATETIME_EAK))) {
+  if (isDefined(get(probationData, SUPERVISION_TYPE_EAK))) {
     associations.push([MANUAL_ASSIGNED_TO, 0, PEOPLE, 0, PROBATION_PAROLE, {}]);
     if (officerFilledOutInForm) {
       associations.push([MANUAL_ASSIGNED_TO, 0, EMPLOYEE, 0, PROBATION_PAROLE, {}]);
