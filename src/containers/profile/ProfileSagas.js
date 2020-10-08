@@ -78,6 +78,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   ATTORNEYS,
   CONTACT_INFO,
+  COUNTY_ID,
   EDUCATION,
   EMERGENCY_CONTACT,
   EMERGENCY_CONTACT_INFO,
@@ -639,6 +640,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const addressESID :UUID = getESIDFromApp(app, LOCATION);
     const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    const countyIdESID :UUID = getESIDFromApp(app, COUNTY_ID);
     const educationESID :UUID = getESIDFromApp(app, EDUCATION);
     const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
     const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
@@ -657,6 +659,7 @@ function* loadProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     const neighborsToGet = [
       { direction: DST, neighborESID: addressESID },
       { direction: DST, neighborESID: contactInfoESID },
+      { direction: DST, neighborESID: countyIdESID },
       { direction: DST, neighborESID: educationESID },
       { direction: DST, neighborESID: enrollmentStatusESID },
       { direction: DST, neighborESID: hearingsESID },
