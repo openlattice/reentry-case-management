@@ -7,6 +7,7 @@ const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   ATTORNEYS,
   CONTACT_INFO,
+  COUNTY_ID,
   EDUCATION,
   EMPLOYEE,
   EMPLOYMENT,
@@ -27,7 +28,6 @@ const {
 const {
   CITY,
   COUNTY,
-  COUNTY_ID,
   DATE,
   DATETIME_COMPLETED,
   DOB,
@@ -56,6 +56,7 @@ const {
   REGISTERED_FLAG,
   SOURCE,
   STREET,
+  STRING_NUMBER,
   TITLE,
   TYPE,
   US_STATE,
@@ -107,7 +108,7 @@ export const EDUCATION_EAK = getEntityAddressKey(0, EDUCATION, HIGHEST_EDUCATION
  * ids
  */
 export const ID_PSK = getPageSectionKey(1, 5);
-export const COUNTY_ID_EAK = getEntityAddressKey(0, PEOPLE, COUNTY_ID);
+export const COUNTY_ID_EAK = getEntityAddressKey(0, COUNTY_ID, STRING_NUMBER);
 export const STATE_ID_EAK = getEntityAddressKey(0, STATE_ID, OL_ID_FQN);
 
 /*
