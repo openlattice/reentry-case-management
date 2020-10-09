@@ -9,13 +9,13 @@ import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
+  COUNTY_ID,
   EDUCATION,
   NEEDS_ASSESSMENT,
   PERSON_DETAILS,
   STATE_ID,
 } = APP_TYPE_FQNS;
 const {
-  COUNTY_ID,
   DATETIME_COMPLETED,
   DOB,
   ETHNICITY,
@@ -28,13 +28,13 @@ const {
   OL_ID_FQN,
   PROJECTED_RELEASE_DATETIME,
   RACE,
+  STRING_NUMBER,
 } = PROPERTY_TYPE_FQNS;
 
 const getFormattedParticipantData = (participant :Map, participantNeighbors :Map) :Map => {
 
   const age = getPersonAge(participant);
   const {
-    [COUNTY_ID]: countyID,
     [DOB]: dobISO,
     [ETHNICITY]: ethnicity,
     [FIRST_NAME]: firstName,
@@ -43,7 +43,7 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
     [RACE]: race,
   } = getEntityProperties(
     participant,
-    [COUNTY_ID, DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, RACE],
+    [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MIDDLE_NAME, RACE],
     EMPTY_FIELD
   );
   const dobAsDateTime :DateTime = DateTime.fromISO(dobISO);
@@ -62,6 +62,8 @@ const getFormattedParticipantData = (participant :Map, participantNeighbors :Map
   }
   const stateIDEntity :List = participantNeighbors.get(STATE_ID, List());
   const opusNumber :string = !stateIDEntity.isEmpty() ? stateIDEntity.getIn([0, OL_ID_FQN, 0]) : EMPTY_FIELD;
+  const countyIDEntity :List = participantNeighbors.get(COUNTY_ID, List());
+  const countyID :string = !countyIDEntity.isEmpty() ? countyIDEntity.getIn([0, STRING_NUMBER, 0]) : EMPTY_FIELD;
   const educationList :List = participantNeighbors.get(EDUCATION, List());
   let education :string = EMPTY_FIELD;
   if (!educationList.isEmpty()) {

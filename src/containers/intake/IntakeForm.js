@@ -29,9 +29,9 @@ import {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
+  getIDAssociations,
   getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
-  getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   prepopulateFormData,
   setClientContactInfoIndices,
@@ -198,7 +198,7 @@ class IntakeForm extends Component<Props, State> {
       getClientReleaseAssociations,
       getClientHearingAssociations,
       getNeedsAssessmentAssociations,
-      getStateIDAssociations
+      getIDAssociations
     )([]);
     associations = associations.concat(getOfficerAndAttorneyContactAssociations(formData, formDataToProcess));
 

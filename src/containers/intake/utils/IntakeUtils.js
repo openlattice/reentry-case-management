@@ -24,6 +24,7 @@ import {
   ATTORNEY_PHONE_EAK,
   CELL_PHONE_EAK,
   CONTACT_INFO_PSK,
+  COUNTY_ID_EAK,
   COURT_HEARINGS_PSK,
   DOB_EAK,
   EDUCATION_EAK,
@@ -71,6 +72,7 @@ const {
   ATTORNEYS,
   CONTACTED_VIA,
   CONTACT_INFO,
+  COUNTY_ID,
   EDUCATION,
   EMPLOYEE,
   EMPLOYMENT,
@@ -736,12 +738,15 @@ const getNeedsAssessmentAssociations = (formData :Object) :Array<Array<*>> => {
   return associations;
 };
 
-const getStateIDAssociations = (formData :Object) :Array<Array<*>> => {
+const getIDAssociations = (formData :Object) :Array<Array<*>> => {
   const associations = [];
   const ids = get(formData, ID_PSK);
   if (!isDefined(ids) || !Object.values(ids).length) return associations;
   if (isDefined(get(ids, STATE_ID_EAK))) {
     associations.push([HAS, 0, PEOPLE, 0, STATE_ID, {}]);
+  }
+  if (isDefined(get(ids, COUNTY_ID_EAK))) {
+    associations.push([HAS, 0, PEOPLE, 0, COUNTY_ID, {}]);
   }
   return associations;
 };
@@ -754,9 +759,9 @@ export {
   getClientHearingAssociations,
   getClientReleaseAssociations,
   getClientSexOffenderAssociations,
+  getIDAssociations,
   getNeedsAssessmentAssociations,
   getOfficerAndAttorneyContactAssociations,
-  getStateIDAssociations,
   hydrateIncarcerationFacilitiesSchemas,
   prepopulateFormData,
   setClientContactInfoIndices,

@@ -13,6 +13,7 @@ const APP_TYPE_FQNS :Object = {
   ATTORNEY_CONTACT_INFO: new FullyQualifiedName('app.attorneycontactinformation'),
   CONTACTED_VIA: new FullyQualifiedName('app.contactedvia'),
   CONTACT_INFO: new FullyQualifiedName('app.contactinformation'),
+  COUNTY_ID: new FullyQualifiedName('app.countyids'),
   COURT_CASES: new FullyQualifiedName('app.courtcases'),
   EDUCATION: new FullyQualifiedName('app.education'),
   EMERGENCY_CONTACT: new FullyQualifiedName('app.emergencycontact'), // general.person
@@ -123,6 +124,7 @@ const PROPERTY_TYPE_FQNS = {
   SSN: new FullyQualifiedName('nc.SSN'),
   STATUS: new FullyQualifiedName('ol.status'),
   STREET: new FullyQualifiedName('location.street'),
+  STRING_NUMBER: new FullyQualifiedName('ol.stringnumber'),
   TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
   US_STATE: new FullyQualifiedName('location.state'),
