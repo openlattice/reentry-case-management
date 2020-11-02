@@ -2,7 +2,7 @@
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PROVIDER_TYPES } from '../../../utils/constants/DataConstants';
+import { NEEDS } from '../../../utils/constants/DataConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { PROVIDER, PROVIDER_ADDRESS } = APP_TYPE_FQNS;
@@ -30,7 +30,7 @@ const schema :Object = {
           title: 'Type of provider',
           items: {
             type: 'string',
-            enum: PROVIDER_TYPES,
+            enum: NEEDS,
           },
           uniqueItems: true,
         },

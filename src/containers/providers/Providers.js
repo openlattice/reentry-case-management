@@ -21,7 +21,7 @@ import { GET_PROVIDERS, getProviders } from './ProvidersActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
-import { PROVIDER_TYPES } from '../../utils/constants/DataConstants';
+import { NEEDS } from '../../utils/constants/DataConstants';
 import { APP, PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { CONTACT_INFO_BY_CONTACT_PERSON_EKID, PROVIDERS_LIST, PROVIDER_NEIGHBOR_MAP } = PROVIDERS;
@@ -29,7 +29,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const { PROVIDER } = APP_TYPE_FQNS;
 const { NAME, TYPE } = PROPERTY_TYPE_FQNS;
 
-const checkboxSelectOptions = PROVIDER_TYPES.map((type :string) => ({ label: type, value: type }));
+const checkboxSelectOptions = NEEDS.map((type :string) => ({ label: type, value: type }));
 
 const HeaderRow = styled.div`
   align-items: center;
