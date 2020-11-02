@@ -10,7 +10,7 @@ import {
   MARITAL_STATUSES,
   PREFERRED_COMMUNICATION_METHODS,
   PREFERRED_COMMUNICATION_TIMES,
-  PROVIDER_TYPES,
+  NEEDS,
   RACES,
   REFERRAL_SOURCES,
   SUPERVISION_LEVELS,
@@ -647,7 +647,7 @@ const needsAssessmentSchema = {
           title: 'Check all the categories that apply.',
           items: {
             type: 'string',
-            enum: PROVIDER_TYPES,
+            enum: NEEDS,
           },
           uniqueItems: true,
         },
