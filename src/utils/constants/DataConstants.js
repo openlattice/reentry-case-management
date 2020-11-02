@@ -194,8 +194,8 @@ const HEARING_TYPES = [
   'Trial Setting Conference',
 ];
 
-// Provider Types
-const PROVIDER_TYPES :string[] = [
+// Needs
+const NEEDS :string[] = [
   'Housing Assistance',
   'Food & Provisions',
   'Employment Assistance',
@@ -205,6 +205,7 @@ const PROVIDER_TYPES :string[] = [
   'Clothing',
   'Education / Vocational Training',
   'Family Support',
+  'State ID / Driver’s License / SS Card',
 ];
 
 export {
@@ -217,7 +218,7 @@ export {
   PAROLE_PROBATION_CONSTS,
   PREFERRED_COMMUNICATION_METHODS,
   PREFERRED_COMMUNICATION_TIMES,
-  PROVIDER_TYPES,
+  NEEDS,
   RACES,
   REFERRAL_SOURCES,
   SEXES,
