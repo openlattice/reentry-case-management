@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useState } from 'react';
 
 import { Map } from 'immutable';
@@ -6,6 +9,7 @@ import { CardSegment } from 'lattice-ui-kit';
 import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import EditEventModal from './EditEventModal';
 

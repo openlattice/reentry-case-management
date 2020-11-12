@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   all,
   call,
@@ -7,19 +10,11 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getNeighborDetails,
-  getPTIDFromEDM,
-} from '../../utils/DataUtils';
-import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import {
   GET_JAILS_BY_JAIL_STAY_EKID,
   SEARCH_JAIL_STAYS_BY_PERSON,
@@ -32,13 +27,24 @@ import {
   searchReleasesByDate,
   searchReleasesByPersonName,
 } from './ReleasesActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+
+import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEKID,
+  getESIDFromApp,
+  getNeighborDetails,
+  getPTIDFromEDM,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined, isNonEmptyString } from '../../utils/LangUtils';
+import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 
 const LOG = new Logger('ReleasesSagas');
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
 const {
   FIRST_NAME,
@@ -233,8 +239,8 @@ function* searchReleasesByDateWorker(action :SequenceAction) :Generator<*, *, *>
       }]
     };
     const [releaseDTResponse, projectedDTResponse] = yield all([
-      call(executeSearchWorker, executeSearch({ searchOptions: releaseDTSearchOptions })),
-      call(executeSearchWorker, executeSearch({ searchOptions: projectedDTSearchOptions }))
+      call(searchEntitySetDataWorker, searchEntitySetData(releaseDTSearchOptions)),
+      call(searchEntitySetDataWorker, searchEntitySetData(projectedDTSearchOptions))
     ]);
     if (releaseDTResponse.error) throw releaseDTResponse.error;
     if (projectedDTResponse.error) throw projectedDTResponse.error;
@@ -378,7 +384,7 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
           ],
         }]
       });
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       people = fromJS(response.data.hits);
       totalHits = response.data.numHits;
@@ -406,7 +412,7 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
         });
       }
 
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       people = fromJS(response.data.hits);
       totalHits = response.data.numHits;

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React from 'react';
 
 import { Map, OrderedMap } from 'immutable';
@@ -8,6 +11,7 @@ import {
   DataGrid,
 } from 'lattice-ui-kit';
 import { useGoToRoute } from 'lattice-utils';
+import type { UUID } from 'lattice';
 
 import EditButton from '../../../components/buttons/EditButton';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -10,21 +13,23 @@ import {
   Map,
   fromJS,
 } from 'immutable';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { EDIT_SEX_OFFENDER, editSexOffender } from './SexOffenderActions';
+
 import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/data/DataActions';
 import {
   deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker,
 } from '../../../core/data/DataSagas';
-import { EDIT_SEX_OFFENDER, editSexOffender } from './SexOffenderActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
+import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
 const { SEX_OFFENDER, SEX_OFFENDER_REGISTRATION_LOCATION } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;

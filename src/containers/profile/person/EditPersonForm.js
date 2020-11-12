@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import { Map } from 'immutable';
@@ -6,6 +9,7 @@ import { Form } from 'lattice-fabricate';
 import { Card, CardSegment, Spinner } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { EDIT_PERSON, editPerson } from './EditPersonActions';

@@ -2,19 +2,21 @@
  * @flow
  */
 
-import { AccountUtils } from 'lattice-auth';
 import { Map, fromJS } from 'immutable';
+import { AccountUtils } from 'lattice-auth';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { isDefined } from '../../utils/LangUtils';
-import { RESET_REQUEST_STATE } from '../../core/redux/ReduxActions';
 import {
   INITIALIZE_APPLICATION,
   initializeApplication,
 } from './AppActions';
-import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
+
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { RESET_REQUEST_STATE } from '../../core/redux/ReduxActions';
+import { isDefined } from '../../utils/LangUtils';
+import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
@@ -94,11 +96,11 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           entitySetIdsByOrgId = entitySetIdsByOrgId
             .map((orgFqnMap :Map) => orgFqnMap.sortBy((esid :UUID, fqn) => fqn.toString()));
 
-          let selectedOrganizationId :string = '';
+          let selectedOrganizationId :UUID = '';
           if (!organizations.isEmpty() && !selectedOrganizationId.length) {
             selectedOrganizationId = organizations.valueSeq().getIn([0, 'id'], '');
           }
-          const storedOrganizationId :string = AccountUtils.retrieveOrganizationId();
+          const storedOrganizationId :?UUID = AccountUtils.retrieveOrganizationId();
           if (storedOrganizationId && organizations.has(storedOrganizationId)) {
             selectedOrganizationId = storedOrganizationId;
           }

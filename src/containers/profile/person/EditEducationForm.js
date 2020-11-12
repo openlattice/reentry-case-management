@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
@@ -8,6 +11,7 @@ import { ReduxUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import {

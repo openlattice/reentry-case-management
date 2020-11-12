@@ -1,9 +1,12 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { getEKID } from '../../utils/DataUtils';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   CLEAR_EDIT_REQUEST_STATES,
@@ -23,8 +26,10 @@ import {
   getProviderNeighbors,
   getProviders,
 } from './ProvidersActions';
-import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
+
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../utils/DataUtils';
+import { PROVIDERS, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {

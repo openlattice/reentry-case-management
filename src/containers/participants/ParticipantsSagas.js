@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -6,9 +9,9 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
-import { Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -38,9 +41,9 @@ import { DST, SRC } from '../../utils/constants/GeneralConstants';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
 
 const LOG = new Logger('ParticipantsSagas');
-const { FullyQualifiedName } = Models;
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   MANUAL_JAILS_PRISONS,
   MANUAL_JAIL_STAYS,
@@ -156,7 +159,7 @@ function* getParticipantsNeighborsWorker(action :SequenceAction) :Generator<*, *
           let personNeighborMap :Map = Map();
           neighborList.forEach((neighbor :Map) => {
             const neighborESID :UUID = getNeighborESID(neighbor);
-            const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
+            const neighborEntityFqn :FQN = getFqnFromApp(app, neighborESID);
             const entity :Map = getNeighborDetails(neighbor);
             let entityList :List = personNeighborMap.get(neighborEntityFqn, List());
             entityList = entityList.push(entity);
@@ -242,7 +245,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           ],
         }]
       });
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       searchedParticipants = fromJS(response.data.hits);
       totalHits = response.data.numHits;
@@ -279,7 +282,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       }
 
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       searchedParticipants = fromJS(response.data.hits);
       totalHits = response.data.numHits;

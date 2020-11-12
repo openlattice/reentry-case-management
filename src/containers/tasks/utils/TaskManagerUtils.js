@@ -1,6 +1,10 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';

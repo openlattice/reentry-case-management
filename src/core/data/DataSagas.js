@@ -10,9 +10,9 @@ import {
 } from '@redux-saga/core/effects';
 import { Models, Types } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { isDefined } from '../../utils/LangUtils';
 import {
   CREATE_OR_REPLACE_ASSOCIATION,
   DELETE_ENTITIES,
@@ -23,9 +23,10 @@ import {
   submitDataGraph,
   submitPartialReplace,
 } from './DataActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 
 import Logger from '../../utils/Logger';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
 
 const LOG = new Logger('DataSagas');
 const { DataGraphBuilder } = Models;

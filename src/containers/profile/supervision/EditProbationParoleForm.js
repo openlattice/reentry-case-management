@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -16,6 +19,7 @@ import {
 import { DataUtils, useRequestState } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import {
   EDIT_SUPERVISION,

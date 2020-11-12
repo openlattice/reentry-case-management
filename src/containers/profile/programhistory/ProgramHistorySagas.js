@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -15,6 +18,7 @@ import {
   SearchApiSagas,
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

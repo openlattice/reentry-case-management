@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useState } from 'react';
 
 import styled from 'styled-components';
@@ -9,6 +12,7 @@ import {
   Colors,
   Label,
 } from 'lattice-ui-kit';
+import type { UUID } from 'lattice';
 
 import EditProviderModal from './EditProviderModal';
 import { getListOfContacts } from './utils/ProvidersUtils';

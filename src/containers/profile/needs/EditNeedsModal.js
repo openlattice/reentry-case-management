@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
@@ -6,6 +9,7 @@ import { List, Map } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import { EDIT_NEEDS, clearEditRequestState, editNeeds } from './NeedsActions';
 import { schema, uiSchema } from './schemas/EditNeedsSchemas';

@@ -1,11 +1,13 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { Models } from 'lattice';
 import {
   List,
   Map,
@@ -20,21 +22,9 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getFqnFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyFqnFromEDM,
-} from '../../utils/DataUtils';
-import { constructNewEntityFromSubmittedData } from '../../utils/FormUtils';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/data/DataActions';
-import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
 import {
   ADD_NEW_PROVIDER_CONTACTS,
   CREATE_NEW_PROVIDER,
@@ -53,12 +43,26 @@ import {
   getProviderNeighbors,
   getProviders,
 } from './ProvidersActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
-const LOG = new Logger('EventSagas');
-const { FullyQualifiedName } = Models;
+import Logger from '../../utils/Logger';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/data/DataSagas';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEKID,
+  getESIDFromApp,
+  getFqnFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyFqnFromEDM,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { constructNewEntityFromSubmittedData } from '../../utils/FormUtils';
+import { isDefined } from '../../utils/LangUtils';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+
+const LOG = new Logger('ProvidersSagas');
+
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -164,7 +168,7 @@ function* getProviderNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         neighborList.forEach((neighbor :Map) => {
 
           const neighborESID :UUID = getNeighborESID(neighbor);
-          const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
+          const neighborEntityFqn :FQN = getFqnFromApp(app, neighborESID);
           const entity :Map = getNeighborDetails(neighbor);
           if (neighborESID === providerStaffESID) {
             pointOfContactPersonEKIDs.push(getEKID(entity));
@@ -280,7 +284,7 @@ function* createNewProviderWorker(action :SequenceAction) :Generator<*, *, *> {
       [ENTITY_KEY_ID]: [newProviderEKID]
     });
     fromJS(providerData).forEach((entityValue :List, ptid :UUID) => {
-      const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+      const propertyFqn :FQN = getPropertyFqnFromEDM(edm, ptid);
       newProvider = newProvider.set(propertyFqn, entityValue);
     });
     const newProviderAddress :Map = fromJS({
