@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useState } from 'react';
 
 import styled from 'styled-components';
@@ -15,6 +18,7 @@ import {
   ExpansionPanelSummary,
   Label,
 } from 'lattice-ui-kit';
+import type { UUID } from 'lattice';
 
 import EditContactInfoModal from './EditContactInfoModal';
 import EditEmergencyContactsModal from './EditEmergencyContactsModal';

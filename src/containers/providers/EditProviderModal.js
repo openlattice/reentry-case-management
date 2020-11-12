@@ -1,21 +1,35 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useRef, useState } from 'react';
+
 import styled from 'styled-components';
 import {
   List,
   Map,
   fromJS,
-  has,
   get,
+  has,
   mergeDeep,
 } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ModalHeader from '../../components/modal/ModalHeader';
+import {
+  ADD_NEW_PROVIDER_CONTACTS,
+  EDIT_PROVIDER,
+  EDIT_PROVIDER_CONTACTS,
+  addNewProviderContacts,
+  clearEditRequestStates,
+  deleteProviderStaffAndContacts,
+  editProvider,
+  editProviderContacts,
+} from './ProvidersActions';
 import {
   contactsSchema,
   contactsUiSchema,
@@ -28,25 +42,17 @@ import {
   getDataForFormPrepopulation,
   preprocessContactsData,
 } from './utils/ProvidersUtils';
-import { requestIsPending, requestIsSuccess, reduceRequestStates } from '../../utils/RequestStateUtils';
+
+import ModalHeader from '../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../utils/DataUtils';
-import {
-  ADD_NEW_PROVIDER_CONTACTS,
-  EDIT_PROVIDER,
-  EDIT_PROVIDER_CONTACTS,
-  addNewProviderContacts,
-  clearEditRequestStates,
-  deleteProviderStaffAndContacts,
-  editProvider,
-  editProviderContacts,
-} from './ProvidersActions';
+import { reduceRequestStates, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PROVIDERS,
   SHARED
 } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const FixedWidthModal = styled.div`
   padding-bottom: 30px;

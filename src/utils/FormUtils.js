@@ -8,13 +8,13 @@ import {
   removeIn,
   setIn
 } from 'immutable';
-import { Models } from 'lattice';
+import type { FQN, UUID } from 'lattice';
 
-import { isDefined } from './LangUtils';
 import { getPropertyFqnFromEDM } from './DataUtils';
+import { isDefined } from './LangUtils';
+
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
-const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const deleteKeyFromFormData = (formData :Object, path :string[]) :Object => {
@@ -73,7 +73,7 @@ const constructNewEntityFromSubmittedData = (data :Map, ekid :UUID, edm :Map) :M
   Map().withMutations((map :Map) => {
     map.set(ENTITY_KEY_ID, List([ekid]));
     data.forEach((entityValue :List, ptid :UUID) => {
-      const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+      const propertyFqn :FQN = getPropertyFqnFromEDM(edm, ptid);
       map.set(propertyFqn, entityValue);
     });
   })

@@ -1,25 +1,31 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
+
+import { EDIT_SEX_OFFENDER, editSexOffender } from './SexOffenderActions';
+import { schema, uiSchema } from './schemas/EditSexOffenderSchemas';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
-import { schema, uiSchema } from './schemas/EditSexOffenderSchemas';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { getEKID } from '../../../utils/DataUtils';
-import { getOriginalFormData, preprocessSexOffenderData } from '../utils/SexOffenderUtils';
-import { clearEditRequestState } from '../needs/NeedsActions';
-import { EDIT_SEX_OFFENDER, editSexOffender } from './SexOffenderActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID } from '../../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
   EDM,
   PROFILE,
   SHARED
 } from '../../../utils/constants/ReduxStateConstants';
+import { clearEditRequestState } from '../needs/NeedsActions';
+import { getOriginalFormData, preprocessSexOffenderData } from '../utils/SexOffenderUtils';
 
 const {
   findEntityAddressKeyFromMap,

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -6,16 +9,18 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { Map, Set, fromJS } from 'immutable';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { EDIT_NEEDS, editNeeds } from './NeedsActions';
+
 import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import { getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import { submitPartialReplace } from '../../../core/data/DataActions';
 import { submitPartialReplaceWorker } from '../../../core/data/DataSagas';
-import { EDIT_NEEDS, editNeeds } from './NeedsActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP, EDM } from '../../../utils/constants/ReduxStateConstants';
 
 const { NEEDS_ASSESSMENT } = APP_TYPE_FQNS;

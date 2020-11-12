@@ -1,12 +1,14 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map } from 'immutable';
-import { Models } from 'lattice';
 import { Colors } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
+import type { FQN, UUID } from 'lattice';
 
 import { getEKID, getFirstEntityValue } from './DataUtils';
 
-const { FullyQualifiedName } = Models;
 const { NEUTRAL } = Colors;
 
 const pipeValue = (...fns :Function) => (initial :Object) => fns
@@ -15,7 +17,7 @@ const pipeValue = (...fns :Function) => (initial :Object) => fns
 const pipeConcat = (dataToProcess :Object, ...fns :Function) => (initial :Array<*>) => fns
   .reduce((pipedValue, currentFunction) => pipedValue.concat(currentFunction(dataToProcess)), initial);
 
-const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedName[]) => {
+const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
 
   const values = [];
   const labels = [];
@@ -37,7 +39,7 @@ const getValuesFromEntityList = (entities :List, propertyList :FullyQualifiedNam
 
 const sortEntitiesByDateProperty = (
   entityCollection :List | Map,
-  datePropertyPath :FullyQualifiedName[]
+  datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
   .sortBy((entityObj :Map) => {

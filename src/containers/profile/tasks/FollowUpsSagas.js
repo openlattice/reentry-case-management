@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   all,
   call,
@@ -13,7 +16,6 @@ import {
   get,
   has,
 } from 'immutable';
-import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -21,6 +23,7 @@ import {
   SearchApiSagas,
 } from 'lattice-sagas';
 import { LangUtils, Logger } from 'lattice-utils';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -63,7 +66,6 @@ import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantNeighborsWorker, getParticipantWorker } from '../ProfileSagas';
 
 const { isDefined } = LangUtils;
-const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -127,7 +129,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
     const newFollowUp :Map = Map().withMutations((map :Map) => {
       map.set(ENTITY_KEY_ID, List([newFollowUpEKID]));
       fromJS(followUpData).forEach((entityValue :List, ptid :UUID) => {
-        const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+        const propertyFqn :FQN = getPropertyFqnFromEDM(edm, ptid);
         map.set(propertyFqn, List(entityValue));
       });
     }).asImmutable();
@@ -138,7 +140,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
         map.set(ENTITY_KEY_ID, List([newMeetingsEKID]));
         const meetingData :Map = fromJS(entityData[meetingsESID][0]);
         meetingData.forEach((entityValue :List, ptid :UUID) => {
-          const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+          const propertyFqn :FQN = getPropertyFqnFromEDM(edm, ptid);
           map.set(propertyFqn, List(entityValue));
         });
       }).asImmutable();
@@ -270,7 +272,7 @@ function* getFollowUpNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           const neighborESID :UUID = getNeighborESID(neighbor);
           let esidToUseAsKey :UUID = associationESID;
           if (neighborESID === meetingsESID || neighborESID === providerESID) esidToUseAsKey = neighborESID;
-          const fqn :FullyQualifiedName = getFqnFromApp(app, esidToUseAsKey);
+          const fqn :FQN = getFqnFromApp(app, esidToUseAsKey);
           const entity :Map = getNeighborDetails(neighbor);
           map.update(followUpEKID, Map(), (entitiesMap) => entitiesMap.set(fqn, entity));
 

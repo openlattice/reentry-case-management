@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   List,
   Map,
@@ -6,15 +9,14 @@ import {
   getIn,
   has,
 } from 'immutable';
-import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import type { FQN, UUID } from 'lattice';
 
-import { EMPTY_FIELD, getPersonFullName } from '../../../utils/FormattingUtils';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { EMPTY_FIELD, getPersonFullName } from '../../../utils/FormattingUtils';
+import { isDefined } from '../../../utils/LangUtils';
 
-const { FullyQualifiedName } = Models;
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const {
   CONTACTED_VIA,
@@ -150,7 +152,7 @@ const formatEntityIndexToIdMap = (
 };
 
 // create all entities for each object in array
-const preprocessContactsData = (contactsFormData :Object, entitySetFqn :FullyQualifiedName) :Object => {
+const preprocessContactsData = (contactsFormData :Object, entitySetFqn :FQN) :Object => {
   const newContactsFormData :Object = contactsFormData;
   contactsFormData[getPageSectionKey(1, 1)].forEach((contact :Object, index :number) => {
     if (!has(contact, getEntityAddressKey(-1, entitySetFqn, PHONE_NUMBER))) {

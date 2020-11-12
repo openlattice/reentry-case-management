@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
@@ -11,6 +14,7 @@ import {
   useRequestState,
 } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import {
   EDIT_REFERRAL_SOURCE,

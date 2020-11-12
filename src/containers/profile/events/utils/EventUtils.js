@@ -1,8 +1,12 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, getIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { ValidationUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { deleteKeyFromFormData } from '../../../../utils/FormUtils';

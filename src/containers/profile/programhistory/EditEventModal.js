@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
@@ -13,6 +16,7 @@ import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter, Spinner } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import { EDIT_EVENT, editEvent } from './ProgramHistoryActions';
 

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect } from 'react';
 
 import { Map } from 'immutable';
@@ -7,6 +10,7 @@ import { useGoToRoute } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { MARK_FOLLOW_UP_AS_COMPLETE, clearSubmissionRequestStates, markFollowUpAsComplete } from './FollowUpsActions';

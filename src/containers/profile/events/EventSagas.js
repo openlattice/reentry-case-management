@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -6,26 +9,27 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
-import { Models } from 'lattice';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { isDefined } from '../../../utils/LangUtils';
-import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
 import {
   RECORD_ENROLLMENT_EVENT,
   recordEnrollmentEvent,
 } from './EventActions';
+
+import Logger from '../../../utils/Logger';
 import { submitDataGraph } from '../../../core/data/DataActions';
 import { submitDataGraphWorker } from '../../../core/data/DataSagas';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getESIDFromApp, getPropertyFqnFromEDM } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
+import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
 import { getEnrollmentStatusNeighbors } from '../ProfileActions';
 import { getEnrollmentStatusNeighborsWorker } from '../ProfileSagas';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { APP, EDM, PROFILE } from '../../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const LOG = new Logger('EventSagas');
-const { FullyQualifiedName } = Models;
+
 const { ENROLLMENT_STATUS } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const { PARTICIPANT_NEIGHBORS } = PROFILE;
@@ -69,7 +73,7 @@ function* recordEnrollmentEventWorker(action :SequenceAction) :Generator<*, *, *
       [ENTITY_KEY_ID]: [newEnrollmentStatusEKID]
     });
     fromJS(enrollmentStatusData).forEach((entityValue :List, ptid :UUID) => {
-      const propertyFqn :FullyQualifiedName = getPropertyFqnFromEDM(edm, ptid);
+      const propertyFqn :FQN = getPropertyFqnFromEDM(edm, ptid);
       newEnrollmentStatus = newEnrollmentStatus.set(propertyFqn, entityValue);
     });
 

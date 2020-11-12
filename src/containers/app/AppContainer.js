@@ -15,7 +15,6 @@ import {
   AppNavigationWrapper,
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
-  Sizes,
   Spinner,
   StylesProvider,
   ThemeProvider,
@@ -30,6 +29,7 @@ import {
 } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import * as AppActions from './AppActions';
@@ -56,7 +56,6 @@ import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 declare var gtag :?Function;
 
-const { APP_CONTENT_WIDTH } = Sizes;
 const { INITIALIZE_APPLICATION, switchOrganization } = AppActions;
 const { ORGS, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -149,7 +148,7 @@ class AppContainer extends Component<Props> {
 
     const { organizations, requestStates, selectedOrgId } = this.props;
 
-    const userInfo = AuthUtils.getUserInfo();
+    const userInfo = AuthUtils.getUserInfo() || {};
     let user = null;
     if (isNonEmptyString(userInfo.name)) {
       user = userInfo.name;
@@ -183,7 +182,7 @@ class AppContainer extends Component<Props> {
                   <NavLink to={Routes.TASKS}>Tasks</NavLink>
                 </AppNavigationWrapper>
               </AppHeaderWrapper>
-              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+              <AppContentWrapper>
                 { this.renderAppContent() }
               </AppContentWrapper>
               <ContactSupportButton />

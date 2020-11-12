@@ -1,14 +1,18 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
 import { CREATE_NEW_FOLLOW_UP, clearSubmissionRequestStates, createNewFollowUp } from './FollowUpsActions';
 import {
   getNewFollowUpAssociations,
@@ -17,6 +21,8 @@ import {
   preprocessFormData,
   removeEKIDsFromFormData,
 } from './utils/AddNewFollowUpUtils';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect } from 'react';
 
 import styled from 'styled-components';
@@ -13,6 +16,7 @@ import {
 import { RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { Match } from 'react-router';
 
 import EditEducationForm from './EditEducationForm';

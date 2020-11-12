@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   List,
   Map,
@@ -8,13 +11,14 @@ import {
   set
 } from 'immutable';
 import { Models } from 'lattice';
+import type { UUID } from 'lattice';
 
 import { isDefined } from './LangUtils';
 import { APP, EDM } from './constants/ReduxStateConstants';
 
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
-const { FullyQualifiedName } = Models;
+const { FQN } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const ASSOCIATION_ENTITY_SET :string = 'associationEntitySet';
@@ -23,7 +27,7 @@ const NEIGHBOR_DETAILS :string = 'neighborDetails';
 const NEIGHBOR_ENTITY_SET :string = 'neighborEntitySet';
 const ID :string = 'id';
 
-const getESIDFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
+const getESIDFromApp = (app :Object | Map, fqn :FQN) => {
   const orgId :string = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
     APP.ENTITY_SET_IDS_BY_ORG_ID,
@@ -43,7 +47,7 @@ const getFqnFromApp = (app :Object | Map, esid :UUID) => {
 
 const getFirstEntityValue = (
   entityObj :Map,
-  fqn :FullyQualifiedName | string,
+  fqn :FQN | string,
   defaultValue :string = ''
 ) => (
   entityObj.getIn([fqn, 0], defaultValue)
@@ -51,13 +55,13 @@ const getFirstEntityValue = (
 
 const getEntityProperties = (
   entityObj :Map,
-  propertyList :FullyQualifiedName[],
+  propertyList :FQN[],
   defaultValue ? :string = ''
-) :{ [FullyQualifiedName]:any } => {
+) :{ [FQN]:any } => {
 
   let returnPropertyFields = {};
   if (propertyList.length && isImmutable(entityObj) && !entityObj.isEmpty()) {
-    propertyList.forEach((propertyType :FullyQualifiedName) => {
+    propertyList.forEach((propertyType :FQN) => {
       const value :List = entityObj.get(propertyType, List());
       if (List.isList(value) && value.count() > 1) {
         returnPropertyFields = set(returnPropertyFields, propertyType, value.toJS());
@@ -79,12 +83,12 @@ const getEKID = (entityObj :Map | Object) :string => {
 };
 
 const getPTIDFromEDM = (
-  edm :Map, propertyFqn :FullyQualifiedName
+  edm :Map, propertyFqn :FQN
 ) => edm.getIn([EDM.TYPE_IDS_BY_FQN, EDM.PROPERTY_TYPES, propertyFqn]);
 
 const getPropertyFqnFromEDM = (
   edm :Map, ptid :UUID
-) => new FullyQualifiedName(edm.getIn([EDM.TYPES_BY_ID, EDM.PROPERTY_TYPES, ptid, 'type']));
+) => FQN.of(edm.getIn([EDM.TYPES_BY_ID, EDM.PROPERTY_TYPES, ptid, 'type']));
 
 const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
