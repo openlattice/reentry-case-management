@@ -39,7 +39,7 @@
     "lattice": "~0.82.3",
     "lattice-auth": "~0.22.0",
     "lattice-fabricate": "~0.14.0",
-    "lattice-sagas": "~0.56.0",
+    "lattice-sagas": "~0.57.0",
     "lattice-ui-kit": "~0.39.0",
     "lattice-utils": "~0.8.1",
     "libphonenumber-js": "~1.7.55",
