@@ -52,6 +52,7 @@ import {
   PREFERRED_METHOD_EAK,
   PREFERRED_TIME_EAK,
   RACE_EAK,
+  REFERRAL_EAK,
   REGISTRATION_EAK,
   RELEASE_PSK,
   SEX_OFFENDER_COUNTY_EAK,
@@ -616,7 +617,7 @@ const getClientReleaseAssociations = (formData :Object) => {
   const innerPageSectionKey :string = SUPERVISION_INNER_PSK;
 
   const incarcerationFacilityEKID :any = getIn(formData, [outerPageSectionKey, JAILS_PRISONS_EAK]);
-  const referredFrom :any = getIn(formData, [outerPageSectionKey, JAILS_PRISONS_EAK]);
+  const referredFrom :any = getIn(formData, [outerPageSectionKey, REFERRAL_EAK]);
 
   associations.push([MANUAL_SUBJECT_OF, 0, PEOPLE, 0, MANUAL_JAIL_STAYS, {}]);
 
