@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { AccountUtils } from 'lattice-auth';
 import {
   all,
   call,
@@ -10,23 +9,27 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { push } from 'connected-react-router';
-import { AppApiActions, AppApiSagas } from 'lattice-sagas';
+import { AccountUtils } from 'lattice-auth';
+import { AppApiActions, AppApiSagas, OrganizationsApiActions, OrganizationsApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import * as Routes from '../../core/router/Routes';
-import { APP_NAME } from '../../utils/constants/GeneralConstants';
-import { ERR_ORGS_NOT_FOUND } from '../../utils/Errors';
 import {
   INITIALIZE_APPLICATION,
   SWITCH_ORGANIZATION,
   initializeApplication,
 } from './AppActions';
+
+import Logger from '../../utils/Logger';
+import * as Routes from '../../core/router/Routes';
 import { getEntityDataModelTypes } from '../../core/edm/EDMActions';
 import { getEntityDataModelTypesWorker } from '../../core/edm/EDMSagas';
+import { ERR_ORGS_NOT_FOUND } from '../../utils/Errors';
+import { APP_NAME } from '../../utils/constants/GeneralConstants';
 
 const { getApp, getAppConfigs } = AppApiActions;
 const { getAppWorker, getAppConfigsWorker } = AppApiSagas;
+const { getOrganization } = OrganizationsApiActions;
+const { getOrganizationWorker } = OrganizationsApiSagas;
 
 const LOG = new Logger('AppSagas');
 
@@ -53,6 +56,23 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
 
     const appConfigs :Object[] = appConfigsResponse.data || [];
     if (!appConfigs.length) throw ERR_ORGS_NOT_FOUND;
+
+    const getOrgCalls = [];
+
+    appConfigs.forEach((appConfig :Object) => {
+      const { organization } :Object = appConfig;
+      const { id: orgId } = organization;
+
+      const orgResponse = getOrgCalls.push(call(getOrganizationWorker, getOrganization(orgId)));
+    });
+
+    const orgsResponses :Object[] = yield all(getOrgCalls);
+    const responseErrors = orgsResponses.reduce((acc, response) => {
+      if (response.error) {
+        acc.push(response.error);
+      }
+      return acc;
+    }, []);
 
     yield put(initializeApplication.success(action.id, { appConfigs }));
   }
