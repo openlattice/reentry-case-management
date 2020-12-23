@@ -28,7 +28,6 @@ import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
   clearSubmitRequestState,
   getMeetingAndTask,
-  getReentryStaff,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
 import { schema, uiSchema } from './schemas/CaseNotesSchemas';
@@ -43,6 +42,7 @@ import {
   EDM,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { getProviders } from '../providers/ProvidersActions';
 
 const { getEntityKeyId } = DataUtils;
 const {
@@ -92,7 +92,7 @@ const CaseNotesForm = ({ history, match } :Props) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getReentryStaff());
+    dispatch(getProviders());
     dispatch(getMeetingAndTask(meetingEKID));
   }, [dispatch, meetingEKID]);
 
