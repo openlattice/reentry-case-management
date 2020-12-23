@@ -2,20 +2,18 @@
  * @flow
  */
 
-import { Map, fromJS } from 'immutable';
-import { AccountUtils } from 'lattice-auth';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_CURRENT_STAFF,
   INITIALIZE_APPLICATION,
+  getCurrentStaff,
   initializeApplication,
 } from './AppActions';
 
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { RESET_REQUEST_STATE } from '../../core/redux/ReduxActions';
-import { isDefined } from '../../utils/LangUtils';
 import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -23,7 +21,8 @@ const {
   APP_TYPES_BY_ORG_ID,
   ENTITY_SET_IDS_BY_ORG_ID,
   ORGS,
-  SELECTED_ORG_ID
+  SELECTED_ORG_ID,
+  STAFF_MEMBERS,
 } = APP;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -36,6 +35,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ENTITY_SET_IDS_BY_ORG_ID]: Map(),
   [ORGS]: Map(),
   [SELECTED_ORG_ID]: '',
+  [STAFF_MEMBERS]: List(),
 });
 
 export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -50,6 +50,19 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
       return state;
     }
 
+    case getCurrentStaff.case(action.type): {
+      return getCurrentStaff.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_CURRENT_STAFF, action.id])
+          .setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .set(STAFF_MEMBERS, action.value)
+          .setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_CURRENT_STAFF, action.id])
+      });
+    }
+
     case initializeApplication.case(action.type): {
       const seqAction :SequenceAction = action;
       return initializeApplication.reducer(state, seqAction, {
@@ -57,54 +70,13 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           .setIn([ACTIONS, INITIALIZE_APPLICATION, seqAction.id], seqAction)
           .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-          const { id, value } = action;
-          if (!state.hasIn([ACTIONS, INITIALIZE_APPLICATION, id]) || !isDefined(value)) {
-            return state;
-          }
-
-          const { appConfigs } = value;
-          let organizations :Map = state.get(ORGS);
-
-          let entitySetIdsByOrgId :Map = state.get(ENTITY_SET_IDS_BY_ORG_ID);
-          let appTypesByOrgId :Map = state.get(APP_TYPES_BY_ORG_ID);
-
-          appConfigs.forEach((appConfig :Object) => {
-
-            const { organization } :Object = appConfig;
-            const { id: orgId } = organization;
-
-            if (!fromJS(appConfig.config).isEmpty()) {
-              organizations = organizations.set(orgId, {
-                id: orgId,
-                title: organization.title,
-              });
-
-              fromJS(APP_TYPE_FQNS).forEach((fqn) => {
-                entitySetIdsByOrgId = entitySetIdsByOrgId.setIn(
-                  [orgId, fqn],
-                  appConfig.config[fqn].entitySetId
-                );
-                appTypesByOrgId = appTypesByOrgId.setIn(
-                  [orgId, appConfig.config[fqn].entitySetId],
-                  fqn
-                );
-              });
-            }
-          });
-
-          // alphabetize
-          entitySetIdsByOrgId = entitySetIdsByOrgId
-            .map((orgFqnMap :Map) => orgFqnMap.sortBy((esid :UUID, fqn) => fqn.toString()));
-
-          let selectedOrganizationId :UUID = '';
-          if (!organizations.isEmpty() && !selectedOrganizationId.length) {
-            selectedOrganizationId = organizations.valueSeq().getIn([0, 'id'], '');
-          }
-          const storedOrganizationId :?UUID = AccountUtils.retrieveOrganizationId();
-          if (storedOrganizationId && organizations.has(storedOrganizationId)) {
-            selectedOrganizationId = storedOrganizationId;
-          }
-
+          const { value } = action;
+          const {
+            appTypesByOrgId,
+            entitySetIdsByOrgId,
+            organizations,
+            selectedOrganizationId,
+          } = value;
           return state
             .set(APP_TYPES_BY_ORG_ID, appTypesByOrgId)
             .set(ENTITY_SET_IDS_BY_ORG_ID, entitySetIdsByOrgId)
