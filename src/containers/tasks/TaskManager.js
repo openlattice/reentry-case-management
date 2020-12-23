@@ -31,12 +31,18 @@ import {
   requestIsPending,
   requestIsSuccess,
 } from '../../utils/RequestStateUtils';
-import { PARTICIPANT_FOLLOW_UPS, SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
+import {
+  APP,
+  PARTICIPANT_FOLLOW_UPS,
+  SHARED,
+  TASK_MANAGER,
+} from '../../utils/constants/ReduxStateConstants';
 import { GET_FOLLOW_UP_NEIGHBORS } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
 
+const { STAFF_MEMBERS } = APP;
 const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
-const { FOLLOW_UP_NEIGHBOR_MAP, REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
+const { FOLLOW_UP_NEIGHBOR_MAP } = PARTICIPANT_FOLLOW_UPS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const { DONE, LATE, PENDING } = FOLLOW_UPS_STATUSES;
@@ -77,7 +83,7 @@ type Props = {
   followUps :List;
   followUpNeighborMap :Map;
   participants :Object[];
-  reentryStaffMembers :List;
+  staffMembers :List;
   requestStates :{
     GET_PEOPLE_FOR_NEW_TASK_FORM :RequestState;
     GET_FOLLOW_UP_NEIGHBORS :RequestState;
@@ -91,7 +97,7 @@ const TaskManager = ({
   followUps,
   followUpNeighborMap,
   participants,
-  reentryStaffMembers,
+  staffMembers,
   requestStates,
 } :Props) => {
 
@@ -108,7 +114,7 @@ const TaskManager = ({
   }, [actions]);
 
   const tasksData :Object[] = formatTasksForTable(followUps, followUpNeighborMap, selectedAssignees, selectedReporters);
-  const reentryStaffOptions :Object[] = getReentryStaffOptions(reentryStaffMembers);
+  const reentryStaffOptions :Object[] = getReentryStaffOptions(staffMembers);
 
   const reducedReqState = reduceRequestStates([
     requestStates[GET_PEOPLE_FOR_NEW_TASK_FORM],
@@ -163,13 +169,14 @@ const TaskManager = ({
 };
 
 const mapStateToProps = (state :Map) => {
+  const app = state.get(APP.APP);
   const taskManager = state.get(TASK_MANAGER.TASK_MANAGER);
   const participantFollowUps = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   return {
     [FOLLOW_UPS]: taskManager.get(FOLLOW_UPS),
     [FOLLOW_UP_NEIGHBOR_MAP]: participantFollowUps.get(FOLLOW_UP_NEIGHBOR_MAP),
     [PARTICIPANTS]: taskManager.get(PARTICIPANTS),
-    [REENTRY_STAFF_MEMBERS]: participantFollowUps.get(REENTRY_STAFF_MEMBERS),
+    [STAFF_MEMBERS]: app.get(STAFF_MEMBERS),
     requestStates: {
       [GET_PEOPLE_FOR_NEW_TASK_FORM]: taskManager.getIn([ACTIONS, GET_PEOPLE_FOR_NEW_TASK_FORM, REQUEST_STATE]),
       [GET_FOLLOW_UP_NEIGHBORS]: participantFollowUps.getIn([ACTIONS, GET_FOLLOW_UP_NEIGHBORS, REQUEST_STATE]),

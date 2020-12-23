@@ -10,10 +10,6 @@ const clearSubmissionRequestStates = () => ({
 const CREATE_NEW_FOLLOW_UP :'CREATE_NEW_FOLLOW_UP' = 'CREATE_NEW_FOLLOW_UP';
 const createNewFollowUp :RequestSequence = newRequestSequence(CREATE_NEW_FOLLOW_UP);
 
-const GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM
-  :'GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM' = 'GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM';
-const getEntitiesForNewFollowUpForm :RequestSequence = newRequestSequence(GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM);
-
 const GET_FOLLOW_UP_NEIGHBORS :'GET_FOLLOW_UP_NEIGHBORS' = 'GET_FOLLOW_UP_NEIGHBORS';
 const getFollowUpNeighbors :RequestSequence = newRequestSequence(GET_FOLLOW_UP_NEIGHBORS);
 
@@ -26,13 +22,11 @@ const markFollowUpAsComplete :RequestSequence = newRequestSequence(MARK_FOLLOW_U
 export {
   CLEAR_SUBMISSION_REQUEST_STATES,
   CREATE_NEW_FOLLOW_UP,
-  GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
   MARK_FOLLOW_UP_AS_COMPLETE,
   clearSubmissionRequestStates,
   createNewFollowUp,
-  getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
   markFollowUpAsComplete,

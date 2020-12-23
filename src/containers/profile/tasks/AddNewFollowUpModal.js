@@ -34,10 +34,9 @@ import {
 
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
+const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID, STAFF_MEMBERS } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PROVIDERS_LIST } = PROVIDERS;
-const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 
 const FixedWidthModal = styled.div`
   padding-bottom: 30px;
@@ -56,7 +55,7 @@ type Props = {
   personEKID :UUID;
   propertyTypeIdsByFqn :Map;
   providersList :List;
-  reentryStaffMembers :List;
+  staffMembers :List;
   requestStates :{
     CREATE_NEW_FOLLOW_UP :RequestState;
   };
@@ -73,7 +72,7 @@ const AddNewFollowUpModal = ({
   personEKID,
   propertyTypeIdsByFqn,
   providersList,
-  reentryStaffMembers,
+  staffMembers,
   requestStates,
   schema,
   uiSchema,
@@ -110,7 +109,7 @@ const AddNewFollowUpModal = ({
       actions.createNewFollowUp({ associationEntityData, entityData });
     }
   };
-  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList, participants);
+  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, staffMembers, providersList, participants);
   const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[CREATE_NEW_FOLLOW_UP]);
@@ -155,12 +154,13 @@ AddNewFollowUpModal.defaultProps = {
 };
 
 const mapStateToProps = (state :Map) => {
+  const app :Map = state.get(APP.APP);
   const providers :Map = state.get(PROVIDERS.PROVIDERS);
   const participantFollowUps :Map = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
     [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
-    [REENTRY_STAFF_MEMBERS]: participantFollowUps.get(REENTRY_STAFF_MEMBERS),
+    [STAFF_MEMBERS]: app.get(STAFF_MEMBERS),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {

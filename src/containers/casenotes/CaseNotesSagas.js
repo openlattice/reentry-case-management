@@ -28,11 +28,9 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_MEETING_AND_TASK,
-  GET_REENTRY_STAFF,
   GET_STAFF_WHO_RECORDED_NOTES,
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
   getMeetingAndTask,
-  getReentryStaff,
   getStaffWhoRecordedNotes,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
@@ -45,8 +43,8 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { APP } from '../../utils/constants/ReduxStateConstants';
 
 const { isDefined } = LangUtils;
-const { getEntityData, getEntitySetData } = DataApiActions;
-const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getEntityData } = DataApiActions;
+const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { FOLLOW_UPS, MEETINGS, REENTRY_STAFF } = APP_TYPE_FQNS;
@@ -110,43 +108,6 @@ function* getMeetingAndTaskWorker(action :SequenceAction) :Saga<*> {
 function* getMeetingAndTaskWatcher() :Saga<*> {
 
   yield takeEvery(GET_MEETING_AND_TASK, getMeetingAndTaskWorker);
-}
-
-/*
- *
- * CaseNotesActions.getReentryStaff()
- *
- */
-
-function* getReentryStaffWorker(action :SequenceAction) :Saga<*> {
-  const { id } = action;
-  const sagaResponse = {};
-
-  try {
-    yield put(getReentryStaff.request(id));
-    const app = yield select(getAppFromState);
-    const reentryStaffESID :UUID = getESIDFromApp(app, REENTRY_STAFF);
-
-    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: reentryStaffESID }));
-    if (response.error) throw response.error;
-    const reentryStaff :List = fromJS(response.data);
-    sagaResponse.data = reentryStaff;
-    yield put(getReentryStaff.success(id, reentryStaff));
-  }
-  catch (error) {
-    sagaResponse.error = error;
-    LOG.error(action.type, error);
-    yield put(getReentryStaff.failure(id, error));
-  }
-  finally {
-    yield put(getReentryStaff.finally(id));
-  }
-  return sagaResponse;
-}
-
-function* getReentryStaffWatcher() :Saga<*> {
-
-  yield takeEvery(GET_REENTRY_STAFF, getReentryStaffWorker);
 }
 
 /*
@@ -242,8 +203,6 @@ function* submitCaseNotesAndCompleteTaskWatcher() :Saga<*> {
 export {
   getMeetingAndTaskWatcher,
   getMeetingAndTaskWorker,
-  getReentryStaffWatcher,
-  getReentryStaffWorker,
   getStaffWhoRecordedNotesWatcher,
   getStaffWhoRecordedNotesWorker,
   submitCaseNotesAndCompleteTaskWatcher,

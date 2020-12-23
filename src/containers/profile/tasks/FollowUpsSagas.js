@@ -17,8 +17,6 @@ import {
   has,
 } from 'immutable';
 import {
-  DataApiActions,
-  DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
@@ -28,12 +26,10 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   CREATE_NEW_FOLLOW_UP,
-  GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM,
   GET_FOLLOW_UP_NEIGHBORS,
   LOAD_TASKS,
   MARK_FOLLOW_UP_AS_COMPLETE,
   createNewFollowUp,
-  getEntitiesForNewFollowUpForm,
   getFollowUpNeighbors,
   loadTasks,
   markFollowUpAsComplete,
@@ -57,7 +53,6 @@ import { DST } from '../../../utils/constants/GeneralConstants';
 import {
   APP,
   EDM,
-  PARTICIPANT_FOLLOW_UPS,
   PROVIDERS,
 } from '../../../utils/constants/ReduxStateConstants';
 import { getProviders } from '../../providers/ProvidersActions';
@@ -66,8 +61,6 @@ import { getParticipant, getParticipantNeighbors } from '../ProfileActions';
 import { getParticipantNeighborsWorker, getParticipantWorker } from '../ProfileSagas';
 
 const { isDefined } = LangUtils;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -84,7 +77,6 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
-const getParticipantFollowUpsFromState = (state) => state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS, Map());
 const getProvidersFromState = (state) => state.get(PROVIDERS.PROVIDERS, Map());
 
 const LOG = new Logger('FollowUpsSagas');
@@ -109,7 +101,6 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const participantFollowUps = yield select(getParticipantFollowUpsFromState);
     const providers = yield select(getProvidersFromState);
     const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
     const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
@@ -146,7 +137,7 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
       }).asImmutable();
     }
 
-    const reentryStaffMembers :List = participantFollowUps.get(PARTICIPANT_FOLLOW_UPS.REENTRY_STAFF_MEMBERS, List());
+    const reentryStaffMembers :List = app.get(APP.STAFF_MEMBERS, List());
     const providersList :List = providers.get(PROVIDERS.PROVIDERS_LIST, List());
     const followUpNeighbors :Map = Map().withMutations((map :Map) => {
       map.set(MEETINGS, newMeeting);
@@ -186,49 +177,6 @@ function* createNewFollowUpWorker(action :SequenceAction) :Generator<*, *, *> {
 function* createNewFollowUpWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_NEW_FOLLOW_UP, createNewFollowUpWorker);
-}
-
-/*
- *
- * FollowUpsActions.getEntitiesForNewFollowUpForm()
- *
- */
-
-function* getEntitiesForNewFollowUpFormWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const sagaResponse :Object = {};
-
-  try {
-    yield put(getEntitiesForNewFollowUpForm.request(id));
-    const app = yield select(getAppFromState);
-    const reentryStaffESID :UUID = getESIDFromApp(app, REENTRY_STAFF);
-
-    const [providersResponse, reentryStaffResponse] = yield all([
-      call(getProvidersWorker, getProviders()),
-      call(getEntitySetDataWorker, getEntitySetData({ entitySetId: reentryStaffESID })),
-    ]);
-    if (providersResponse.error) throw providersResponse.error;
-    if (reentryStaffResponse.error) throw reentryStaffResponse.error;
-
-    const reentryStaff :List = fromJS(reentryStaffResponse.data);
-    sagaResponse.data = reentryStaff;
-    yield put(getEntitiesForNewFollowUpForm.success(id, reentryStaff));
-  }
-  catch (error) {
-    sagaResponse.error = error;
-    LOG.error(action.type, error);
-    yield put(getEntitiesForNewFollowUpForm.failure(id, error));
-  }
-  finally {
-    yield put(getEntitiesForNewFollowUpForm.finally(id));
-  }
-  return sagaResponse;
-}
-
-function* getEntitiesForNewFollowUpFormWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_ENTITIES_FOR_NEW_FOLLOW_UP_FORM, getEntitiesForNewFollowUpFormWorker);
 }
 
 /*
@@ -342,7 +290,7 @@ function* loadTasksWorker(action :SequenceAction) :Generator<*, *, *> {
     const [neighborsResponse, participantResponse, formEntitiesResponse] :Object[] = yield all([
       call(getParticipantNeighborsWorker, getParticipantNeighbors({ neighborsToGet, participantEKID })),
       call(getParticipantWorker, getParticipant({ participantEKID })),
-      call(getEntitiesForNewFollowUpFormWorker, getEntitiesForNewFollowUpForm()),
+      call(getProvidersWorker, getProviders()),
     ]);
     if (neighborsResponse.error) throw neighborsResponse.error;
     if (participantResponse.error) throw participantResponse.error;
@@ -427,8 +375,6 @@ function* markFollowUpAsCompleteWatcher() :Generator<*, *, *> {
 export {
   createNewFollowUpWatcher,
   createNewFollowUpWorker,
-  getEntitiesForNewFollowUpFormWatcher,
-  getEntitiesForNewFollowUpFormWorker,
   getFollowUpNeighborsWatcher,
   getFollowUpNeighborsWorker,
   loadTasksWatcher,

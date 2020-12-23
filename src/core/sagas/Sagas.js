@@ -47,7 +47,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CaseNotesSagas
     fork(CaseNotesSagas.getMeetingAndTaskWatcher),
-    fork(CaseNotesSagas.getReentryStaffWatcher),
     fork(CaseNotesSagas.getStaffWhoRecordedNotesWatcher),
     fork(CaseNotesSagas.submitCaseNotesAndCompleteTaskWatcher),
 
@@ -85,7 +84,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantFollowUpsSagas
     fork(ParticipantFollowUpsSagas.createNewFollowUpWatcher),
-    fork(ParticipantFollowUpsSagas.getEntitiesForNewFollowUpFormWatcher),
     fork(ParticipantFollowUpsSagas.getFollowUpNeighborsWatcher),
     fork(ParticipantFollowUpsSagas.loadTasksWatcher),
     fork(ParticipantFollowUpsSagas.markFollowUpAsCompleteWatcher),
