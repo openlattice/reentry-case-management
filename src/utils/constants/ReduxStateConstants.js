@@ -13,6 +13,7 @@ const APP :Object = {
   INITIALIZE_APPLICATION: 'initializeApplication',
   ORGS: 'organizations',
   SELECTED_ORG_ID: 'selectedOrgId',
+  STAFF_MEMBERS: 'staffMembers',
 };
 
 const CASE_NOTES :Object = {

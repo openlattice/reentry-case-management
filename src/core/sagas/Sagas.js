@@ -41,6 +41,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(SearchApiSagas.searchEntitySetDataWatcher),
 
     // AppSagas
+    fork(AppSagas.getCurrentStaffWatcher),
     fork(AppSagas.initializeApplicationWatcher),
     fork(AppSagas.switchOrganizationWatcher),
 
