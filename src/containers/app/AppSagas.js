@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import {
   all,
   call,
@@ -15,6 +11,10 @@ import {
   Set,
   fromJS,
 } from 'immutable';
+/*
+ * @flow
+ */
+import { Types } from 'lattice';
 import { AccountUtils } from 'lattice-auth';
 import {
   AppApiActions,
@@ -24,7 +24,7 @@ import {
   OrganizationsApiActions,
   OrganizationsApiSagas
 } from 'lattice-sagas';
-import { DataUtils } from 'lattice-utils';
+import { DataUtils, LangUtils } from 'lattice-utils';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -46,6 +46,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import { ERR_ORGS_NOT_FOUND } from '../../utils/Errors';
 import { APP_NAME } from '../../utils/constants/GeneralConstants';
 
+const { PermissionTypes } = Types;
 const { getApp, getAppConfigs } = AppApiActions;
 const { getAppWorker, getAppConfigsWorker } = AppApiSagas;
 const { getEntitySetData } = DataApiActions;
@@ -53,6 +54,7 @@ const { getEntitySetDataWorker } = DataApiSagas;
 const { getOrganization, getUsersWithRole } = OrganizationsApiActions;
 const { getOrganizationWorker, getUsersWithRoleWorker } = OrganizationsApiSagas;
 const { getPropertyValue } = DataUtils;
+const { isDefined } = LangUtils;
 const {
   COUNTY_ID,
   ENTITY_KEY_ID,
@@ -83,10 +85,10 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
     let staff :List = fromJS(response.data);
 
     const orgId = selectedAppConfig.organization?.id;
-    response = yield call(getOrganizationWorker, getOrganization(selectedAppConfig.organization?.id));
+    response = yield call(getOrganizationWorker, getOrganization(orgId));
     if (response.error) throw response.error;
 
-    const readRole :?Object = response.data?.roles?.find((role) => role.title?.includes('READ'));
+    const readRole :?Object = response.data?.roles?.find((role) => role.title?.includes(PermissionTypes.READ));
     const readRoleId :?UUID = readRole?.id;
 
     response = yield call(getUsersWithRoleWorker, getUsersWithRole({ organizationId: orgId, roleId: readRoleId }));
@@ -97,7 +99,6 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
         mutator.add(user);
       });
     });
-    const authorizedUserEmails = authorizedUsers.map((user) => user.email);
 
     const entityData = {
       [staffESID]: []
@@ -105,15 +106,15 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
 
     staff.forEach((staffMember) => {
       const userEmail = getPropertyValue(staffMember, [COUNTY_ID, 0]);
-      if (!authorizedUserEmails.includes(userEmail)) {
-        const user = authorizedUsers.find((authorizedUser) => authorizedUser.email === userEmail);
+      const user = authorizedUsers.find((authorizedUser) => authorizedUser.email === userEmail);
+      if (!isDefined(user)) {
         const userFirstName = user.given_name;
         const userLastName = user.family_name;
         const { email } = user;
         entityData[staffESID].push({
           [personGivenNamePTID]: [userFirstName],
           [personSurnamePTID]: [userLastName],
-          [idPTID]: email,
+          [idPTID]: [email],
         });
       }
     });
