@@ -28,7 +28,6 @@ import {
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
   clearSubmitRequestState,
   getMeetingAndTask,
-  getReentryStaff,
   submitCaseNotesAndCompleteTask,
 } from './CaseNotesActions';
 import { schema, uiSchema } from './schemas/CaseNotesSchemas';
@@ -41,9 +40,9 @@ import {
   APP,
   CASE_NOTES,
   EDM,
-  PARTICIPANT_FOLLOW_UPS,
   SHARED,
 } from '../../utils/constants/ReduxStateConstants';
+import { getProviders } from '../providers/ProvidersActions';
 
 const { getEntityKeyId } = DataUtils;
 const {
@@ -59,9 +58,8 @@ const {
   REENTRY_STAFF,
 } = APP_TYPE_FQNS;
 const { ACTIONS } = SHARED;
-const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
+const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID, STAFF_MEMBERS } = APP;
 const { MEETING, TASK } = CASE_NOTES;
-const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 
 const ButtonWrapper = styled.div`
@@ -94,7 +92,7 @@ const CaseNotesForm = ({ history, match } :Props) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getReentryStaff());
+    dispatch(getProviders());
     dispatch(getMeetingAndTask(meetingEKID));
   }, [dispatch, meetingEKID]);
 
@@ -103,8 +101,8 @@ const CaseNotesForm = ({ history, match } :Props) => {
   };
 
   const reentryStaffMembers :List = useSelector((store :Map) => store.getIn([
-    CASE_NOTES.CASE_NOTES,
-    REENTRY_STAFF_MEMBERS
+    APP.APP,
+    STAFF_MEMBERS
   ]));
   const meeting :Map = useSelector((store :Map) => store.getIn([
     CASE_NOTES.CASE_NOTES,

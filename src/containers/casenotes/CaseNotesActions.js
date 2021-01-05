@@ -10,9 +10,6 @@ const clearSubmitRequestState = () => ({
 const GET_MEETING_AND_TASK :'GET_MEETING_AND_TASK' = 'GET_MEETING_AND_TASK';
 const getMeetingAndTask :RequestSequence = newRequestSequence(GET_MEETING_AND_TASK);
 
-const GET_REENTRY_STAFF :'GET_REENTRY_STAFF' = 'GET_REENTRY_STAFF';
-const getReentryStaff :RequestSequence = newRequestSequence(GET_REENTRY_STAFF);
-
 const GET_STAFF_WHO_RECORDED_NOTES :'GET_STAFF_WHO_RECORDED_NOTES' = 'GET_STAFF_WHO_RECORDED_NOTES';
 const getStaffWhoRecordedNotes :RequestSequence = newRequestSequence(GET_STAFF_WHO_RECORDED_NOTES);
 
@@ -23,12 +20,10 @@ const submitCaseNotesAndCompleteTask :RequestSequence = newRequestSequence(SUBMI
 export {
   CLEAR_SUBMIT_REQUEST_STATE,
   GET_MEETING_AND_TASK,
-  GET_REENTRY_STAFF,
   GET_STAFF_WHO_RECORDED_NOTES,
   SUBMIT_CASE_NOTES_AND_COMPLETE_TASK,
   clearSubmitRequestState,
   getMeetingAndTask,
-  getReentryStaff,
   getStaffWhoRecordedNotes,
   submitCaseNotesAndCompleteTask,
 };

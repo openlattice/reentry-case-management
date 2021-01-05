@@ -45,9 +45,11 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
 import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
-import { getEntitiesForNewFollowUpForm, getFollowUpNeighbors } from '../profile/tasks/FollowUpsActions';
+import { getFollowUpNeighbors } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
-import { getEntitiesForNewFollowUpFormWorker, getFollowUpNeighborsWorker } from '../profile/tasks/FollowUpsSagas';
+import { getFollowUpNeighborsWorker } from '../profile/tasks/FollowUpsSagas';
+import { getProviders } from '../providers/ProvidersActions';
+import { getProvidersWorker } from '../providers/ProvidersSagas';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -243,7 +245,7 @@ function* loadTaskManagerDataWorker(action :SequenceAction) :Generator<*, *, *> 
 
     yield all([
       call(searchForTasksWorker, searchForTasks({ statuses: [] })),
-      call(getEntitiesForNewFollowUpFormWorker, getEntitiesForNewFollowUpForm()),
+      call(getProvidersWorker, getProviders()),
       call(getPeopleForNewTaskFormWorker, getPeopleForNewTaskForm()),
     ]);
 
