@@ -1,5 +1,9 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 
 const SEARCH_PREFIX = 'entity';
 

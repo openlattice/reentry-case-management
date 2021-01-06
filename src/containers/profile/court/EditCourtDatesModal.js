@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
@@ -11,6 +14,7 @@ import {
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import { EDIT_COURT_HEARINGS, deleteCourtHearing, editCourtHearings } from './CourtActions';
 import { schema, uiSchema } from './schemas/EditCourtDatesSchemas';

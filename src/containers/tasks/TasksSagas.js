@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   all,
   call,
@@ -11,24 +14,16 @@ import {
   Map,
   fromJS,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getEntityProperties,
-  getPTIDFromEDM,
-} from '../../utils/DataUtils';
-import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
 import {
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
@@ -37,17 +32,29 @@ import {
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
-import { getEntitiesForNewFollowUpForm, getFollowUpNeighbors } from '../profile/tasks/FollowUpsActions';
-import { getEntitiesForNewFollowUpFormWorker, getFollowUpNeighborsWorker } from '../profile/tasks/FollowUpsSagas';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+
+import Logger from '../../utils/Logger';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEKID,
+  getESIDFromApp,
+  getEntityProperties,
+  getPTIDFromEDM,
+} from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import { getSearchTerm, getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+import { getFollowUpNeighbors } from '../profile/tasks/FollowUpsActions';
 import { FOLLOW_UPS_STATUSES } from '../profile/tasks/FollowUpsConstants';
+import { getFollowUpNeighborsWorker } from '../profile/tasks/FollowUpsSagas';
+import { getProviders } from '../providers/ProvidersActions';
+import { getProvidersWorker } from '../providers/ProvidersSagas';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { executeSearch } = SearchApiActions;
-const { executeSearchWorker } = SearchApiSagas;
+const { searchEntitySetData } = SearchApiActions;
+const { searchEntitySetDataWorker } = SearchApiSagas;
 const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
 const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
@@ -118,7 +125,7 @@ function* searchForTasksWorker(action :SequenceAction) :Generator<*, *, *> {
               fuzzy: false
             }]
           });
-          searchCalls.push(call(executeSearchWorker, executeSearch({ searchOptions })));
+          searchCalls.push(call(searchEntitySetDataWorker, searchEntitySetData(searchOptions)));
         }
 
         if (status === FOLLOW_UPS_STATUSES.PENDING) {
@@ -131,12 +138,12 @@ function* searchForTasksWorker(action :SequenceAction) :Generator<*, *, *> {
               fuzzy: false
             }]
           });
-          searchCalls.push(call(executeSearchWorker, executeSearch({ searchOptions })));
+          searchCalls.push(call(searchEntitySetDataWorker, searchEntitySetData(searchOptions)));
         }
 
         if (status === FOLLOW_UPS_STATUSES.DONE) {
           searchOptions = searchOptionsForCompletedTasks;
-          searchCalls.push(call(executeSearchWorker, executeSearch({ searchOptions })));
+          searchCalls.push(call(searchEntitySetDataWorker, searchEntitySetData(searchOptions)));
         }
 
         const statusConstraint = getSearchTerm(statusPTID, searchString);
@@ -238,7 +245,7 @@ function* loadTaskManagerDataWorker(action :SequenceAction) :Generator<*, *, *> 
 
     yield all([
       call(searchForTasksWorker, searchForTasks({ statuses: [] })),
-      call(getEntitiesForNewFollowUpFormWorker, getEntitiesForNewFollowUpForm()),
+      call(getProvidersWorker, getProviders()),
       call(getPeopleForNewTaskFormWorker, getPeopleForNewTaskForm()),
     ]);
 

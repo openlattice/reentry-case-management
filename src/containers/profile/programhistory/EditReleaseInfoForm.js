@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect } from 'react';
 
 import { Map } from 'immutable';
@@ -10,6 +13,7 @@ import {
 } from 'lattice-ui-kit';
 import { ReduxUtils, RoutingUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 import type { Match } from 'react-router';
 
 import EditFacilityForm from './EditFacilityForm';

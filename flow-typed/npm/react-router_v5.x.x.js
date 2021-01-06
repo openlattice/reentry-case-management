@@ -1,18 +1,18 @@
-// flow-typed signature: 1f000048434229fbad1dbd00c6046a0c
-// flow-typed version: 822e55b7ba/react-router_v5.x.x/flow_>=v0.104.x
+// flow-typed signature: 7a910df5fd688ad6d23c9ceaa43bf1ea
+// flow-typed version: 5f4b3cb313/react-router_v5.x.x/flow_>=v0.104.x
 
 declare module "react-router" {
   // NOTE: many of these are re-exported by react-router-dom and
   // react-router-native, so when making changes, please be sure to update those
   // as well.
-  declare export type Location = {
+  declare export type Location = $ReadOnly<{
     pathname: string,
     search: string,
     hash: string,
     state?: any,
     key?: string,
     ...
-  };
+  }>;
 
   declare export type LocationShape = {
     pathname?: string,
@@ -40,9 +40,6 @@ declare module "react-router" {
     block(
       callback: string | (location: Location, action: HistoryAction) => ?string
     ): () => void,
-    // createMemoryHistory
-    index?: number,
-    entries?: Array<Location>,
     ...
   };
 

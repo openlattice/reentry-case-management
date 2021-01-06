@@ -13,6 +13,7 @@ const APP :Object = {
   INITIALIZE_APPLICATION: 'initializeApplication',
   ORGS: 'organizations',
   SELECTED_ORG_ID: 'selectedOrgId',
+  STAFF_MEMBERS: 'staffMembers',
 };
 
 const CASE_NOTES :Object = {
@@ -53,7 +54,6 @@ const PARTICIPANT_FOLLOW_UPS :Object = {
   FOLLOW_UP_NEIGHBOR_MAP: 'followUpNeighborMap',
   MEETING_NOTES_STAFF_MAP: 'meetingNotesStaffMap',
   PARTICIPANT_FOLLOW_UPS: 'participantFollowUps',
-  REENTRY_STAFF_MEMBERS: 'reentryStaffMembers',
 };
 
 const PROVIDERS :Object = {

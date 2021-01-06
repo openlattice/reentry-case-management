@@ -1,6 +1,9 @@
-// @flow
-import Papa from 'papaparse';
+/*
+ * @flow
+ */
+
 import FS from 'file-saver';
+import Papa from 'papaparse';
 import {
   all,
   call,
@@ -16,25 +19,14 @@ import {
   getIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
-import {
-  getEKID,
-  getESIDFromApp,
-  getEntityProperties,
-  getNeighborDetails,
-  getPTIDFromEDM,
-} from '../../utils/DataUtils';
-import { getUTCDateRangeSearchString } from '../../utils/SearchUtils';
-import { getProviders } from '../providers/ProvidersActions';
-import { getProvidersWorker } from '../providers/ProvidersSagas';
 import {
   DOWNLOAD_PARTICIPANTS,
   GET_INTAKES_PER_YEAR,
@@ -43,11 +35,24 @@ import {
   getIntakesPerYear,
   getReportsData,
 } from './ReportsActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES } from '../profile/events/EventConstants';
 import { TABLE_HEADERS } from './ReportsConstants';
+
+import Logger from '../../utils/Logger';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEKID,
+  getESIDFromApp,
+  getEntityProperties,
+  getNeighborDetails,
+  getPTIDFromEDM,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
+import { getUTCDateRangeSearchString } from '../../utils/SearchUtils';
+import { APP, EDM } from '../../utils/constants/ReduxStateConstants';
+import { ENROLLMENT_STATUSES } from '../profile/events/EventConstants';
+import { getProviders } from '../providers/ProvidersActions';
+import { getProvidersWorker } from '../providers/ProvidersSagas';
 
 const {
   ENROLLMENT_STATUS,
@@ -76,8 +81,8 @@ const headersByPropertyFqn :Map = Map().withMutations((map :Map) => {
 }).asImmutable();
 
 const LOG = new Logger('ReportsSagas');
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getAppFromState = (state) => state.get(APP.APP, Map());
 const getEdmFromState = (state) => state.get(EDM.EDM, Map());
@@ -132,7 +137,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       }]
     });
 
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) {
       throw response.error;
     }
@@ -249,7 +254,7 @@ function* getIntakesPerYearWorker(action :SequenceAction) :Generator<*, *, *> {
       }]
     };
 
-    const response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    const response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
     let numberOfIntakesPerMonth :List = fromJS([
       { y: 0, x: 'Jan' },
@@ -331,7 +336,7 @@ function* getReportsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     const [providersResponse, intakesPerYear, jailStaysResponse] = yield all([
       call(getProvidersWorker, getProviders({ fetchNeighbors: false })),
       call(getIntakesPerYearWorker, getIntakesPerYear({ dateTimeObj: now })),
-      call(executeSearchWorker, executeSearch({ searchOptions: releasesSearchOptions })),
+      call(searchEntitySetDataWorker, searchEntitySetData(releasesSearchOptions)),
     ]);
     if (providersResponse.error) throw providersResponse.error;
     if (intakesPerYear.error) throw intakesPerYear.error;

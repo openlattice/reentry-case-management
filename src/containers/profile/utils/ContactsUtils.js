@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   List,
   Map,
@@ -12,6 +15,7 @@ import {
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { format } from 'libphonenumber-js';
+import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID, getEntityProperties } from '../../../utils/DataUtils';

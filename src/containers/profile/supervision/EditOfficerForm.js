@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -14,6 +17,7 @@ import {
 } from 'lattice-ui-kit';
 import { DataUtils, useRequestState } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import {
   EDIT_OFFICER,

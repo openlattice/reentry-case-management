@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useState } from 'react';
 
 import styled from 'styled-components';
@@ -81,15 +84,15 @@ const IntakesBarChart = ({ actions, numberOfIntakesPerMonth, requestStates } :Pr
           <Button
               variant="text"
               onClick={getIntakesForPreviousYear}
-              size="sm">
-            <FontAwesomeIcon icon={faChevronLeft} color={BLUE.BLUE_01} />
+              size="small">
+            <FontAwesomeIcon icon={faChevronLeft} />
           </Button>
           <Year>{ selectedYear }</Year>
           <Button
               variant="text"
               onClick={getIntakesForNextYear}
-              size="sm">
-            <FontAwesomeIcon icon={faChevronRight} color={BLUE.BLUE_01} />
+              size="small">
+            <FontAwesomeIcon icon={faChevronRight} />
           </Button>
         </YearRow>
         {

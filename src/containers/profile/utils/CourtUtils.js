@@ -1,6 +1,10 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEKID } from '../../../utils/DataUtils';

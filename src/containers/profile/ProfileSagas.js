@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   all,
   call,
@@ -12,13 +15,13 @@ import {
   fromJS,
   get,
 } from 'immutable';
-import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -70,7 +73,7 @@ import { getIncarcerationFacilities } from '../intake/IntakeActions';
 import { getIncarcerationFacilitiesWorker } from '../intake/IntakeSagas';
 
 const LOG = new Logger('ProfileSagas');
-const { FullyQualifiedName } = Models;
+
 const { getEntityData } = DataApiActions;
 const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -447,7 +450,7 @@ function* getParticipantNeighborsWorker(action :SequenceAction) :Generator<*, *,
           }
 
           const neighborESID :UUID = getNeighborESID(neighbor);
-          const neighborEntityFqn :FullyQualifiedName = getFqnFromApp(app, neighborESID);
+          const neighborEntityFqn :FQN = getFqnFromApp(app, neighborESID);
           const entity :Map = getNeighborDetails(neighbor);
           let entityList :List = personNeighborMap.get(neighborEntityFqn, List());
           entityList = entityList.push(entity);

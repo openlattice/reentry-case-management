@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React from 'react';
 
 import styled from 'styled-components';
@@ -11,6 +14,7 @@ import {
 } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import type { UUID } from 'lattice';
 
 import { DELETE_PARTICIPANT_AND_NEIGHBORS, deleteParticipantAndNeighbors } from './ProfileActions';
 

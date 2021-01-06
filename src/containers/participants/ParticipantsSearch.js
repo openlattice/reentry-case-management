@@ -1,5 +1,9 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -14,10 +18,17 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import NoResults from '../../components/noresults/NoResults';
+import {
+  SEARCH_PARTICIPANTS,
+  clearSearchResults,
+  searchParticipants
+} from './ParticipantsActions';
+import { aggregateResultsData } from './utils/ParticipantsUtils';
 
+import NoResults from '../../components/noresults/NoResults';
 import * as Routes from '../../core/router/Routes';
 import {
   ButtonWrapper,
@@ -25,15 +36,9 @@ import {
   PaginationWrapper,
   StyledSearchButton,
 } from '../../components/search/SearchStyledComponents';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
-import { aggregateResultsData } from './utils/ParticipantsUtils';
-import { goToRoute } from '../../core/router/RoutingActions';
-import {
-  SEARCH_PARTICIPANTS,
-  clearSearchResults,
-  searchParticipants
-} from './ParticipantsActions';
 import { PARTICIPANTS, SHARED } from '../../utils/constants/ReduxStateConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 

@@ -1,14 +1,18 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map, fromJS } from 'immutable';
-import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ModalHeader from '../../../components/modal/ModalHeader';
 import { CREATE_NEW_FOLLOW_UP, clearSubmissionRequestStates, createNewFollowUp } from './FollowUpsActions';
 import {
   getNewFollowUpAssociations,
@@ -17,6 +21,8 @@ import {
   preprocessFormData,
   removeEKIDsFromFormData,
 } from './utils/AddNewFollowUpUtils';
+
+import ModalHeader from '../../../components/modal/ModalHeader';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
@@ -28,10 +34,9 @@ import {
 
 const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
+const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID, STAFF_MEMBERS } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PROVIDERS_LIST } = PROVIDERS;
-const { REENTRY_STAFF_MEMBERS } = PARTICIPANT_FOLLOW_UPS;
 
 const FixedWidthModal = styled.div`
   padding-bottom: 30px;
@@ -50,7 +55,7 @@ type Props = {
   personEKID :UUID;
   propertyTypeIdsByFqn :Map;
   providersList :List;
-  reentryStaffMembers :List;
+  staffMembers :List;
   requestStates :{
     CREATE_NEW_FOLLOW_UP :RequestState;
   };
@@ -67,7 +72,7 @@ const AddNewFollowUpModal = ({
   personEKID,
   propertyTypeIdsByFqn,
   providersList,
-  reentryStaffMembers,
+  staffMembers,
   requestStates,
   schema,
   uiSchema,
@@ -104,7 +109,7 @@ const AddNewFollowUpModal = ({
       actions.createNewFollowUp({ associationEntityData, entityData });
     }
   };
-  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, reentryStaffMembers, providersList, participants);
+  const hydratedSchema :Object = hydrateNewFollowUpForm(schema, staffMembers, providersList, participants);
   const renderHeader = () => (<ModalHeader onClose={onClose} title="New Task" />);
   const renderFooter = () => {
     const isSubmitting :boolean = requestIsPending(requestStates[CREATE_NEW_FOLLOW_UP]);
@@ -149,12 +154,13 @@ AddNewFollowUpModal.defaultProps = {
 };
 
 const mapStateToProps = (state :Map) => {
+  const app :Map = state.get(APP.APP);
   const providers :Map = state.get(PROVIDERS.PROVIDERS);
   const participantFollowUps :Map = state.get(PARTICIPANT_FOLLOW_UPS.PARTICIPANT_FOLLOW_UPS);
   const selectedOrgId :string = state.getIn([APP.APP, SELECTED_ORG_ID]);
   return {
     [PROVIDERS_LIST]: providers.get(PROVIDERS_LIST),
-    [REENTRY_STAFF_MEMBERS]: participantFollowUps.get(REENTRY_STAFF_MEMBERS),
+    [STAFF_MEMBERS]: app.get(STAFF_MEMBERS),
     entitySetIdsByFqn: state.getIn([APP.APP, ENTITY_SET_IDS_BY_ORG_ID, selectedOrgId], Map()),
     propertyTypeIdsByFqn: state.getIn([EDM.EDM, TYPE_IDS_BY_FQN, PROPERTY_TYPES], Map()),
     requestStates: {

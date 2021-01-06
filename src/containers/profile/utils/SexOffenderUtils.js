@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   List,
   Map,
@@ -7,12 +10,13 @@ import {
   removeIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 
-import { isDefined } from '../../../utils/LangUtils';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
