@@ -98,24 +98,35 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
       response.data.forEach((user) => {
         mutator.add(user);
       });
-    });
+    }).toList();
 
     const entityData = {
       [staffESID]: []
     };
 
-    staff.forEach((staffMember) => {
-      const userEmail = getPropertyValue(staffMember, [COUNTY_ID, 0]);
-      const user = authorizedUsers.find((authorizedUser) => authorizedUser.email === userEmail);
-      if (!isDefined(user)) {
-        const userFirstName = user.given_name;
-        const userLastName = user.family_name;
-        const { email } = user;
-        entityData[staffESID].push({
-          [personGivenNamePTID]: [userFirstName],
-          [personSurnamePTID]: [userLastName],
+    authorizedUsers.forEach((user) => {
+      const { email } = user;
+      const staffMemberEntity = staff
+        .find((staffMember :Map) => email === getPropertyValue(staffMember, [COUNTY_ID, 0]));
+      if (!isDefined(staffMemberEntity)) {
+        const newStaffEntity = {
           [idPTID]: [email],
-        });
+        };
+
+        if (isDefined(user.given_name)) {
+          newStaffEntity[personGivenNamePTID] = [user.given_name];
+        }
+        else if (isDefined(user.nickname)) {
+          newStaffEntity[personGivenNamePTID] = [user.nickname];
+        }
+        else {
+          newStaffEntity[personGivenNamePTID] = [email];
+        }
+
+        if (isDefined(user.family_name)) {
+          newStaffEntity[personSurnamePTID] = [user.family_name];
+        }
+        entityData[staffESID].push(newStaffEntity);
       }
     });
 
@@ -123,15 +134,15 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
       response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData: {}, entityData }));
       if (response.error) throw response.error;
       const { entityKeyIds } = response.data;
-      entityKeyIds.forEach((staffEntityKeyId, index) => {
+      entityKeyIds[staffESID].forEach((staffEntityKeyId, index) => {
         const newStaffMember = Map().withMutations((mutator) => {
           const data = entityData[staffESID][index];
           mutator.set(FIRST_NAME, data[personGivenNamePTID][0]);
-          mutator.set(LAST_NAME, data[personSurnamePTID][0]);
+          if (data[personSurnamePTID]) mutator.set(LAST_NAME, data[personSurnamePTID][0]);
           mutator.set(COUNTY_ID, data[idPTID][0]);
           mutator.set(ENTITY_KEY_ID, staffEntityKeyId);
         });
-        staff.push(newStaffMember);
+        staff = staff.push(newStaffMember);
       });
     }
 
