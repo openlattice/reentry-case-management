@@ -17,6 +17,7 @@ import {
   Colors,
   DataGrid,
   Spinner,
+  Tag,
 } from 'lattice-ui-kit';
 import { RoutingUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
@@ -42,7 +43,7 @@ import {
   Header,
   NameHeader,
 } from './styled/GeneralProfileStyles';
-import { getFormattedParticipantData } from './utils/ProfileUtils';
+import { getFormattedParticipantData, getReentryEnrollmentDate } from './utils/ProfileUtils';
 
 import CaseNotesProfileCard from '../casenotes/CaseNotesProfileCard';
 import EditButton from '../../components/buttons/EditButton';
@@ -216,6 +217,8 @@ class ParticipantProfile extends Component<Props, State> {
     const personEKID :UUID = getEKID(participant);
     const participantName :string = getPersonFullName(participant);
     const participantData :Map = getFormattedParticipantData(participant, participantNeighbors);
+    const enrollmentDate :string = getReentryEnrollmentDate(participantNeighbors);
+    const enrollmentTagText :string = `Enrolled: ${enrollmentDate}`;
     return (
       <>
         <HeaderWrapper>
@@ -236,7 +239,10 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileCardStack>
           <Card>
             <CardHeaderWithButtons padding="30px" vertical={false}>
-              <CardHeaderTitle>Person Profile</CardHeaderTitle>
+              <CardInnerWrapper>
+                <CardHeaderTitle>Person Profile</CardHeaderTitle>
+                <div><Tag mode="secondary">{enrollmentTagText}</Tag></div>
+              </CardInnerWrapper>
               <EditButton onClick={this.goToEditPersonPage}>Edit</EditButton>
             </CardHeaderWithButtons>
             <CardSegment padding="30px">
