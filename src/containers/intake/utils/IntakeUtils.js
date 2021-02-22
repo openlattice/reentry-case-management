@@ -304,19 +304,23 @@ const setPreferredMethodOfContact = (formData :Object) :Object => {
       const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
       return propertyTypeFQN.toString() === IS_CELL_PHONE.toString();
     });
-    const { entityIndex } = parseEntityAddressKey(cellPhoneProperty);
-    indexToSet = entityIndex;
+    if (isDefined(cellPhoneProperty)) {
+      const { entityIndex } = parseEntityAddressKey(cellPhoneProperty);
+      indexToSet = entityIndex;
+    }
   }
   else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[3]) {
     const emailProperty :string[] = Object.keys(contactInfoSection).filter((entityAddressKey :string) => {
       const { propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
       return propertyTypeFQN.toString() === EMAIL.toString();
     });
-    const [emailEntityKeyAddress] = emailProperty;
-    const { entityIndex } = parseEntityAddressKey(emailEntityKeyAddress);
-    indexToSet = entityIndex;
+    if (isDefined(emailProperty)) {
+      const [emailEntityKeyAddress] = emailProperty;
+      const { entityIndex } = parseEntityAddressKey(emailEntityKeyAddress);
+      indexToSet = entityIndex;
+    }
   }
-  else {
+  else if (preferredMethodOfContactValue === PREFERRED_COMMUNICATION_METHODS[0]) {
     indexToSet = 0;
   }
 
