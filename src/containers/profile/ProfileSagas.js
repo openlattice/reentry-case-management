@@ -48,6 +48,7 @@ import {
   getPersonFormData,
   getStateIdFormData,
 } from './utils/EditPersonUtils';
+import { addContactInfoToDataToDelete } from './utils/ProfileUtils';
 
 import Logger from '../../utils/Logger';
 import { deleteEntities } from '../../core/data/DataActions';
@@ -88,6 +89,7 @@ const {
   EMPLOYEE,
   EMPLOYMENT,
   ENROLLMENT_STATUS,
+  FOLLOW_UPS,
   HEARINGS,
   IS_EMERGENCY_CONTACT_FOR,
   LOCATION,
@@ -128,23 +130,62 @@ function* deleteParticipantAndNeighborsWorker(action :SequenceAction) :Generator
     const app = yield select(getAppFromState);
     const peopleESID :UUID = getESIDFromApp(app, PEOPLE);
 
-    const dataToDelete = [
+    let dataToDelete = [
       { entitySetId: peopleESID, entityKeyIds: [personEKID] },
     ];
 
-    let searchFilter = {
+    const addressESID :UUID = getESIDFromApp(app, LOCATION);
+    const contactInfoESID :UUID = getESIDFromApp(app, CONTACT_INFO);
+    const countyIdESID :UUID = getESIDFromApp(app, COUNTY_ID);
+    const educationESID :UUID = getESIDFromApp(app, EDUCATION);
+    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
+    const employeeESID :UUID = getESIDFromApp(app, EMPLOYEE);
+    const employmentESID :UUID = getESIDFromApp(app, EMPLOYMENT);
+    const enrollmentStatusESID :UUID = getESIDFromApp(app, ENROLLMENT_STATUS);
+    const followUpsESID :UUID = getESIDFromApp(app, FOLLOW_UPS);
+    const hearingsESID :UUID = getESIDFromApp(app, HEARINGS);
+    const manualJailStaysESID :UUID = getESIDFromApp(app, MANUAL_JAIL_STAYS);
+    const meetingsESID :UUID = getESIDFromApp(app, MEETINGS);
+    const needsAssessmentESID :UUID = getESIDFromApp(app, NEEDS_ASSESSMENT);
+    const personDetailsESID :UUID = getESIDFromApp(app, PERSON_DETAILS);
+    const probationParoleESID :UUID = getESIDFromApp(app, PROBATION_PAROLE);
+    const referralToReentryESID :UUID = getESIDFromApp(app, REFERRAL_REQUEST);
+    const sexOffenderESID :UUID = getESIDFromApp(app, SEX_OFFENDER);
+    const sexOffenderRegistrationLocationESID :UUID = getESIDFromApp(app, SEX_OFFENDER_REGISTRATION_LOCATION);
+    const stateIdESID :UUID = getESIDFromApp(app, STATE_ID);
+
+    let filter = {
       entityKeyIds: [personEKID],
+      sourceEntitySetIds: [emergencyContactESID, employeeESID],
+      destinationEntitySetIds: [
+        addressESID,
+        contactInfoESID,
+        countyIdESID,
+        educationESID,
+        employmentESID,
+        enrollmentStatusESID,
+        followUpsESID,
+        hearingsESID,
+        manualJailStaysESID,
+        meetingsESID,
+        needsAssessmentESID,
+        personDetailsESID,
+        probationParoleESID,
+        referralToReentryESID,
+        sexOffenderESID,
+        sexOffenderRegistrationLocationESID,
+        stateIdESID,
+      ],
     };
     let response :Object = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter })
     );
     if (response.error) throw response.error;
     const neighbors = fromJS(response.data);
-
-    const emergencyContactESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT);
-    const emergencyContactInfoESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT_INFO);
     const emergencyContactEKIDs :UUID[] = [];
+    const employeeEKIDs :UUID[] = [];
+    const employmentEKIDs :UUID[] = [];
 
     const neighborEKIDsByESID = Map().withMutations((mutator :Map) => {
       neighbors.forEach((neighborList :List) => {
@@ -153,6 +194,8 @@ function* deleteParticipantAndNeighborsWorker(action :SequenceAction) :Generator
           const neighborEKID :UUID = getEKID(getNeighborDetails(neighbor));
 
           if (neighborESID === emergencyContactESID) emergencyContactEKIDs.push(neighborEKID);
+          if (neighborESID === employeeESID) employeeEKIDs.push(neighborEKID);
+          if (neighborESID === employmentESID) employmentEKIDs.push(neighborEKID);
 
           let ekidList :List = mutator.get(neighborESID, List());
           ekidList = ekidList.push(neighborEKID);
@@ -165,15 +208,16 @@ function* deleteParticipantAndNeighborsWorker(action :SequenceAction) :Generator
       dataToDelete.push({ entitySetId: neighborESID, entityKeyIds: ekidList.toJS() });
     });
 
+    const emergencyContactInfoESID :UUID = getESIDFromApp(app, EMERGENCY_CONTACT_INFO);
     if (emergencyContactEKIDs.length) {
-      searchFilter = {
+      filter = {
         entityKeyIds: emergencyContactEKIDs,
         sourceEntitySetIds: [],
         destinationEntitySetIds: [emergencyContactInfoESID],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: emergencyContactESID, filter: searchFilter })
+        searchEntityNeighborsWithFilter({ entitySetId: emergencyContactESID, filter })
       );
       if (response.error) throw response.error;
       const emergencyContactInfoEKIDs :UUID[] = [];
@@ -183,6 +227,52 @@ function* deleteParticipantAndNeighborsWorker(action :SequenceAction) :Generator
         });
       });
       dataToDelete.push({ entitySetId: emergencyContactInfoESID, entityKeyIds: emergencyContactInfoEKIDs });
+    }
+
+    if (employeeEKIDs.length) {
+      const officersESID = getESIDFromApp(app, OFFICERS);
+      filter = { entityKeyIds: employeeEKIDs, destinationEntitySetIds: [], sourceEntitySetIds: [officersESID] };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employeeESID, filter })
+      );
+      if (response.error) throw response.error;
+      const officerEKIDs :UUID[] = [];
+      fromJS(response.data).forEach((neighborList) => {
+        const officerEKID = getEKID(getNeighborDetails(neighborList.get(0, Map())));
+        dataToDelete.push({ entitySetId: officersESID, entityKeyIds: [officerEKID] });
+        officerEKIDs.push(officerEKID);
+      });
+      filter = { entityKeyIds: officerEKIDs, destinationEntitySetIds: [contactInfoESID], sourceEntitySetIds: [] };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: officersESID, filter })
+      );
+      if (response.error) throw response.error;
+      dataToDelete = addContactInfoToDataToDelete(response.data, dataToDelete, contactInfoESID);
+    }
+
+    if (employmentEKIDs.length) {
+      const attorneysESID = getESIDFromApp(app, ATTORNEYS);
+      filter = { entityKeyIds: employmentEKIDs, destinationEntitySetIds: [], sourceEntitySetIds: [attorneysESID] };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employmentESID, filter })
+      );
+      if (response.error) throw response.error;
+      const attorneyEKIDs :UUID[] = [];
+      fromJS(response.data).forEach((neighborList) => {
+        const attorneyEKID = getEKID(getNeighborDetails(neighborList.get(0, Map())));
+        dataToDelete.push({ entitySetId: attorneysESID, entityKeyIds: [attorneyEKID] });
+        attorneyEKIDs.push(attorneyEKID);
+      });
+      filter = { entityKeyIds: attorneyEKIDs, destinationEntitySetIds: [contactInfoESID], sourceEntitySetIds: [] };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: attorneysESID, filter })
+      );
+      if (response.error) throw response.error;
+      dataToDelete = addContactInfoToDataToDelete(response.data, dataToDelete, contactInfoESID);
     }
 
     response = yield call(deleteEntitiesWorker, deleteEntities(dataToDelete));

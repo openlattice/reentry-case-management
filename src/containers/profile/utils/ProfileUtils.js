@@ -2,12 +2,19 @@
  * @flow
  */
 
-import { List, Map } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  setIn,
+} from 'immutable';
+import { LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEKID, getEntityProperties } from '../../../utils/DataUtils';
+import { getEKID, getEntityProperties, getNeighborDetails } from '../../../utils/DataUtils';
 import { getPersonAge } from '../../../utils/PeopleUtils';
 import { sortEntitiesByDateProperty } from '../../../utils/Utils';
 import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
@@ -34,6 +41,7 @@ const {
   RACE,
   STRING_NUMBER,
 } = PROPERTY_TYPE_FQNS;
+const { isDefined } = LangUtils;
 
 const getFormattedParticipantData = (participant :Map, participantNeighbors :Map) :Map => {
 
@@ -122,7 +130,27 @@ const getReentryEnrollmentDate = (participantNeighbors :Map) :string => {
   return enrollmentDate;
 };
 
+const addContactInfoToDataToDelete = (neighbors :Object, dataToDelete :Object[], contactInfoESID :UUID) => {
+  let updatedDataToDelete = dataToDelete;
+  fromJS(neighbors).forEach((neighborList) => {
+    const contactEKIDs = neighborList.map((neighbor) => getEKID(getNeighborDetails(neighbor))).toJS();
+    const contactInfoIndex = updatedDataToDelete.findIndex((obj) => obj.entitySetId === contactInfoESID);
+    if (isDefined(contactInfoIndex)) {
+      updatedDataToDelete = setIn(
+        updatedDataToDelete,
+        [contactInfoIndex, 'entityKeyIds'],
+        getIn(updatedDataToDelete, [contactInfoIndex, 'entityKeyIds']).concat(contactEKIDs)
+      );
+    }
+    else {
+      updatedDataToDelete.push({ entitySetId: contactInfoESID, entityKeyIds: contactEKIDs });
+    }
+  });
+  return updatedDataToDelete;
+};
+
 export {
+  addContactInfoToDataToDelete,
   getFormattedParticipantData,
   getMostRecentReleaseDate,
   getReentryEnrollmentDate,
