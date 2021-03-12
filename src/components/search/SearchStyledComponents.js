@@ -5,7 +5,7 @@ import { Button } from 'lattice-ui-kit';
 const FieldsGrid = styled.div`
   display: grid;
   grid-gap: 20px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(${(props) => (props.columns ? props.columns : 3)}, 1fr);
   margin-bottom: 20px;
   width: 100%;
 `;
