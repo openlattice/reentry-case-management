@@ -175,8 +175,8 @@ class AppContainer extends Component<Props> {
                   user={user}>
                 <AppNavigationWrapper>
                   <NavLink to={Routes.ROOT} />
-                  <NavLink to={Routes.PARTICIPANTS}>Search</NavLink>
-                  <NavLink to={Routes.NEW_INTAKE}>New Intake</NavLink>
+                  <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
+                  <NavLink to={Routes.NEW_INTAKE}>Releases & Intake</NavLink>
                   <NavLink to={Routes.REPORTS}>Reports</NavLink>
                   <NavLink to={Routes.PROVIDERS}>Providers</NavLink>
                   <NavLink to={Routes.TASKS}>Tasks</NavLink>
