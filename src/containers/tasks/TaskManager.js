@@ -2,12 +2,20 @@
 import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { Button, CheckboxSelect, Label } from 'lattice-ui-kit';
+import {
+  Button,
+  CheckboxSelect,
+  Grid,
+  Label,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import SubscriptionsModal from './SubscriptionsModal';
 import {
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   LOAD_TASK_MANAGER_DATA,
@@ -51,6 +59,8 @@ const FOLLOW_UP_STATUS_OPTIONS :Object[] = [
   { label: LATE, value: LATE },
   { label: PENDING, value: PENDING },
 ];
+
+const NotificationsIcon = <FontAwesomeIcon icon={faBell} />;
 
 const PageHeader = styled.div`
   font-size: 28px;
@@ -101,7 +111,8 @@ const TaskManager = ({
   requestStates,
 } :Props) => {
 
-  const [newFollowUpModalVisible, setModalVisibility] = useState(false);
+  const [newFollowUpModalVisible, openNewFollowUpModal] = useState(false);
+  const [subscriptionsModalVisible, openSubscriptionsModal] = useState(false);
   const [selectedTaskStatuses, selectTaskStatus] = useState([]);
   const [selectedAssignees, selectAssignee] = useState([]);
   const [selectedReporters, selectReporter] = useState([]);
@@ -155,15 +166,21 @@ const TaskManager = ({
                 options={reentryStaffOptions} />
           </SelectWrapper>
         </span>
-        <Button color="primary" onClick={() => setModalVisibility(true)}>New Task</Button>
+        <Grid spacing={1}>
+          <Button onClick={() => openSubscriptionsModal(true)} startIcon={NotificationsIcon}>Subscribe</Button>
+          <Button color="primary" onClick={() => openNewFollowUpModal(true)}>New Task</Button>
+        </Grid>
       </Row>
       <TasksTable hasSearched={hasSearched} isLoading={isSearching} tasksData={tasksData} />
       <AddNewFollowUpModal
           isVisible={newFollowUpModalVisible}
-          onClose={() => setModalVisibility(false)}
+          onClose={() => openNewFollowUpModal(false)}
           participants={participants}
           schema={schema}
           uiSchema={uiSchema} />
+      <SubscriptionsModal
+          isVisible={subscriptionsModalVisible}
+          onClose={() => openSubscriptionsModal(false)} />
     </>
   );
 };
