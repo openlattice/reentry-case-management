@@ -334,6 +334,7 @@ class IntakeForm extends Component<Props, State> {
                     </Button>
                     <Button
                         color="primary"
+                        disabled={submissionSuccessful}
                         isLoading={requestIsPending(requestStates[SUBMIT_INTAKE_FORM])}
                         onClick={handleNext}>
                       { primaryButtonText }
