@@ -99,6 +99,7 @@ const REPORTS :Object = {
 const TASK_MANAGER :Object = {
   FOLLOW_UPS: 'followUps',
   PARTICIPANTS: 'participants',
+  SUBSCRIPTIONS: 'subscriptions',
   TASK_MANAGER: 'taskManager',
 };
 
