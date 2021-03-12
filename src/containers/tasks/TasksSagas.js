@@ -17,6 +17,8 @@ import {
 import {
   DataApiActions,
   DataApiSagas,
+  PersistentSearchApiActions,
+  PersistentSearchApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
@@ -26,9 +28,11 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   GET_PEOPLE_FOR_NEW_TASK_FORM,
+  GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   getPeopleForNewTaskForm,
+  getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
@@ -55,6 +59,8 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
+const { getPersistentSearches } = PersistentSearchApiActions;
+const { getPersistentSearchesWorker } = PersistentSearchApiSagas;
 const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
 const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
@@ -192,6 +198,36 @@ function* searchForTasksWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * TasksActions.getSubscriptions()
+ *
+ */
+
+function* getSubscriptionsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(getSubscriptions.request(action.id));
+
+    const response = yield call(getPersistentSearchesWorker, getPersistentSearches(false));
+    if (response.error) throw response.error;
+    const subscriptions = fromJS(response.data);
+
+    yield put(getSubscriptions.success(action.id, subscriptions));
+  }
+  catch (error) {
+    yield put(getSubscriptions.failure(action.id, error));
+  }
+  finally {
+    yield put(getSubscriptions.finally(action.id));
+  }
+}
+
+function* getSubscriptionsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SUBSCRIPTIONS, getSubscriptionsWorker);
+}
+
+/*
+ *
  * TasksActions.getPeopleForNewTaskForm()
  *
  */
@@ -268,6 +304,8 @@ function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
 export {
   getPeopleForNewTaskFormWatcher,
   getPeopleForNewTaskFormWorker,
+  getSubscriptionsWatcher,
+  getSubscriptionsWorker,
   loadTaskManagerDataWatcher,
   loadTaskManagerDataWorker,
   searchForTasksWatcher,

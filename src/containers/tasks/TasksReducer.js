@@ -6,16 +6,18 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   CLEAR_PARTICIPANTS,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
+  GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   getPeopleForNewTaskForm,
+  getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
 
 import { SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
 
-const { FOLLOW_UPS, PARTICIPANTS } = TASK_MANAGER;
+const { FOLLOW_UPS, PARTICIPANTS, SUBSCRIPTIONS } = TASK_MANAGER;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const INITIAL_STATE :Map = fromJS({
@@ -32,6 +34,7 @@ const INITIAL_STATE :Map = fromJS({
   },
   [FOLLOW_UPS]: List(),
   [PARTICIPANTS]: List(),
+  [SUBSCRIPTIONS]: List(),
 });
 
 export default function tasksReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -40,6 +43,19 @@ export default function tasksReducer(state :Map = INITIAL_STATE, action :Sequenc
 
     case CLEAR_PARTICIPANTS: {
       return state.set(PARTICIPANTS, List());
+    }
+
+    case getSubscriptions.case(action.type): {
+      return getSubscriptions.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_SUBSCRIPTIONS, action.id], action)
+          .setIn([ACTIONS, GET_SUBSCRIPTIONS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .set(SUBSCRIPTIONS, action.value)
+          .setIn([ACTIONS, GET_SUBSCRIPTIONS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, GET_SUBSCRIPTIONS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_SUBSCRIPTIONS, action.id]),
+      });
     }
 
     case getPeopleForNewTaskForm.case(action.type): {
