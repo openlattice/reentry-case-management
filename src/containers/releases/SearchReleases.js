@@ -70,6 +70,9 @@ const labels = Map({
   name: 'Name',
   releaseDate: 'Release date',
   dataSource: 'Data source',
+  dob: 'DOB',
+  race: 'Race',
+  ethnicity: 'Ethnicity',
 });
 
 const MAX_HITS :number = 10;
@@ -84,7 +87,7 @@ const ButtonGrid = styled.div`
   display: grid;
   grid-gap: 15px;
   grid-template-columns: repeat(2, 200px);
-  margin-bottom: 40px;
+  margin: 20px 0 40px;
 `;
 
 const Label = styled.div`
@@ -123,6 +126,7 @@ type Props = {
 };
 
 type State = {
+  dob :string;
   endDate :string;
   firstName :string;
   lastName :string;
@@ -138,6 +142,7 @@ class Releases extends Component<Props, State> {
     super(props);
 
     this.state = {
+      dob: '',
       endDate: '',
       firstName: '',
       lastName: '',
@@ -170,11 +175,12 @@ class Releases extends Component<Props, State> {
 
   searchForPeopleByName = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
     const { actions } = this.props;
-    const { firstName, lastName } = this.state;
+    const { dob, firstName, lastName } = this.state;
 
     if (isNonEmptyString(firstName) || isNonEmptyString(lastName)) {
       const start = startIndex || 0;
       actions.searchReleasesByPersonName({
+        dob,
         firstName,
         lastName,
         maxHits: MAX_HITS,
@@ -194,6 +200,10 @@ class Releases extends Component<Props, State> {
 
   setEndDate = (date :string) => {
     this.setState({ endDate: date });
+  }
+
+  setDOB = (date :string) => {
+    this.setState({ dob: date });
   }
 
   setPage = (page :number) => {
@@ -337,7 +347,7 @@ class Releases extends Component<Props, State> {
               }
               {
                 searchingByPerson && (
-                  <FieldsGrid>
+                  <FieldsGrid columns={4}>
                     <div>
                       <Label>Last name</Label>
                       <Input
@@ -349,6 +359,10 @@ class Releases extends Component<Props, State> {
                       <Input
                           name="firstName"
                           onChange={this.onInputChange} />
+                    </div>
+                    <div>
+                      <Label>Date of birth</Label>
+                      <DatePicker onChange={this.setDOB} />
                     </div>
                     <ButtonWrapper>
                       <StyledSearchButton onClick={this.searchForPeopleByName}>Search</StyledSearchButton>
