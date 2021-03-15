@@ -23,7 +23,12 @@ import { DateTimeUtils, LangUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { createSubscription } from './TasksActions';
+import {
+  CREATE_SUBSCRIPTION,
+  EXPIRE_SUBSCRIPTION,
+  createSubscription,
+  expireSubscription,
+} from './TasksActions';
 
 import ModalHeader from '../../components/modal/ModalHeader';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -143,6 +148,10 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
         timezone: timezone.value,
       }
     }));
+  };
+  const onCancel = () => {
+    const id = taskAssignmentSubscription.get('id');
+    dispatch(expireSubscription(id));
   };
 
   const withHeader = <ModalHeader onClose={onClose} title="Alerts for Task Assignment" />;
