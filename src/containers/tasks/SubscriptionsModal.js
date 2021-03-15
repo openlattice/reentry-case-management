@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { List } from 'immutable';
+import {
+  List,
+  Map,
+  get,
+  getIn,
+} from 'immutable';
 import {
   Button,
   Colors,
@@ -14,26 +19,37 @@ import {
   Select,
   Typography,
 } from 'lattice-ui-kit';
+import { DateTimeUtils, LangUtils } from 'lattice-utils';
+import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { createSubscription } from './TasksActions';
+
 import ModalHeader from '../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getSearchTerm } from '../../utils/SearchUtils';
+import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 import {
   APP,
-  PARTICIPANT_FOLLOW_UPS,
-  SHARED,
+  EDM,
   TASK_MANAGER,
 } from '../../utils/constants/ReduxStateConstants';
 
-const { STAFF_MEMBERS } = APP;
+const { CURRENT_USER_EKID, ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
+const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 const { SUBSCRIPTIONS } = TASK_MANAGER;
+const { FOLLOW_UPS } = APP_TYPE_FQNS;
+const { ASSIGNEE_ID } = PROPERTY_TYPE_FQNS;
 const { GREEN, NEUTRAL } = Colors;
+const { isDefined } = LangUtils;
+const { formatAsDate } = DateTimeUtils;
 
 const TIME_ZONES = [
   'PST',
   'MST',
   'CST',
   'EST',
-].map((timeZone) => ({ label: timeZone, value: timeZone }));
+].map((timezone) => ({ label: timezone, value: timezone }));
 
 const TextGrid = styled.div`
   display: grid;
@@ -44,7 +60,7 @@ const TextGrid = styled.div`
 
 const SubscriptionStatusWrapper = styled.div`
   align-items: center;
-  color: ${(props) => (props.subscribed ? GREEN.G300 : NEUTRAL.N900)};
+  color: ${(props) => (props.subscribed ? GREEN.G200 : NEUTRAL.N900)};
   display: grid;
   text-transform: uppercase;
   grid-template-columns: 20px 1fr;
@@ -69,19 +85,70 @@ type Props = {
 
 const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
 
-  const [timeZone, setTimeZone] = useState('CST');
-  const [expirationDate, setExpirationDate] = useState('');
+  const selectedOrgId :string = useSelector((store :Map) => store.getIn([APP.APP, SELECTED_ORG_ID]));
+  const entitySetIds :Map = useSelector((store :Map) => store.getIn([
+    APP.APP,
+    ENTITY_SET_IDS_BY_ORG_ID,
+    selectedOrgId
+  ], Map()));
+  const followUpsESID = entitySetIds.get(FOLLOW_UPS);
+  const propertyTypeIds :Map = useSelector((store :Map) => store.getIn([
+    EDM.EDM,
+    TYPE_IDS_BY_FQN,
+    PROPERTY_TYPES
+  ], Map()));
+  const assigneeIdPTID = propertyTypeIds.get(ASSIGNEE_ID);
+  const currentUserEKID = useSelector((store :Map) => store.getIn([APP.APP, CURRENT_USER_EKID]));
+  const query :string = getSearchTerm(assigneeIdPTID, currentUserEKID);
+
+  const subscriptions :List = useSelector((store) => store.getIn([TASK_MANAGER.TASK_MANAGER, SUBSCRIPTIONS]));
+  const taskAssignmentSubscription = subscriptions.find((subscription) => {
+    const subscriptionQuery = subscription.getIn(['constraints', 'constraints', 0, 'constraints', 0, 'searchTerm']);
+    return subscriptionQuery === query;
+  });
+  const isSubscribed :boolean = isDefined(taskAssignmentSubscription);
+  const subscriptionTimezone = getIn(taskAssignmentSubscription, ['alertMetadata', 'timezone']);
+  const subscriptionExpirationISO = get(taskAssignmentSubscription, 'expiration');
+  const expirationDefault = subscriptionExpirationISO ? DateTime.fromISO(subscriptionExpirationISO).toISODate() : '';
+
+  const [timezone, setTimezone] = useState(subscriptionTimezone || 'CST');
+  const [expiration, setExpiration] = useState(expirationDefault);
+  const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const onExpirationDateChange = (date :string) => {
+    const eodAsISO = DateTime.fromISO(date).endOf('day').toISO();
+    setExpiration(eodAsISO);
+  };
 
   const dispatch = useDispatch();
 
-  const subscriptions :List = useSelector((store) => store.getIn([TASK_MANAGER.TASK_MANAGER, SUBSCRIPTIONS]));
-  const isSubscribed :boolean = !subscriptions.isEmpty();
+  const onSubscribe = () => {
+    dispatch(createSubscription({
+      expiration,
+      type: 'CARE_ISSUE_ALERT',
+      constraints: {
+        entitySetIds: [followUpsESID],
+        start: 0,
+        maxHits: 10000,
+        constraints: [{
+          constraints: [{
+            searchTerm: query,
+            fuzzy: false
+          }]
+        }]
+      },
+      alertMetadata: {
+        alertName: 'Reentry Task Assignment',
+        timezone: timezone.value,
+      }
+    }));
+  };
 
   const withHeader = <ModalHeader onClose={onClose} title="Alerts for Task Assignment" />;
 
   const renderButtons = () => {
-    if (!subscriptions.isEmpty()) {
+    if (isSubscribed) {
       if (isEditing) {
         return (
           <ButtonGrid>
@@ -92,23 +159,23 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       }
       return (
         <ButtonGrid>
-          <Button onClick={() => {}}>Cancel</Button>
+          <Button onClick={() => {}}>Cancel Alert</Button>
           <Button color="secondary" onClick={() => setIsEditing(true)}>Edit</Button>
         </ButtonGrid>
       );
     }
 
-    if (isEditing) {
+    if (isCreating) {
       return (
         <ButtonGrid>
-          <Button onClick={() => setIsEditing(false)}>Discard</Button>
-          <Button color="primary" onClick={() => {}}>Subscribe</Button>
+          <Button onClick={() => setIsCreating(false)}>Discard</Button>
+          <Button color="primary" onClick={onSubscribe}>Subscribe</Button>
         </ButtonGrid>
       );
     }
     return (
       <ButtonGrid>
-        <Button color="secondary" onClick={() => setIsEditing(true)}>Edit</Button>
+        <Button color="secondary" onClick={() => setIsCreating(true)}>Edit</Button>
       </ButtonGrid>
     );
   };
@@ -123,22 +190,38 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
         <Typography>
           Receive an email when a task is assigned to you.
         </Typography>
-        <SubscriptionStatusWrapper>
+        <SubscriptionStatusWrapper subscribed={isSubscribed}>
           {
             isSubscribed
-              ? <FontAwesomeIcon color={GREEN.G300} icon={faCheckCircle} />
+              ? <FontAwesomeIcon color={GREEN.G200} icon={faCheckCircle} />
               : <FontAwesomeIcon color={NEUTRAL.N800} icon={faTimesCircle} />
           }
-          <Typography>{isSubscribed ? 'Subscribed' : 'Not Subscribed'}</Typography>
+          <Typography color="inherit">{isSubscribed ? 'Subscribed' : 'Not Subscribed'}</Typography>
         </SubscriptionStatusWrapper>
       </TextGrid>
       <Label>Time Zone</Label>
-      <Select
-          disabled={!isEditing}
-          onChange={setTimeZone}
-          options={TIME_ZONES} />
+      {
+        isCreating
+          ? (
+            <Select
+                onChange={setTimezone}
+                options={TIME_ZONES}
+                value={timezone} />
+          )
+          : (<Typography>{subscriptionTimezone || EMPTY_FIELD}</Typography>)
+      }
       <Label>Expiration Date</Label>
-      <DatePicker disabled={!isEditing} onChange={setExpirationDate} />
+      {
+        isCreating || isEditing
+          ? <DatePicker onChange={onExpirationDateChange} value={expiration} />
+          : (
+            <Typography>
+              {subscriptionExpirationISO
+                ? formatAsDate(subscriptionExpirationISO)
+                : EMPTY_FIELD}
+            </Typography>
+          )
+      }
       {renderButtons()}
     </Modal>
   );
