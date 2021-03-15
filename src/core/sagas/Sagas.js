@@ -158,5 +158,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(TasksSagas.getSubscriptionsWatcher),
     fork(TasksSagas.loadTaskManagerDataWatcher),
     fork(TasksSagas.searchForTasksWatcher),
+    fork(TasksSagas.updateSubscriptionWatcher),
   ]);
 }

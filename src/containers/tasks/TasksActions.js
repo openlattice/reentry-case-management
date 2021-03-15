@@ -25,6 +25,9 @@ const loadTaskManagerData :RequestSequence = newRequestSequence(LOAD_TASK_MANAGE
 const SEARCH_FOR_TASKS :'SEARCH_FOR_TASKS' = 'SEARCH_FOR_TASKS';
 const searchForTasks :RequestSequence = newRequestSequence(SEARCH_FOR_TASKS);
 
+const UPDATE_SUBSCRIPTION :'UPDATE_SUBSCRIPTION' = 'UPDATE_SUBSCRIPTION';
+const updateSubscription :RequestSequence = newRequestSequence(UPDATE_SUBSCRIPTION);
+
 export {
   CLEAR_PARTICIPANTS,
   CREATE_SUBSCRIPTION,
@@ -33,6 +36,7 @@ export {
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  UPDATE_SUBSCRIPTION,
   clearParticipants,
   createSubscription,
   expireSubscription,
@@ -40,4 +44,5 @@ export {
   getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
+  updateSubscription,
 };

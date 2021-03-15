@@ -11,12 +11,14 @@ import {
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  UPDATE_SUBSCRIPTION,
   createSubscription,
   expireSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
+  updateSubscription,
 } from './TasksActions';
 
 import { SHARED, TASK_MANAGER } from '../../utils/constants/ReduxStateConstants';
@@ -39,6 +41,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [SEARCH_FOR_TASKS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [UPDATE_SUBSCRIPTION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -132,6 +137,18 @@ export default function tasksReducer(state :Map = INITIAL_STATE, action :Sequenc
         },
         FAILURE: () => state.setIn([ACTIONS, SEARCH_FOR_TASKS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SEARCH_FOR_TASKS, action.id]),
+      });
+    }
+
+    case updateSubscription.case(action.type): {
+      return updateSubscription.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, UPDATE_SUBSCRIPTION, action.id], action)
+          .setIn([ACTIONS, UPDATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, UPDATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, UPDATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, UPDATE_SUBSCRIPTION, action.id]),
       });
     }
 
