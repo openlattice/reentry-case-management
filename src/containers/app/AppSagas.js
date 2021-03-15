@@ -109,6 +109,7 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
       if (!isDefined(staffMemberEntity)) {
         const newStaffEntity = {
           [idPTID]: [email],
+          [personGivenNamePTID]: [email],
         };
 
         if (isDefined(user.given_name)) {
@@ -117,12 +118,9 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
         else if (isDefined(user.nickname)) {
           newStaffEntity[personGivenNamePTID] = [user.nickname];
         }
-        else {
-          newStaffEntity[personGivenNamePTID] = [email];
-        }
 
         if (isDefined(user.family_name)) {
-          newStaffEntity[personSurnamePTID] = [user.family_name];
+          newStaffEntity[(personSurnamePTID :UUID)] = [user.family_name];
         }
         entityData[staffESID].push(newStaffEntity);
       }
