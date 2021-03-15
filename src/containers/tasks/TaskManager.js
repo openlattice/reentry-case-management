@@ -21,6 +21,7 @@ import {
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   clearParticipants,
+  getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
 } from './TasksActions';
@@ -87,6 +88,7 @@ const SelectWrapper = styled.div`
 type Props = {
   actions :{
     clearParticipants :() => void;
+    getSubscriptions :RequestSequence;
     loadTaskManagerData :RequestSequence;
     searchForTasks :RequestSequence;
   };
@@ -119,6 +121,7 @@ const TaskManager = ({
 
   useEffect(() => {
     actions.loadTaskManagerData();
+    actions.getSubscriptions();
     return () => {
       actions.clearParticipants();
     };
@@ -206,6 +209,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     clearParticipants,
+    getSubscriptions,
     loadTaskManagerData,
     searchForTasks,
   }, dispatch)
