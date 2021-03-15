@@ -13,7 +13,10 @@ import { EMPTY_FIELD } from '../../../utils/constants/GeneralConstants';
 
 const {
   DATA_SOURCE,
+  DOB,
+  ETHNICITY,
   PROJECTED_RELEASE_DATETIME,
+  RACE,
   RELEASE_DATETIME,
 } = PROPERTY_TYPE_FQNS;
 
@@ -22,27 +25,37 @@ const formatDataForReleasesByDateList = (searchedJailStays :List, peopleByJailSt
   let releasesData :List = List();
 
   searchedJailStays.forEach((jailStay :Map) => {
-    let release :Map = Map();
-    const {
-      [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
-      [RELEASE_DATETIME]: releaseDateTime
-    } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
-      ? DateTime.fromISO(releaseDateTime)
-      : DateTime.fromISO(projectedReleaseDateTime);
-    const releaseDate :string = releaseDateAsDateTime.isValid
-      ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
-      : EMPTY_FIELD;
-    release = release.set('releaseDate', releaseDate);
-    release = release.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
+    const release :Map = Map().withMutations((mutator) => {
+      const {
+        [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
+        [RELEASE_DATETIME]: releaseDateTime
+      } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
+      const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
+        ? DateTime.fromISO(releaseDateTime)
+        : DateTime.fromISO(projectedReleaseDateTime);
+      const releaseDate :string = releaseDateAsDateTime.isValid
+        ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
+        : EMPTY_FIELD;
+      mutator.set('releaseDate', releaseDate);
+      mutator.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
 
-    const jailStayEKID :UUID = getEKID(jailStay);
-    const person :Map = peopleByJailStayEKID.get(jailStayEKID, Map());
-    const personName :string = getPersonFullName(person);
-    release = release.set('name', personName);
-    const { [DATA_SOURCE]: dataSource } = getEntityProperties(person, [DATA_SOURCE]);
-    release = release.set('dataSource', dataSource);
-    release = release.set('personEntity', person);
+      const jailStayEKID :UUID = getEKID(jailStay);
+      const person :Map = peopleByJailStayEKID.get(jailStayEKID, Map());
+      const personName :string = getPersonFullName(person);
+      mutator.set('name', personName);
+      const {
+        [DATA_SOURCE]: dataSource,
+        [DOB]: dob,
+        [ETHNICITY]: ethnicity,
+        [RACE]: race,
+      } = getEntityProperties(person, [DATA_SOURCE, DOB, ETHNICITY, RACE]);
+      mutator.set('dataSource', dataSource);
+      mutator.set('dob', dob);
+      mutator.set('race', race);
+      mutator.set('ethnicity', ethnicity);
+      mutator.set('personEntity', person);
+    });
+
     releasesData = releasesData.push(release);
   });
 
@@ -54,27 +67,38 @@ const formatDataForReleasesByPersonList = (searchedPeople :List, jailStaysByPers
   let releasesData :List = List();
 
   searchedPeople.forEach((person :Map) => {
-    let release :Map = Map();
-    const personName :string = getPersonFullName(person);
-    release = release.set('name', personName);
-    const { [DATA_SOURCE]: dataSource } = getEntityProperties(person, [DATA_SOURCE]);
-    release = release.set('dataSource', dataSource);
 
-    const personEKID :UUID = getEKID(person);
-    const jailStay :Map = jailStaysByPersonEKID.get(personEKID, '');
-    const {
-      [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
-      [RELEASE_DATETIME]: releaseDateTime
-    } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
-    const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
-      ? DateTime.fromISO(releaseDateTime)
-      : DateTime.fromISO(projectedReleaseDateTime);
-    const releaseDate :string = releaseDateAsDateTime.isValid
-      ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
-      : EMPTY_FIELD;
-    release = release.set('releaseDate', releaseDate);
-    release = release.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
-    release = release.set('personEntity', person);
+    const release :Map = Map().withMutations((mutator) => {
+      const personName :string = getPersonFullName(person);
+      mutator.set('name', personName);
+      const {
+        [DATA_SOURCE]: dataSource,
+        [DOB]: dob,
+        [ETHNICITY]: ethnicity,
+        [RACE]: race,
+      } = getEntityProperties(person, [DATA_SOURCE, DOB, ETHNICITY, RACE]);
+      mutator.set('dataSource', dataSource);
+      mutator.set('dob', dob);
+      mutator.set('race', race);
+      mutator.set('ethnicity', ethnicity);
+
+      const personEKID :UUID = getEKID(person);
+      const jailStay :Map = jailStaysByPersonEKID.get(personEKID, '');
+      const {
+        [PROJECTED_RELEASE_DATETIME]: projectedReleaseDateTime,
+        [RELEASE_DATETIME]: releaseDateTime
+      } = getEntityProperties(jailStay, [PROJECTED_RELEASE_DATETIME, RELEASE_DATETIME]);
+      const releaseDateAsDateTime :DateTime = (releaseDateTime && releaseDateTime.length)
+        ? DateTime.fromISO(releaseDateTime)
+        : DateTime.fromISO(projectedReleaseDateTime);
+      const releaseDate :string = releaseDateAsDateTime.isValid
+        ? releaseDateAsDateTime.toLocaleString(DateTime.DATE_SHORT)
+        : EMPTY_FIELD;
+      mutator.set('releaseDate', releaseDate);
+      mutator.set('releaseDateAsISODate', releaseDateAsDateTime.toISODate());
+      mutator.set('personEntity', person);
+    });
+
     releasesData = releasesData.push(release);
   });
 

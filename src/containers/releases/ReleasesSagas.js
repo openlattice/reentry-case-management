@@ -47,6 +47,7 @@ const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiAction
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { INMATES, JAIL_STAYS, JAILS_PRISONS } = APP_TYPE_FQNS;
 const {
+  DOB,
   FIRST_NAME,
   LAST_NAME,
   PROJECTED_RELEASE_DATETIME,
@@ -355,6 +356,7 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
     yield put(searchReleasesByPersonName.request(id, value));
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
     const {
+      dob,
       firstName,
       lastName,
       maxHits,
@@ -367,6 +369,7 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
     const inmatesESID :UUID = getESIDFromApp(app, INMATES);
     const firstNamePTID :UUID = getPTIDFromEDM(edm, FIRST_NAME);
     const lastNamePTID :UUID = getPTIDFromEDM(edm, LAST_NAME);
+    const dobPTID :UUID = getPTIDFromEDM(edm, DOB);
     const searchOptions = {
       entitySetIds: [inmatesESID],
       start,
@@ -407,6 +410,17 @@ function* searchReleasesByPersonNameWorker(action :SequenceAction) :Generator<*,
           min: 1,
           constraints: [{
             searchTerm: lastNameConstraint,
+            fuzzy: true
+          }]
+        });
+      }
+
+      if (DateTime.fromISO(dob).isValid) {
+        const dobConstraint = getSearchTerm(dobPTID, dob);
+        searchOptions.constraints.push({
+          min: 1,
+          constraints: [{
+            searchTerm: dobConstraint,
             fuzzy: true
           }]
         });

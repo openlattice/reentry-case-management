@@ -4,7 +4,6 @@
 
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Card,
@@ -60,11 +59,6 @@ const labels = Map({
   facility: 'Facility',
   enrollmentDate: 'Enrollment Date',
 });
-
-const SearchGrid = styled(FieldsGrid)`
-  margin-top: 20px;
-  grid-template-columns: repeat(4, 1fr);
-`;
 
 type Props = {
   actions :{
@@ -165,7 +159,7 @@ class ParticipantsSearch extends Component<Props, State> {
             <Typography variant="h2">Search Enrolled Participants</Typography>
           </CardHeader>
           <CardSegment padding="30px" vertical>
-            <SearchGrid>
+            <FieldsGrid columns={4}>
               <div>
                 <Label>Last name</Label>
                 <Input
@@ -185,7 +179,7 @@ class ParticipantsSearch extends Component<Props, State> {
               <ButtonWrapper>
                 <StyledSearchButton onClick={this.searchPeople}>Search</StyledSearchButton>
               </ButtonWrapper>
-            </SearchGrid>
+            </FieldsGrid>
           </CardSegment>
         </Card>
         {
