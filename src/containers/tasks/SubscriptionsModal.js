@@ -31,8 +31,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   CREATE_SUBSCRIPTION,
   EXPIRE_SUBSCRIPTION,
+  UPDATE_SUBSCRIPTION,
   createSubscription,
   expireSubscription,
+  updateSubscription,
 } from './TasksActions';
 
 import ModalHeader from '../../components/modal/ModalHeader';
@@ -157,13 +159,20 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       }
     }));
   };
+
   const onCancel = () => {
     const id = taskAssignmentSubscription.get('id');
     dispatch(expireSubscription(id));
   };
 
+  const onEdit = () => {
+    const id = taskAssignmentSubscription.get('id');
+    dispatch(updateSubscription({ persistentSearchId: id, expiration: `"${expiration}"` }));
+  };
+
   const createRequestState = useRequestState([TASK_MANAGER.TASK_MANAGER, ACTIONS, CREATE_SUBSCRIPTION]);
   const cancelRequestState = useRequestState([TASK_MANAGER.TASK_MANAGER, ACTIONS, EXPIRE_SUBSCRIPTION]);
+  const updateRequestState = useRequestState([TASK_MANAGER.TASK_MANAGER, ACTIONS, UPDATE_SUBSCRIPTION]);
 
   const withHeader = <ModalHeader onClose={onClose} title="Alerts for Task Assignment" />;
 
@@ -173,7 +182,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
         return (
           <ButtonGrid>
             <Button onClick={() => setIsEditing(false)}>Discard</Button>
-            <Button onClick={() => {}}>Save</Button>
+            <Button isLoading={isPending(updateRequestState)} onClick={onEdit}>Save</Button>
           </ButtonGrid>
         );
       }
