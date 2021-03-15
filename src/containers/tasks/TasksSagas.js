@@ -27,10 +27,12 @@ import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CREATE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  createSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,
@@ -59,8 +61,8 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
-const { getPersistentSearches } = PersistentSearchApiActions;
-const { getPersistentSearchesWorker } = PersistentSearchApiSagas;
+const { createPersistentSearch, getPersistentSearches } = PersistentSearchApiActions;
+const { createPersistentSearchWorker, getPersistentSearchesWorker } = PersistentSearchApiSagas;
 const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
 const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
@@ -198,6 +200,36 @@ function* searchForTasksWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * TasksActions.createSubscription()
+ *
+ */
+
+function* createSubscriptionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(createSubscription.request(action.id));
+
+    const response = yield call(createPersistentSearchWorker, createPersistentSearch(action.value));
+    if (response.error) throw response.error;
+
+    yield put(createSubscription.success(action.id));
+    yield put(getSubscriptions());
+  }
+  catch (error) {
+    yield put(createSubscription.failure(action.id, error));
+  }
+  finally {
+    yield put(createSubscription.finally(action.id));
+  }
+}
+
+function* createSubscriptionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_SUBSCRIPTION, createSubscriptionWorker);
+}
+
+/*
+ *
  * TasksActions.getSubscriptions()
  *
  */
@@ -302,6 +334,8 @@ function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createSubscriptionWatcher,
+  createSubscriptionWorker,
   getPeopleForNewTaskFormWatcher,
   getPeopleForNewTaskFormWorker,
   getSubscriptionsWatcher,

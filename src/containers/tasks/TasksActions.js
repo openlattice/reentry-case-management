@@ -7,6 +7,9 @@ const clearParticipants = () => ({
   type: CLEAR_PARTICIPANTS
 });
 
+const CREATE_SUBSCRIPTION :'CREATE_SUBSCRIPTION' = 'CREATE_SUBSCRIPTION';
+const createSubscription :RequestSequence = newRequestSequence(CREATE_SUBSCRIPTION);
+
 const GET_PEOPLE_FOR_NEW_TASK_FORM :'GET_PEOPLE_FOR_NEW_TASK_FORM' = 'GET_PEOPLE_FOR_NEW_TASK_FORM';
 const getPeopleForNewTaskForm :RequestSequence = newRequestSequence(GET_PEOPLE_FOR_NEW_TASK_FORM);
 
@@ -21,11 +24,13 @@ const searchForTasks :RequestSequence = newRequestSequence(SEARCH_FOR_TASKS);
 
 export {
   CLEAR_PARTICIPANTS,
+  CREATE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   clearParticipants,
+  createSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,

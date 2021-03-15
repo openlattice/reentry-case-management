@@ -152,6 +152,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(SupervisionSagas.submitSupervisionWatcher),
 
     // TasksSagas
+    fork(TasksSagas.createSubscriptionWatcher),
     fork(TasksSagas.getPeopleForNewTaskFormWatcher),
     fork(TasksSagas.getSubscriptionsWatcher),
     fork(TasksSagas.loadTaskManagerDataWatcher),

@@ -5,10 +5,12 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   CLEAR_PARTICIPANTS,
+  CREATE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  createSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,
@@ -22,6 +24,9 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [CREATE_SUBSCRIPTION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PEOPLE_FOR_NEW_TASK_FORM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -43,6 +48,18 @@ export default function tasksReducer(state :Map = INITIAL_STATE, action :Sequenc
 
     case CLEAR_PARTICIPANTS: {
       return state.set(PARTICIPANTS, List());
+    }
+
+    case createSubscription.case(action.type): {
+      return createSubscription.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_SUBSCRIPTION, action.id], action)
+          .setIn([ACTIONS, CREATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, CREATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, CREATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_SUBSCRIPTION, action.id]),
+      });
     }
 
     case getSubscriptions.case(action.type): {
