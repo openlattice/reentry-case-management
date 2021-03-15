@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Card,
+  CardHeader,
   CardSegment,
   CardStack,
   DatePicker,
@@ -15,6 +16,7 @@ import {
   Label,
   PaginationToolbar,
   SearchResults,
+  Typography,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -159,8 +161,10 @@ class ParticipantsSearch extends Component<Props, State> {
     return (
       <CardStack>
         <Card>
+          <CardHeader>
+            <Typography variant="h2">Search Enrolled Participants</Typography>
+          </CardHeader>
           <CardSegment padding="30px" vertical>
-            <div>Search Participants</div>
             <SearchGrid>
               <div>
                 <Label>Last name</Label>

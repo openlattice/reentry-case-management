@@ -15,6 +15,7 @@ import {
   PaginationToolbar,
   Radio,
   SearchResults,
+  Typography,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -295,10 +296,14 @@ class Releases extends Component<Props, State> {
         <CardStack>
           <Card>
             <CardHeaderWithButtons vertical={false}>
-              <div>Search Releases</div>
-              <Button onClick={this.goToNewIntakeForm}>Create New Person</Button>
+              <Typography variant="h2">Search Releases</Typography>
+              <Button color="primary" onClick={this.goToNewIntakeForm}>Create New Person</Button>
             </CardHeaderWithButtons>
             <CardSegment padding="30px" vertical>
+              <Typography gutterBottom>
+                Search for upcoming releases to start the intake process, or click the button above to
+                start a profile from scratch.
+              </Typography>
               <ButtonGrid>
                 <Radio
                     checked={searchingByDate}
