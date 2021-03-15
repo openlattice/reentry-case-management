@@ -19,7 +19,12 @@ import {
   Select,
   Typography,
 } from 'lattice-ui-kit';
-import { DateTimeUtils, LangUtils } from 'lattice-utils';
+import {
+  DateTimeUtils,
+  LangUtils,
+  ReduxUtils,
+  useRequestState,
+} from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -37,17 +42,20 @@ import { EMPTY_FIELD } from '../../utils/constants/GeneralConstants';
 import {
   APP,
   EDM,
+  SHARED,
   TASK_MANAGER,
 } from '../../utils/constants/ReduxStateConstants';
 
 const { CURRENT_USER_EKID, ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
+const { ACTIONS } = SHARED;
 const { SUBSCRIPTIONS } = TASK_MANAGER;
 const { FOLLOW_UPS } = APP_TYPE_FQNS;
 const { ASSIGNEE_ID } = PROPERTY_TYPE_FQNS;
 const { GREEN, NEUTRAL } = Colors;
 const { isDefined } = LangUtils;
 const { formatAsDate } = DateTimeUtils;
+const { isPending } = ReduxUtils;
 
 const TIME_ZONES = [
   'PST',
@@ -154,6 +162,9 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
     dispatch(expireSubscription(id));
   };
 
+  const createRequestState = useRequestState([TASK_MANAGER.TASK_MANAGER, ACTIONS, CREATE_SUBSCRIPTION]);
+  const cancelRequestState = useRequestState([TASK_MANAGER.TASK_MANAGER, ACTIONS, EXPIRE_SUBSCRIPTION]);
+
   const withHeader = <ModalHeader onClose={onClose} title="Alerts for Task Assignment" />;
 
   const renderButtons = () => {
@@ -168,7 +179,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       }
       return (
         <ButtonGrid>
-          <Button onClick={() => {}}>Cancel Alert</Button>
+          <Button isLoading={isPending(cancelRequestState)} onClick={onCancel}>Cancel Alert</Button>
           <Button color="secondary" onClick={() => setIsEditing(true)}>Edit</Button>
         </ButtonGrid>
       );
@@ -178,7 +189,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       return (
         <ButtonGrid>
           <Button onClick={() => setIsCreating(false)}>Discard</Button>
-          <Button color="primary" onClick={onSubscribe}>Subscribe</Button>
+          <Button color="primary" isLoading={isPending(createRequestState)} onClick={onSubscribe}>Subscribe</Button>
         </ButtonGrid>
       );
     }
