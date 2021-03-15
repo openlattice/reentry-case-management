@@ -5,7 +5,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  setIn,
+} from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Modal, ModalFooter } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -23,6 +29,7 @@ import {
 } from './utils/AddNewFollowUpUtils';
 
 import ModalHeader from '../../../components/modal/ModalHeader';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import {
   APP,
@@ -32,11 +39,18 @@ import {
   SHARED,
 } from '../../../utils/constants/ReduxStateConstants';
 
-const { processAssociationEntityData, processEntityData } = DataProcessingUtils;
+const {
+  getEntityAddressKey,
+  getPageSectionKey,
+  processAssociationEntityData,
+  processEntityData,
+} = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID, STAFF_MEMBERS } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQN } = EDM;
 const { PROVIDERS_LIST } = PROVIDERS;
+const { FOLLOW_UPS, REENTRY_STAFF } = APP_TYPE_FQNS;
+const { ASSIGNEE_ID, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const FixedWidthModal = styled.div`
   padding-bottom: 30px;
@@ -80,7 +94,24 @@ const AddNewFollowUpModal = ({
 
   const [formData, updateFormData] = useState({});
   const onChange = ({ formData: newFormData } :Object) => {
-    updateFormData(newFormData);
+    const staffId = getIn(
+      newFormData,
+      [getPageSectionKey(1, 1), getEntityAddressKey(1, REENTRY_STAFF, ENTITY_KEY_ID)]
+    );
+    const assigneeId = getIn(
+      newFormData,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, FOLLOW_UPS, ASSIGNEE_ID)]
+    );
+
+    let updatedFormData = newFormData;
+    if (staffId !== assigneeId) {
+      updatedFormData = setIn(
+        updatedFormData,
+        [getPageSectionKey(1, 1), getEntityAddressKey(0, FOLLOW_UPS, ASSIGNEE_ID)],
+        staffId
+      );
+    }
+    updateFormData(updatedFormData);
   };
   const closeModal = useCallback(() => {
     updateFormData({});
