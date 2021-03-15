@@ -6,11 +6,13 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   CLEAR_PARTICIPANTS,
   CREATE_SUBSCRIPTION,
+  EXPIRE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   createSubscription,
+  expireSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,
@@ -25,6 +27,9 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
     [CREATE_SUBSCRIPTION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EXPIRE_SUBSCRIPTION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PEOPLE_FOR_NEW_TASK_FORM]: {
@@ -59,6 +64,18 @@ export default function tasksReducer(state :Map = INITIAL_STATE, action :Sequenc
           .setIn([ACTIONS, CREATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, CREATE_SUBSCRIPTION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_SUBSCRIPTION, action.id]),
+      });
+    }
+
+    case expireSubscription.case(action.type): {
+      return expireSubscription.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EXPIRE_SUBSCRIPTION, action.id], action)
+          .setIn([ACTIONS, EXPIRE_SUBSCRIPTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, EXPIRE_SUBSCRIPTION, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state.setIn([ACTIONS, EXPIRE_SUBSCRIPTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EXPIRE_SUBSCRIPTION, action.id]),
       });
     }
 

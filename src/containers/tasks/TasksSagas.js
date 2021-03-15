@@ -28,11 +28,13 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   CREATE_SUBSCRIPTION,
+  EXPIRE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
   GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
   createSubscription,
+  expireSubscription,
   getPeopleForNewTaskForm,
   getSubscriptions,
   loadTaskManagerData,
@@ -61,8 +63,12 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
-const { createPersistentSearch, getPersistentSearches } = PersistentSearchApiActions;
-const { createPersistentSearchWorker, getPersistentSearchesWorker } = PersistentSearchApiSagas;
+const { createPersistentSearch, expirePersistentSearch, getPersistentSearches } = PersistentSearchApiActions;
+const {
+  createPersistentSearchWorker,
+  expirePersistentSearchWorker,
+  getPersistentSearchesWorker,
+} = PersistentSearchApiSagas;
 const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
 const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
@@ -230,6 +236,35 @@ function* createSubscriptionWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * TasksActions.expireSubscription()
+ *
+ */
+
+function* expireSubscriptionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(expireSubscription.request(action.id));
+
+    const response = yield call(expirePersistentSearchWorker, expirePersistentSearch(action.value));
+    if (response.error) throw response.error;
+
+    yield put(expireSubscription.success(action.id));
+    yield put(getSubscriptions());
+  }
+  catch (error) {
+    yield put(expireSubscription.failure(action.id, error));
+  }
+  finally {
+    yield put(expireSubscription.finally(action.id));
+  }
+}
+
+function* expireSubscriptionWatcher() :Generator<*, *, *> {
+  yield takeEvery(EXPIRE_SUBSCRIPTION, expireSubscriptionWorker);
+}
+
+/*
+ *
  * TasksActions.getSubscriptions()
  *
  */
@@ -336,6 +371,8 @@ function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
 export {
   createSubscriptionWatcher,
   createSubscriptionWorker,
+  expireSubscriptionWatcher,
+  expireSubscriptionWorker,
   getPeopleForNewTaskFormWatcher,
   getPeopleForNewTaskFormWorker,
   getSubscriptionsWatcher,
