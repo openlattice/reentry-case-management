@@ -34,7 +34,7 @@
     "@redux-saga/core": "~1.1.0",
     "connected-react-router": "~6.8.0",
     "file-saver": "~2.0.0",
-    "history": "~4.10.0",
+    "history": "~5.0.0",
     "immutable": "4.0.0-rc.10",
     "lattice": "~0.89.2",
     "lattice-auth": "~0.22.0",
