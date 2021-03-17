@@ -19,6 +19,7 @@ import { APP, SHARED } from '../../utils/constants/ReduxStateConstants';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   APP_TYPES_BY_ORG_ID,
+  CURRENT_USER_EKID,
   ENTITY_SET_IDS_BY_ORG_ID,
   ORGS,
   SELECTED_ORG_ID,
@@ -32,6 +33,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [APP_TYPES_BY_ORG_ID]: Map(),
+  [CURRENT_USER_EKID]: '',
   [ENTITY_SET_IDS_BY_ORG_ID]: Map(),
   [ORGS]: Map(),
   [SELECTED_ORG_ID]: '',
@@ -56,7 +58,8 @@ export default function reducer(state :Map<*, *> = INITIAL_STATE, action :Object
           .setIn([ACTIONS, GET_CURRENT_STAFF, action.id])
           .setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => state
-          .set(STAFF_MEMBERS, action.value)
+          .set(STAFF_MEMBERS, action.value.staff)
+          .set(CURRENT_USER_EKID, action.value.currentUserEKID)
           .setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state.setIn([ACTIONS, GET_CURRENT_STAFF, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CURRENT_STAFF, action.id])

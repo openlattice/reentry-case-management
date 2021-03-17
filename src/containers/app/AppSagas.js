@@ -1,3 +1,4 @@
+// @flow
 import {
   all,
   call,
@@ -11,11 +12,8 @@ import {
   Set,
   fromJS,
 } from 'immutable';
-/*
- * @flow
- */
 import { Types } from 'lattice';
-import { AccountUtils } from 'lattice-auth';
+import { AccountUtils, AuthUtils } from 'lattice-auth';
 import {
   AppApiActions,
   AppApiSagas,
@@ -53,7 +51,7 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { getOrganization, getUsersWithRole } = OrganizationsApiActions;
 const { getOrganizationWorker, getUsersWithRoleWorker } = OrganizationsApiSagas;
-const { getPropertyValue } = DataUtils;
+const { getEntityKeyId, getPropertyValue } = DataUtils;
 const { isDefined } = LangUtils;
 const {
   COUNTY_ID,
@@ -111,6 +109,7 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
       if (!isDefined(staffMemberEntity)) {
         const newStaffEntity = {
           [idPTID]: [email],
+          [personGivenNamePTID]: [email],
         };
 
         if (isDefined(user.given_name)) {
@@ -119,12 +118,9 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
         else if (isDefined(user.nickname)) {
           newStaffEntity[personGivenNamePTID] = [user.nickname];
         }
-        else {
-          newStaffEntity[personGivenNamePTID] = [email];
-        }
 
         if (isDefined(user.family_name)) {
-          newStaffEntity[personSurnamePTID] = [user.family_name];
+          newStaffEntity[(personSurnamePTID :UUID)] = [user.family_name];
         }
         entityData[staffESID].push(newStaffEntity);
       }
@@ -146,12 +142,18 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
 
+    const currentUser :Object = AuthUtils.getUserInfo();
+    const { email } = currentUser;
+    const userEntity :?Map = staff
+      .find((staffMember :Map) => getPropertyValue(staffMember, [COUNTY_ID, 0]) === email);
+    const currentUserEKID :?UUID = userEntity ? getEntityKeyId(userEntity) : '';
+
     staff = staff.filter((staffMember :Map) => {
       const userEmail = getPropertyValue(staffMember, [COUNTY_ID, 0]);
       return !userEmail.includes('openlattice');
     });
 
-    yield put(getCurrentStaff.success(action.id, staff));
+    yield put(getCurrentStaff.success(action.id, { currentUserEKID, staff }));
   }
   catch (error) {
     LOG.error(action.type, error);
