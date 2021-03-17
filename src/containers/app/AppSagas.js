@@ -150,7 +150,8 @@ function* getCurrentStaffWorker(action :SequenceAction) :Generator<*, *, *> {
 
     staff = staff.filter((staffMember :Map) => {
       const userEmail = getPropertyValue(staffMember, [COUNTY_ID, 0]);
-      return !userEmail.includes('openlattice');
+      // this specific person 'treek' has access but should not be in the staff list:
+      return !userEmail.includes('openlattice') && !userEmail.includes('treek');
     });
 
     yield put(getCurrentStaff.success(action.id, { currentUserEKID, staff }));
