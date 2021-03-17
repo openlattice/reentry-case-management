@@ -52,7 +52,13 @@ const { CURRENT_USER_EKID, ENTITY_SET_IDS_BY_ORG_ID, SELECTED_ORG_ID } = APP;
 const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 const { ACTIONS } = SHARED;
 const { SUBSCRIPTIONS } = TASK_MANAGER;
-const { FOLLOW_UPS } = APP_TYPE_FQNS;
+const {
+  ASSIGNED_TO,
+  FOLLOW_UPS,
+  PEOPLE,
+  REENTRY_STAFF,
+  REPORTED,
+} = APP_TYPE_FQNS;
 const { ASSIGNEE_ID } = PROPERTY_TYPE_FQNS;
 const { GREEN, NEUTRAL } = Colors;
 const { isDefined } = LangUtils;
@@ -107,6 +113,10 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
     selectedOrgId
   ], Map()));
   const followUpsESID = entitySetIds.get(FOLLOW_UPS);
+  const assignedToESID = entitySetIds.get(ASSIGNED_TO);
+  const reportedESID = entitySetIds.get(REPORTED);
+  const peopleESID = entitySetIds.get(PEOPLE);
+  const staffESID = entitySetIds.get(REENTRY_STAFF);
   const propertyTypeIds :Map = useSelector((store :Map) => store.getIn([
     EDM.EDM,
     TYPE_IDS_BY_FQN,
@@ -155,6 +165,10 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       },
       alertMetadata: {
         alertName: 'Reentry Task Assignment',
+        assignedToEntitySetId: assignedToESID,
+        personEntitySetId: peopleESID,
+        reportedEntitySetId: reportedESID,
+        staffEntitySetId: staffESID,
         timezone: timezone.value,
       }
     }));
