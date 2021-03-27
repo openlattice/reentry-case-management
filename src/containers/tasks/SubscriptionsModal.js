@@ -151,7 +151,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
   const onSubscribe = () => {
     dispatch(createSubscription({
       expiration,
-      type: 'CARE_ISSUE_ALERT',
+      type: 'REENTRY_TASK_ALERT',
       constraints: {
         entitySetIds: [followUpsESID],
         start: 0,
