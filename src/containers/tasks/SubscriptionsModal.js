@@ -53,8 +53,8 @@ const { TYPE_IDS_BY_FQN, PROPERTY_TYPES } = EDM;
 const { ACTIONS } = SHARED;
 const { SUBSCRIPTIONS } = TASK_MANAGER;
 const {
-  ASSIGNED_TO,
   FOLLOW_UPS,
+  MANUAL_ASSIGNED_TO,
   PEOPLE,
   REENTRY_STAFF,
   REPORTED,
@@ -113,7 +113,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
     selectedOrgId
   ], Map()));
   const followUpsESID = entitySetIds.get(FOLLOW_UPS);
-  const assignedToESID = entitySetIds.get(ASSIGNED_TO);
+  const manualAssignedToESID = entitySetIds.get(MANUAL_ASSIGNED_TO);
   const reportedESID = entitySetIds.get(REPORTED);
   const peopleESID = entitySetIds.get(PEOPLE);
   const staffESID = entitySetIds.get(REENTRY_STAFF);
@@ -151,7 +151,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
   const onSubscribe = () => {
     dispatch(createSubscription({
       expiration,
-      type: 'CARE_ISSUE_ALERT',
+      type: 'REENTRY_TASK_ALERT',
       constraints: {
         entitySetIds: [followUpsESID],
         start: 0,
@@ -165,7 +165,7 @@ const SubscriptionsModal = ({ isVisible, onClose } :Props) => {
       },
       alertMetadata: {
         alertName: 'Reentry Task Assignment',
-        assignedToEntitySetId: assignedToESID,
+        assignedToEntitySetId: manualAssignedToESID,
         personEntitySetId: peopleESID,
         reportedEntitySetId: reportedESID,
         staffEntitySetId: staffESID,
