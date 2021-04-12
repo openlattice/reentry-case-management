@@ -11,6 +11,7 @@ const {
   REENTRY_STAFF,
 } = APP_TYPE_FQNS;
 const {
+  ASSIGNEE_ID,
   CATEGORY,
   DESCRIPTION,
   ENTITY_KEY_ID,
@@ -64,6 +65,10 @@ const dataSchema :Object = {
           enum: [],
           enumNames: []
         },
+        [getEntityAddressKey(0, FOLLOW_UPS, ASSIGNEE_ID)]: {
+          type: 'string',
+          title: 'Task Assignee ID',
+        },
       },
       required: [
         getEntityAddressKey(1, REENTRY_STAFF, ENTITY_KEY_ID),
@@ -103,6 +108,9 @@ const uiSchema :Object = {
     [getEntityAddressKey(0, PROVIDER, ENTITY_KEY_ID)]: {
       classNames: 'column-span-12',
     },
+    [getEntityAddressKey(0, FOLLOW_UPS, ASSIGNEE_ID)]: {
+      'ui:widget': 'hidden',
+    }
   }
 };
 

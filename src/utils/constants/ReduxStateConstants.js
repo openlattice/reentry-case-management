@@ -9,6 +9,7 @@ const SHARED :Object = {
 const APP :Object = {
   APP: 'app',
   APP_TYPES_BY_ORG_ID: 'appTypesByOrgId',
+  CURRENT_USER_EKID: 'currentUserEKID',
   ENTITY_SET_IDS_BY_ORG_ID: 'entitySetIdsByOrgId',
   INITIALIZE_APPLICATION: 'initializeApplication',
   ORGS: 'organizations',
@@ -99,6 +100,7 @@ const REPORTS :Object = {
 const TASK_MANAGER :Object = {
   FOLLOW_UPS: 'followUps',
   PARTICIPANTS: 'participants',
+  SUBSCRIPTIONS: 'subscriptions',
   TASK_MANAGER: 'taskManager',
 };
 

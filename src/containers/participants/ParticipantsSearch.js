@@ -4,10 +4,10 @@
 
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Card,
+  CardHeader,
   CardSegment,
   CardStack,
   DatePicker,
@@ -15,6 +15,7 @@ import {
   Label,
   PaginationToolbar,
   SearchResults,
+  Typography,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -58,11 +59,6 @@ const labels = Map({
   facility: 'Facility',
   enrollmentDate: 'Enrollment Date',
 });
-
-const SearchGrid = styled(FieldsGrid)`
-  margin-top: 20px;
-  grid-template-columns: repeat(4, 1fr);
-`;
 
 type Props = {
   actions :{
@@ -159,9 +155,11 @@ class ParticipantsSearch extends Component<Props, State> {
     return (
       <CardStack>
         <Card>
+          <CardHeader>
+            <Typography variant="h2">Search Enrolled Participants</Typography>
+          </CardHeader>
           <CardSegment padding="30px" vertical>
-            <div>Search Participants</div>
-            <SearchGrid>
+            <FieldsGrid columns={4}>
               <div>
                 <Label>Last name</Label>
                 <Input
@@ -181,7 +179,7 @@ class ParticipantsSearch extends Component<Props, State> {
               <ButtonWrapper>
                 <StyledSearchButton onClick={this.searchPeople}>Search</StyledSearchButton>
               </ButtonWrapper>
-            </SearchGrid>
+            </FieldsGrid>
           </CardSegment>
         </Card>
         {

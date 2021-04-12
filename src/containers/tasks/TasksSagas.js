@@ -17,6 +17,8 @@ import {
 import {
   DataApiActions,
   DataApiSagas,
+  PersistentSearchApiActions,
+  PersistentSearchApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
@@ -25,12 +27,20 @@ import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CREATE_SUBSCRIPTION,
+  EXPIRE_SUBSCRIPTION,
   GET_PEOPLE_FOR_NEW_TASK_FORM,
+  GET_SUBSCRIPTIONS,
   LOAD_TASK_MANAGER_DATA,
   SEARCH_FOR_TASKS,
+  UPDATE_SUBSCRIPTION,
+  createSubscription,
+  expireSubscription,
   getPeopleForNewTaskForm,
+  getSubscriptions,
   loadTaskManagerData,
   searchForTasks,
+  updateSubscription,
 } from './TasksActions';
 
 import Logger from '../../utils/Logger';
@@ -55,6 +65,18 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
+const {
+  createPersistentSearch,
+  expirePersistentSearch,
+  getPersistentSearches,
+  updatePersistentSearchExpiration,
+} = PersistentSearchApiActions;
+const {
+  createPersistentSearchWorker,
+  expirePersistentSearchWorker,
+  getPersistentSearchesWorker,
+  updatePersistentSearchExpirationWorker,
+} = PersistentSearchApiSagas;
 const { FOLLOW_UPS, PEOPLE } = APP_TYPE_FQNS;
 const { GENERAL_DATETIME, LAST_NAME, STATUS } = PROPERTY_TYPE_FQNS;
 
@@ -192,6 +214,124 @@ function* searchForTasksWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * TasksActions.getSubscriptions()
+ *
+ */
+
+function* getSubscriptionsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(getSubscriptions.request(action.id));
+
+    const response = yield call(getPersistentSearchesWorker, getPersistentSearches(false));
+    if (response.error) throw response.error;
+    const subscriptions = fromJS(response.data);
+
+    yield put(getSubscriptions.success(action.id, subscriptions));
+  }
+  catch (error) {
+    yield put(getSubscriptions.failure(action.id, error));
+  }
+  finally {
+    yield put(getSubscriptions.finally(action.id));
+  }
+}
+
+function* getSubscriptionsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SUBSCRIPTIONS, getSubscriptionsWorker);
+}
+
+/*
+ *
+ * TasksActions.createSubscription()
+ *
+ */
+
+function* createSubscriptionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(createSubscription.request(action.id));
+
+    const response = yield call(createPersistentSearchWorker, createPersistentSearch(action.value));
+    if (response.error) throw response.error;
+
+    yield put(createSubscription.success(action.id));
+    yield put(getSubscriptions());
+  }
+  catch (error) {
+    yield put(createSubscription.failure(action.id, error));
+  }
+  finally {
+    yield put(createSubscription.finally(action.id));
+  }
+}
+
+function* createSubscriptionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_SUBSCRIPTION, createSubscriptionWorker);
+}
+
+/*
+ *
+ * TasksActions.expireSubscription()
+ *
+ */
+
+function* expireSubscriptionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(expireSubscription.request(action.id));
+
+    const response = yield call(expirePersistentSearchWorker, expirePersistentSearch(action.value));
+    if (response.error) throw response.error;
+
+    yield put(expireSubscription.success(action.id));
+    yield put(getSubscriptions());
+  }
+  catch (error) {
+    yield put(expireSubscription.failure(action.id, error));
+  }
+  finally {
+    yield put(expireSubscription.finally(action.id));
+  }
+}
+
+function* expireSubscriptionWatcher() :Generator<*, *, *> {
+  yield takeEvery(EXPIRE_SUBSCRIPTION, expireSubscriptionWorker);
+}
+
+/*
+ *
+ * TasksActions.getSubscriptions()
+ *
+ */
+
+function* updateSubscriptionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(updateSubscription.request(action.id));
+
+    const response = yield call(updatePersistentSearchExpirationWorker, updatePersistentSearchExpiration(action.value));
+    if (response.error) throw response.error;
+
+    yield put(updateSubscription.success(action.id));
+    yield put(getSubscriptions());
+  }
+  catch (error) {
+    yield put(updateSubscription.failure(action.id, error));
+  }
+  finally {
+    yield put(updateSubscription.finally(action.id));
+  }
+}
+
+function* updateSubscriptionWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_SUBSCRIPTION, updateSubscriptionWorker);
+}
+
+/*
+ *
  * TasksActions.getPeopleForNewTaskForm()
  *
  */
@@ -266,10 +406,18 @@ function* loadTaskManagerDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  createSubscriptionWatcher,
+  createSubscriptionWorker,
+  expireSubscriptionWatcher,
+  expireSubscriptionWorker,
   getPeopleForNewTaskFormWatcher,
   getPeopleForNewTaskFormWorker,
+  getSubscriptionsWatcher,
+  getSubscriptionsWorker,
   loadTaskManagerDataWatcher,
   loadTaskManagerDataWorker,
   searchForTasksWatcher,
   searchForTasksWorker,
+  updateSubscriptionWatcher,
+  updateSubscriptionWorker,
 };

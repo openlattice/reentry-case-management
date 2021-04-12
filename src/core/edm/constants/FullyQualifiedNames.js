@@ -77,6 +77,7 @@ const APP_TYPE_FQNS :Object = {
 };
 
 const PROPERTY_TYPE_FQNS = {
+  ASSIGNEE_ID: FQN.of('ol.assigneeid'),
   CATEGORY: FQN.of('ol.category'),
   CITY: FQN.of('location.city'),
   COUNTRY: FQN.of('ol.country'),
